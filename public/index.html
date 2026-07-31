@@ -1876,7 +1876,7 @@ renderPlanoEstavel();
 
     let items=[];
     if(view==='contest')items=[button('#importVertical'),button('#editContest'),button('#newContest')];
-    if(view==='plan')items=[button('#editPlanV3','#editPlanV2','#editPlan'),button('#regenPlan')];
+    if(view==='plan')items=[button('#planCustomizePersistent','#finalEditPlanButton','#editPlanV3','#editPlanV2','#editPlan'),button('#regenPlan')];
     if(view==='reviews')items=[revisionAddButton(),button('#completeAll')];
 
     const valid=items.filter(Boolean);
@@ -3935,57 +3935,127 @@ body.dark .final-session-summary,body.dark .final-topic-select{background:#101b3
 <script id="persistentPlanCustomizationController">
 (() => {
   'use strict';
-  const BUTTON_ID='planCustomizePersistent';
-  function getActions(){
-    const hero=document.querySelector('#plan .page-hero');
-    if(!hero)return null;
-    let actions=document.getElementById('planHeaderActions')||hero.querySelector('.page-hero-actions');
-    if(!actions){
-      actions=document.createElement('div');
-      actions.id='planHeaderActions';actions.className='page-hero-actions';hero.appendChild(actions);
+  const BUTTON_ID = 'planCustomizePersistent';
+
+  function planIsActive() {
+    return document.getElementById('plan')?.classList.contains('active');
+  }
+
+  function getPlanActions() {
+    const hero = document.querySelector('#plan .page-hero');
+    if (!hero) return null;
+    let actions = document.getElementById('planHeaderActions');
+    if (!actions) {
+      actions = document.createElement('div');
+      actions.id = 'planHeaderActions';
+      actions.className = 'page-hero-actions';
+      hero.appendChild(actions);
     }
-    const recalc=document.getElementById('regenPlan');
-    if(recalc&&recalc.parentElement!==actions)actions.appendChild(recalc);
     return actions;
   }
-  function ensureButton(){
-    const actions=getActions();if(!actions)return null;
-    let button=document.getElementById(BUTTON_ID);
-    if(!button){
-      button=document.createElement('button');button.id=BUTTON_ID;button.type='button';button.className='btn';
-      button.textContent='✎ Personalizar semana e matérias';
+
+  function getVisibleActions() {
+    if (planIsActive()) {
+      let context = document.getElementById('contextActions');
+      if (!context) {
+        const topActions = document.querySelector('.top-actions');
+        if (topActions) {
+          context = document.createElement('div');
+          context.id = 'contextActions';
+          topActions.prepend(context);
+        }
+      }
+      if (context) {
+        context.hidden = false;
+        return context;
+      }
     }
-    button.hidden=false;button.disabled=false;button.removeAttribute('hidden');button.removeAttribute('disabled');
-    button.style.cssText='display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;align-items:center;justify-content:center;';
-    const recalc=document.getElementById('regenPlan');
-    if(button.parentElement!==actions)actions.insertBefore(button,recalc||actions.firstChild);
-    else if(recalc&&button.nextElementSibling!==recalc)actions.insertBefore(button,recalc);
+    return getPlanActions();
+  }
+
+  function ensureButton() {
+    const actions = getVisibleActions();
+    if (!actions) return null;
+
+    let button = document.getElementById(BUTTON_ID);
+    if (!button) {
+      button = document.createElement('button');
+      button.id = BUTTON_ID;
+      button.type = 'button';
+      button.className = 'btn';
+      button.textContent = '✎ Personalizar semana e matérias';
+    }
+
+    const recalc = document.getElementById('regenPlan');
+    button.hidden = false;
+    button.disabled = false;
+    button.removeAttribute('hidden');
+    button.removeAttribute('disabled');
+    button.style.cssText = 'display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;align-items:center;justify-content:center;';
+
+    if (button.parentElement !== actions) actions.appendChild(button);
+    if (recalc) {
+      recalc.hidden = false;
+      recalc.disabled = false;
+      recalc.removeAttribute('hidden');
+      recalc.removeAttribute('disabled');
+      if (recalc.parentElement !== actions) actions.appendChild(recalc);
+      if (button.nextElementSibling !== recalc) actions.insertBefore(button, recalc);
+    }
     return button;
   }
-  function openEditor(){
-    const api=window.aprovaFinalSubjects;
-    if(api&&typeof api.openSubjects==='function'){api.openSubjects();return}
-    const legacy=document.getElementById('finalEditPlanButton')||document.getElementById('editPlanV3')||document.getElementById('editPlanV2')||document.getElementById('editPlan');
-    if(legacy){legacy.click();return}
-    (window.toast||window.alert)('O editor do plano ainda está carregando. Tente novamente em um instante.');
-    setTimeout(()=>{const next=window.aprovaFinalSubjects;if(next?.openSubjects)next.openSubjects()},250);
+
+  function restoreWhenLeavingPlan() {
+    if (planIsActive()) return;
+    const planActions = getPlanActions();
+    if (!planActions) return;
+    const button = document.getElementById(BUTTON_ID);
+    const recalc = document.getElementById('regenPlan');
+    if (button && button.parentElement !== planActions) planActions.appendChild(button);
+    if (recalc && recalc.parentElement !== planActions) planActions.appendChild(recalc);
   }
-  document.addEventListener('click',event=>{
-    const button=event.target.closest('#'+BUTTON_ID);if(!button)return;
-    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();openEditor();
-  },true);
-  function refresh(){ensureButton()}
-  const observer=new MutationObserver(()=>refresh());
-  function start(){
-    refresh();
-    const plan=document.getElementById('plan');if(plan)observer.observe(plan,{childList:true,subtree:true});
+
+  function openEditor() {
+    const api = window.aprovaFinalSubjects;
+    if (api && typeof api.openSubjects === 'function') {
+      api.openSubjects();
+      return;
+    }
+    const legacy = document.getElementById('finalEditPlanButton') || document.getElementById('editPlanV3') || document.getElementById('editPlanV2') || document.getElementById('editPlan');
+    if (legacy) {
+      legacy.click();
+      return;
+    }
+    (window.toast || window.alert)('O editor do plano ainda está carregando. Tente novamente em um instante.');
   }
-  document.addEventListener('aprova:render',()=>setTimeout(refresh,0));
-  document.addEventListener('click',event=>{if(event.target.closest('[data-view="plan"],#regenPlan'))setTimeout(refresh,20)},true);
-  window.addEventListener('pageshow',refresh);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  setTimeout(refresh,250);setTimeout(refresh,900);
-  window.aprovaPlanCustomization={refresh,open:openEditor};
+
+  document.addEventListener('click', event => {
+    const button = event.target.closest('#' + BUTTON_ID);
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    openEditor();
+  }, true);
+
+  function refresh() {
+    if (planIsActive()) ensureButton();
+    else restoreWhenLeavingPlan();
+  }
+
+  document.addEventListener('aprova:render', () => setTimeout(refresh, 0));
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-view],#regenPlan')) setTimeout(refresh, 30);
+  }, true);
+  window.addEventListener('pageshow', refresh);
+  window.addEventListener('popstate', refresh);
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refresh, { once: true });
+  else refresh();
+  setTimeout(refresh, 250);
+  setTimeout(refresh, 900);
+
+  window.aprovaPlanCustomization = { refresh, open: openEditor };
 })();
 </script>
 </body></html>
