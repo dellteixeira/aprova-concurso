@@ -1236,7 +1236,64 @@ renderPlanoEstavel();
     salvar('aprovaAvailable', DIAS.map(day => sessions.some(item => item[0] === day)));
     return plan;
   };
-  const sessionCard = session => session ? `<button type="button" class="slot ${/revisão/i.test(session[2]) ? 'review' : ''}" data-cycle-session="${esc(session[0])}|${esc(session[1])}" title="Abrir assuntos da matéria"><strong>${esc(session[2])}</strong><small>${session[1]}–${finish(session[1], session[3])} · ${session[3]} min</small></button>` : '<div class="planner-empty"></div>';
+  const readCompletedSessions = () => ler('aprovaPlanCompleted', {});
+  const sessionCompletionKey = session => `${session[0]}|${session[1]}|${session[2]}`;
+  const subjectNameFromSession = value => String(value || '').replace(/^Revisão[^·]*·\s*/i,'').trim();
+  const topicsForSession = session => {
+    const vertical = ler('aprovaVerticalizacao', null);
+    const subject = subjectNameFromSession(session?.[2]);
+    const normalized = text => String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const discipline = vertical?.disciplinas?.find(item => normalized(item.nome) === normalized(subject))
+      || vertical?.disciplinas?.find(item => normalized(subject).includes(normalized(item.nome)) || normalized(item.nome).includes(normalized(subject)));
+    return (discipline?.topicos || []).map(item => typeof item === 'string' ? item : item.nome).filter(Boolean);
+  };
+  const sessionCard = session => {
+    if (!session) return '<div class="planner-empty"></div>';
+    const completed = !!readCompletedSessions()[sessionCompletionKey(session)];
+    const topics = topicsForSession(session);
+    const payload = encodeURIComponent(JSON.stringify(topics));
+    return `<div class="slot-shell${completed ? ' is-completed' : ''}" data-session-key="${esc(sessionCompletionKey(session))}">
+      <button type="button" class="slot ${/revisão/i.test(session[2]) ? 'review' : ''}" data-cycle-session="${esc(session[0])}|${esc(session[1])}" data-session-topics="${payload}" aria-label="Abrir assuntos de ${esc(session[2])}">
+        <strong>${esc(session[2])}</strong><small>${session[1]}–${finish(session[1], session[3])} · ${session[3]} min</small>
+      </button>
+      <button type="button" class="session-check${completed ? ' checked' : ''}" data-complete-session="${esc(sessionCompletionKey(session))}" aria-pressed="${completed}" title="${completed ? 'Marcar como pendente' : 'Marcar como estudado'}">✓</button>
+    </div>`;
+  };
+  let sessionTopicsTooltip = document.getElementById('sessionTopicsTooltip');
+  if (!sessionTopicsTooltip) {
+    sessionTopicsTooltip = document.createElement('div');
+    sessionTopicsTooltip.id = 'sessionTopicsTooltip';
+    sessionTopicsTooltip.className = 'session-topics-tooltip';
+    sessionTopicsTooltip.setAttribute('role','tooltip');
+    document.body.appendChild(sessionTopicsTooltip);
+  }
+  const positionSessionTopics = button => {
+    if (!sessionTopicsTooltip.classList.contains('show')) return;
+    const rect = button.getBoundingClientRect();
+    const width = Math.min(360, Math.max(250, rect.width + 80));
+    sessionTopicsTooltip.style.width = `${width}px`;
+    let left = rect.left + rect.width / 2 - width / 2;
+    left = Math.max(12, Math.min(left, window.innerWidth - width - 12));
+    const tooltipHeight = sessionTopicsTooltip.offsetHeight || 180;
+    let top = rect.top - tooltipHeight - 10;
+    if (top < 12) top = Math.min(window.innerHeight - tooltipHeight - 12, rect.bottom + 10);
+    sessionTopicsTooltip.style.left = `${left}px`;
+    sessionTopicsTooltip.style.top = `${top}px`;
+  };
+  const showSessionTopics = button => {
+    let topics = [];
+    try { topics = JSON.parse(decodeURIComponent(button.dataset.sessionTopics || '%5B%5D')); } catch (_) {}
+    const subject = button.querySelector('strong')?.textContent || 'Disciplina';
+    sessionTopicsTooltip.innerHTML = `<strong>${esc(subject)}</strong>${topics.length
+      ? `<span>${topics.length} tópico${topics.length === 1 ? '' : 's'} previsto${topics.length === 1 ? '' : 's'}</span><ul>${topics.map(topic => `<li>${esc(topic)}</li>`).join('')}</ul>`
+      : '<span>Nenhum tópico cadastrado nesta disciplina.</span>'}`;
+    sessionTopicsTooltip.classList.add('show');
+    positionSessionTopics(button);
+  };
+  const hideSessionTopics = () => sessionTopicsTooltip.classList.remove('show');
+  window.addEventListener('scroll', hideSessionTopics, true);
+  window.addEventListener('resize', hideSessionTopics);
+
   const renderGrid = plan => {
     const wrap = document.querySelector('#plan .planner-wrap');
     if (!wrap) return;
@@ -1256,9 +1313,31 @@ renderPlanoEstavel();
     }
     html += '</div>';
     wrap.innerHTML = html;
-    wrap.querySelectorAll('[data-cycle-session]').forEach(button => button.addEventListener('click', () => {
-      const [day, time] = button.dataset.cycleSession.split('|');
-      try { window.abrirAssuntosDaSessao?.(day, time); } catch (_) {}
+    wrap.querySelectorAll('[data-cycle-session]').forEach(button => {
+      button.addEventListener('click', () => {
+        const [day, time] = button.dataset.cycleSession.split('|');
+        try { window.abrirAssuntosDaSessao?.(day, time); } catch (_) {}
+      });
+      button.addEventListener('mouseenter', () => showSessionTopics(button));
+      button.addEventListener('mousemove', () => positionSessionTopics(button));
+      button.addEventListener('mouseleave', hideSessionTopics);
+      button.addEventListener('focus', () => showSessionTopics(button));
+      button.addEventListener('blur', hideSessionTopics);
+    });
+    wrap.querySelectorAll('[data-complete-session]').forEach(check => check.addEventListener('click', event => {
+      event.preventDefault(); event.stopPropagation();
+      const key = check.dataset.completeSession;
+      const completed = readCompletedSessions();
+      completed[key] = !completed[key];
+      if (!completed[key]) delete completed[key];
+      salvar('aprovaPlanCompleted', completed);
+      const shell = check.closest('.slot-shell');
+      shell?.classList.toggle('is-completed', !!completed[key]);
+      check.classList.toggle('checked', !!completed[key]);
+      check.setAttribute('aria-pressed', String(!!completed[key]));
+      check.title = completed[key] ? 'Marcar como pendente' : 'Marcar como estudado';
+      try { window.aprovaContestManager?.snapshot?.(); } catch (_) {}
+      (window.toast || alert)(completed[key] ? 'Sessão marcada como estudada.' : 'Sessão reaberta como pendente.');
     }));
   };
   const todayKey = () => DIAS[(new Date().getDay() + 6) % 7];
@@ -1342,6 +1421,7 @@ renderPlanoEstavel();
     .canonical-planner{display:grid;grid-template-columns:126px repeat(5,minmax(135px,1fr)) 126px repeat(2,minmax(135px,1fr));min-width:1420px;align-items:stretch;grid-auto-rows:minmax(118px,auto)}
     .canonical-planner .head,.canonical-planner .hour,.canonical-planner .planner-empty{border:1px solid var(--line,#30466e);min-height:72px;padding:14px}.canonical-planner .head{font-weight:800;letter-spacing:.04em}.canonical-planner .hour{color:var(--muted,#aebbd5);font-size:.86rem}.canonical-planner .hour strong{color:inherit;white-space:nowrap}.canonical-planner .slot{display:flex;flex-direction:column;gap:5px;text-align:left;border:1px solid var(--line,#30466e);border-radius:12px;margin:5px;padding:13px;background:#eaf0ff;color:#3156d7;font:inherit;cursor:pointer}.canonical-planner .slot strong{font-size:.92rem;line-height:1.2}.canonical-planner .slot small{font-size:.78rem;font-weight:700}.canonical-planner .slot.review{background:#e3faf2;color:#087c61}.canonical-today{display:grid;gap:0}.canonical-today .session-row{display:grid;grid-template-columns:86px 1fr auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line,#30466e)}.canonical-today .session-row div{display:grid;gap:4px}.canonical-today .session-row small,.canonical-today .session-row span{color:var(--muted,#aebbd5);font-size:.82rem}.canonical-today .session-row em{font-style:normal;font-size:.72rem;font-weight:800;color:#3156d7;background:#eaf0ff;padding:7px 10px;border-radius:999px}@media(max-width:700px){.canonical-today .session-row{grid-template-columns:62px 1fr}.canonical-today .session-row em{display:none}}
     [data-theme="dark"] .canonical-planner .slot{background:#e5edff;color:#3156d7}[data-theme="dark"] .canonical-planner .slot.review{background:#dff7ef;color:#087c61}[data-theme="dark"] .canonical-today .session-row em{background:#e5edff;color:#3156d7}
+    .canonical-planner .slot-shell{position:relative;display:grid;min-width:0;margin:0;border:1px solid transparent;border-radius:12px}.canonical-planner .slot-shell .slot{width:calc(100% - 10px);height:calc(100% - 10px);min-height:108px}.canonical-planner .slot-shell.is-completed .slot{background:#d7dbe2!important;color:#687180!important;border-color:#aeb5c0!important;text-decoration:none;filter:saturate(.35)}.canonical-planner .session-check{position:absolute;top:7px;right:7px;width:20px;height:20px;min-width:20px;min-height:20px;padding:0;border:1px solid #8795ad;border-radius:6px;background:#fff;color:transparent;font:900 11px/1 system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer;display:grid;place-items:center;z-index:3;box-shadow:0 1px 4px #0002}.canonical-planner .session-check:hover{border-color:#4165f5;transform:none}.canonical-planner .session-check.checked{background:#6f7784;border-color:#6f7784;color:#fff}.canonical-planner .slot strong{padding-right:22px}.canonical-planner .slot small{padding-right:4px}.session-topics-tooltip{position:fixed;z-index:9999;display:none;max-height:320px;overflow:auto;padding:14px 15px;border:1px solid #415579;border-radius:13px;background:#101b31;color:#edf3ff;box-shadow:0 18px 50px #0008;pointer-events:none}.session-topics-tooltip.show{display:block}.session-topics-tooltip>strong{display:block;font-size:.92rem;margin-bottom:4px}.session-topics-tooltip>span{display:block;color:#aebbd4;font-size:.76rem;margin-bottom:9px}.session-topics-tooltip ul{margin:0;padding-left:18px;display:grid;gap:7px}.session-topics-tooltip li{font-size:.8rem;line-height:1.35;color:#e2e9f8}.session-topics-tooltip li::marker{color:#829cff}body:not(.dark) .session-topics-tooltip{background:#fff;color:#1b2640;border-color:#d7deeb;box-shadow:0 18px 45px #1b26402d}body:not(.dark) .session-topics-tooltip>span{color:#73809a}body:not(.dark) .session-topics-tooltip li{color:#33415d}
   `;
   document.head.appendChild(css);
   syncIfPlanChanged(true);
@@ -1366,7 +1446,7 @@ renderPlanoEstavel();
   const ACTIVE='aprovaActiveContestId';
   const EDITAIS='aprovaEditaisLocaisV2';
   const STATE_PREFIX='aprovaContestState:';
-  const STATE_KEYS=['aprovaConcurso','aprovaVerticalizacao','aprovaPlano','aprovaConfiguracaoPlano','aprovaAvailable','aprovaDone','aprovaReviewQueue','aprovaReviews','aprovaHistory','aprovaStudyHistory','aprovaStudySessions','aprovaSequence','aprovaProgress','aprovaPomo'];
+  const STATE_KEYS=['aprovaConcurso','aprovaVerticalizacao','aprovaPlano','aprovaConfiguracaoPlano','aprovaAvailable','aprovaDone','aprovaReviewQueue','aprovaReviews','aprovaHistory','aprovaStudyHistory','aprovaStudySessions','aprovaSequence','aprovaProgress','aprovaPomo','aprovaPlanCompleted'];
   const read=(k,f)=>{try{const v=localStorage.getItem(k);return v===null?f:JSON.parse(v)}catch{return f}};
   const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
   const uid=()=>crypto.randomUUID?crypto.randomUUID():`contest-${Date.now()}-${Math.random().toString(16).slice(2)}`;
