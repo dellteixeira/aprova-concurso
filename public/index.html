@@ -1475,4 +1475,102 @@ renderPlanoEstavel();
 </script>
 
 
+
+<style id="aprova-hotfix-edital-ui">
+.edital-empty-manager{border:1px dashed var(--line);border-radius:18px;padding:22px;background:color-mix(in srgb,var(--panel) 92%,transparent);display:grid;gap:14px}
+.edital-empty-manager h4{margin:0;font-size:18px}.edital-empty-manager p{margin:0;color:var(--muted);line-height:1.55}
+.edital-empty-actions,.vertical-extra-actions{display:flex;gap:10px;flex-wrap:wrap}
+.vertical-toolbar{align-items:center;gap:14px}.vertical-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+#manualDisciplineModal .topics-help{font-size:12px;color:var(--muted);margin-top:6px}
+@media(max-width:760px){.vertical-toolbar{align-items:flex-start}.vertical-toolbar-actions{justify-content:flex-start;width:100%}.vertical-toolbar-actions .btn,.edital-empty-actions .btn{flex:1 1 180px}}
+</style>
+<script id="aprova-hotfix-edital">
+(()=>{
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+
+  // Corrige o erro listaConcursos/listaEditais nulos quando a seção antiga foi removida do dashboard.
+  window.renderCatalogoInicial=function(concursos=[],editais=[],conectado=false){
+    const listaConcursos=document.getElementById('savedContests');
+    const listaEditais=document.getElementById('savedEditais');
+    if(listaConcursos){
+      if(!conectado) listaConcursos.innerHTML='<div class="catalog-empty">Conecte e entre na sua conta para ver seus concursos cadastrados.</div>';
+      else listaConcursos.innerHTML=concursos.length?concursos.slice(0,3).map(c=>`<div class="catalog-item"><div class="catalog-icon">⚖</div><div class="catalog-copy"><b>${esc(c.titulo||'Concurso sem título')} · ${esc(c.cargo||'Cargo não informado')}</b><span>${esc(c.orgao||c.banca||'Em preparação')}${c.data_prova?` · Prova em ${dataBrasileira(c.data_prova)}`:''}</span></div></div>`).join(''):'<div class="catalog-empty">Nenhum concurso cadastrado ainda.</div>';
+    }
+    if(listaEditais){
+      if(!conectado) listaEditais.innerHTML='<div class="catalog-empty">Seus PDFs ficarão aqui para serem reutilizados sem nova análise.</div>';
+      else listaEditais.innerHTML=editais.length?editais.slice(0,3).map(e=>`<div class="catalog-item"><div class="catalog-icon pdf">PDF</div><div class="catalog-copy"><b>${esc(e.nome_arquivo||'Edital sem nome')}</b><span>${e.chatgpt_url?'Análise vinculada ao ChatGPT · ':''}${typeof dataDoEdital==='function'?dataDoEdital(e.created_at):''}</span></div>${e.chatgpt_url?`<button class="btn catalog-action" data-open-chat="${e.id}">Abrir ChatGPT</button>`:''}</div>`).join(''):'<div class="catalog-empty">Nenhum edital salvo ainda.</div>';
+    }
+    document.querySelectorAll('[data-open-view]').forEach(b=>b.onclick=()=>showView(b.dataset.openView));
+    document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>{const edital=(window.editaisDaConta||[]).find?.(x=>String(x.id)===String(b.dataset.openChat)) || (typeof editaisDaConta!=='undefined'?editaisDaConta.find(x=>String(x.id)===String(b.dataset.openChat)):null);if(edital&&typeof abrirChatGpt==='function')abrirChatGpt(edital.chatgpt_url)});
+  };
+
+  const oldFill=window.preencherConcursosNoFormulario || (typeof preencherConcursosNoFormulario==='function'?preencherConcursosNoFormulario:null);
+  window.preencherConcursosNoFormulario=function(){
+    const select=document.getElementById('chatGptContest');if(!select)return;
+    const lista=(typeof concursosDaConta!=='undefined'&&Array.isArray(concursosDaConta))?concursosDaConta:[];
+    select.innerHTML='<option value="">Criar novo concurso com os campos abaixo</option>'+lista.map(c=>`<option value="${esc(c.id)}">${esc(c.titulo||'Concurso')} · ${esc(c.cargo||'Cargo')}</option>`).join('');
+  };
+
+  if(!document.getElementById('manualDisciplineModal')){
+    document.body.insertAdjacentHTML('beforeend',`<div class="modal" id="manualDisciplineModal"><div class="modal-box"><h2>Adicionar matéria ao edital</h2><p class="edit-note">A matéria será incluída somente no concurso atualmente ativo.</p><form class="log-form" id="manualDisciplineForm"><div class="field full"><label>Nome da matéria</label><input id="manualDisciplineName" required placeholder="Ex.: Direito Constitucional"></div><div class="field"><label>Prioridade</label><select id="manualDisciplinePriority"><option value="alta">Alta</option><option value="media" selected>Média</option><option value="baixa">Baixa</option></select></div><div class="field"><label>Peso</label><input id="manualDisciplineWeight" type="number" min="1" max="10" value="1"></div><div class="field full"><label>Tópicos da matéria</label><textarea id="manualDisciplineTopics" rows="8" placeholder="Digite um tópico por linha"></textarea><div class="topics-help">Cada linha será criada como um tópico pendente e poderá ser marcada ou desmarcada depois.</div></div></form><div class="modal-actions"><button class="btn" type="button" data-close>Cancelar</button><button class="btn primary" type="submit" form="manualDisciplineForm">Adicionar matéria</button></div></div></div>`);
+  }
+
+  const originalRender=(typeof renderTopicosImportados==='function')?renderTopicosImportados:null;
+  function openManual(){
+    const active=localStorage.getItem('aprovaActiveContestId');
+    if(!active && !localStorage.getItem('aprovaConcurso')){toast('Cadastre ou habilite um concurso antes de adicionar matérias.');return;}
+    document.getElementById('manualDisciplineForm')?.reset();
+    document.getElementById('manualDisciplineWeight').value='1';
+    if(typeof openModal==='function')openModal('manualDisciplineModal');else document.getElementById('manualDisciplineModal')?.classList.add('open');
+  }
+  function bindExtras(){
+    document.getElementById('addManualDiscipline')?.addEventListener('click',openManual,{once:true});
+    document.getElementById('emptyImportVertical')?.addEventListener('click',()=>document.getElementById('importVertical')?.click(),{once:true});
+    document.getElementById('bulkToggleStudied')?.addEventListener('click',()=>{
+      if(!verticalizacaoImportada?.disciplinas?.length)return;
+      const all=verticalizacaoImportada.disciplinas.flatMap(d=>d.topicos||[]);
+      const mark=!all.every(t=>t.concluido);
+      all.forEach(t=>t.concluido=mark);salvarVerticalizacao();renderTopicosImportados();
+      window.aprovaContestManager?.snapshot?.();toast(mark?'Todos os tópicos foram marcados como estudados.':'Todos os tópicos foram desmarcados.');
+    },{once:true});
+  }
+  window.renderTopicosImportados=renderTopicosImportados=function(){
+    const destino=document.getElementById('topics');if(!destino)return;
+    if(!verticalizacaoImportada?.disciplinas?.length){
+      destino.innerHTML=`<div class="edital-empty-manager"><div><h4>Matérias e tópicos do edital</h4><p>Importe a verticalização em JSON ou adicione uma matéria manualmente. Depois você poderá reorganizar as matérias mais cobradas, expandir toda a lista e marcar ou desmarcar cada tópico estudado.</p></div><div class="edital-empty-actions"><button class="btn primary" type="button" id="emptyImportVertical">Importar verticalização</button><button class="btn" type="button" id="addManualDiscipline">+ Adicionar matéria</button></div></div>`;
+      bindExtras();return;
+    }
+    originalRender?.();
+    const actions=document.querySelector('#topics .vertical-toolbar-actions');
+    if(actions&&!document.getElementById('addManualDiscipline'))actions.insertAdjacentHTML('beforeend','<button class="btn" type="button" id="bulkToggleStudied">Marcar/desmarcar todos</button><button class="btn" type="button" id="addManualDiscipline">+ Adicionar matéria</button>');
+    bindExtras();
+  };
+
+  document.getElementById('manualDisciplineForm')?.addEventListener('submit',e=>{
+    e.preventDefault();
+    const nome=document.getElementById('manualDisciplineName').value.trim();
+    if(!nome){toast('Informe o nome da matéria.');return;}
+    const prioridade=document.getElementById('manualDisciplinePriority').value;
+    const peso=Math.max(1,Number(document.getElementById('manualDisciplineWeight').value)||1);
+    const topicos=document.getElementById('manualDisciplineTopics').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(nome=>({nome,concluido:false}));
+    if(!verticalizacaoImportada)verticalizacaoImportada={concurso:{},disciplinas:[],estrategia:''};
+    if(!Array.isArray(verticalizacaoImportada.disciplinas))verticalizacaoImportada.disciplinas=[];
+    const existente=verticalizacaoImportada.disciplinas.find(d=>String(d.nome).trim().toLowerCase()===nome.toLowerCase());
+    if(existente){
+      existente.prioridade=prioridade;existente.peso=peso;const conhecidos=new Set((existente.topicos||[]).map(t=>String(t.nome).trim().toLowerCase()));
+      existente.topicos=[...(existente.topicos||[]),...topicos.filter(t=>!conhecidos.has(t.nome.toLowerCase()))];
+    }else verticalizacaoImportada.disciplinas.push({nome,prioridade,peso,ordem:verticalizacaoImportada.disciplinas.length,topicos});
+    salvarVerticalizacao();
+    try{const c=JSON.parse(localStorage.getItem('aprovaConcurso')||'null');if(c){c.materias=verticalizacaoImportada.disciplinas.map(d=>d.nome).join(', ');c.topicos=verticalizacaoImportada.disciplinas.reduce((n,d)=>n+(d.topicos?.length||0),0);localStorage.setItem('aprovaConcurso',JSON.stringify(c));}}catch{}
+    document.getElementById('manualDisciplineModal')?.classList.remove('open');
+    renderTopicosImportados();
+    if(typeof atualizarMateriasDisponiveis==='function')atualizarMateriasDisponiveis();
+    window.aprovaContestManager?.snapshot?.();toast(`Matéria “${nome}” adicionada ao concurso ativo.`);
+  });
+
+  // Reinstala o botão principal sem depender das rotinas antigas.
+  document.addEventListener('click',e=>{if(e.target.matches('[data-close]'))e.target.closest('.modal')?.classList.remove('open')});
+  setTimeout(()=>{try{renderTopicosImportados()}catch(err){console.warn(err)}},0);
+})();
+</script>
 </body></html>
