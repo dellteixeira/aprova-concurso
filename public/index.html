@@ -1,7 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>Aprova</title>
 <style>
 :root{--navy:#121d38;--blue:#4165f5;--soft:#eef2ff;--bg:#f6f8fc;--line:#e8edf5;--ink:#1b2640;--muted:#73809a;--green:#18b889;--amber:#f3a622;--red:#e75a6b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}.app{display:grid;grid-template-columns:245px 1fr;min-height:100vh}aside{background:var(--navy);color:#b8c5e2;padding:25px 15px;position:sticky;top:0;height:100vh}.brand{color:white;font-size:21px;font-weight:850;letter-spacing:-.8px;padding:0 10px 32px;display:flex;align-items:center;gap:9px}.mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,#90a7ff,#4265f5);display:grid;place-items:center;color:white;font-size:17px}.nav-label{margin:0 10px 9px;font-size:10px;letter-spacing:1.1px;font-weight:800;color:#8391b2}.nav{display:grid;gap:4px;margin-bottom:24px}.nav button{width:100%;border:0;background:transparent;color:#b7c4e0;text-align:left;border-radius:9px;padding:11px 12px;font:700 13px inherit;cursor:pointer;display:flex;gap:12px;align-items:center}.nav button:hover,.nav button.active{background:#293858;color:white}.ico{width:18px;text-align:center;font-size:16px}.side-progress{position:absolute;bottom:18px;left:15px;right:15px;border:1px solid #364873;border-radius:14px;padding:14px;background:#1a2a4a}.side-progress b{color:#fff;font-size:12px}.side-progress p{font-size:11px;line-height:1.45;margin:5px 0 10px}.side-progress button{width:100%;border:0;border-radius:8px;background:#819bff;padding:8px;color:#17244a;font-weight:850;cursor:pointer}.main{max-width:1450px;width:100%;margin:auto;padding:26px 34px 50px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}.top small,.muted{color:var(--muted)}h1{font-size:25px;letter-spacing:-.8px;margin:4px 0 0}.top-actions{display:flex;gap:10px;align-items:center}.icon-btn,.btn{border:1px solid var(--line);background:white;border-radius:10px;min-height:39px;padding:0 13px;color:var(--ink);font-weight:750;cursor:pointer}.icon-btn{width:39px;padding:0}.btn.primary{border:0;background:var(--blue);color:white}.btn.ghost{background:transparent}.avatar{width:39px;height:39px;border-radius:11px;background:linear-gradient(145deg,#f8b3a9,#bf6d70);display:grid;place-items:center;color:white;font-weight:800}.view{display:none}.view.active{display:block}.hero{padding:27px 31px;min-height:157px;border-radius:21px;background:linear-gradient(108deg,#182b76,#4165f5 67%,#6682ff);color:white;overflow:hidden;position:relative;display:flex;justify-content:space-between;align-items:center}.hero:after{content:"";position:absolute;right:-52px;bottom:-136px;width:270px;height:270px;border:35px solid #ffffff1c;border-radius:50%;box-shadow:0 0 0 33px #ffffff0a}.hero>*{z-index:1}.hero p{font-size:11px;font-weight:800;letter-spacing:.8px;color:#cfd9ff;margin:0 0 7px}.hero h2{font-size:24px;margin:0 0 9px;letter-spacing:-.6px}.hero span{font-size:13px;color:#dfe6ff}.hero .btn{border:0;color:#2950d5;position:relative}.grid{display:grid;gap:18px}.stats{grid-template-columns:repeat(4,1fr);margin:21px 0}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:19px}.metric{display:flex;justify-content:space-between}.metric small,.tiny-label{font-size:10px;letter-spacing:.7px;font-weight:800;color:var(--muted)}.metric strong{font-size:23px;display:block;margin-top:9px;letter-spacing:-.7px}.bubble{height:36px;width:36px;border-radius:11px;display:grid;place-items:center;font-size:16px}.b-blue{color:var(--blue);background:#edf1ff}.b-green{color:var(--green);background:#eafbf5}.b-amber{color:#d98b00;background:#fff5df}.b-purple{color:#8758e2;background:#f3ecff}.trend{font-size:11px;color:var(--muted);margin:11px 0 0}.trend b{color:var(--green)}.dash-main{grid-template-columns:1.35fr .83fr}.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}.section-title h3{margin:0;font-size:15px;letter-spacing:-.25px}.link{font-size:12px;color:var(--blue);font-weight:800;cursor:pointer}.sessions .session{display:grid;grid-template-columns:52px 1fr auto;gap:13px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}.sessions .session:last-child{border:0;padding-bottom:0}.time{font-size:12px;font-weight:800;color:#56637a}.time span{display:block;font-size:10px;color:#9aa6b9;margin-top:3px}.subject b{font-size:13px}.subject span{font-size:11px;color:var(--muted);display:block;margin-top:4px}.tag{font-size:9px;padding:6px 8px;border-radius:99px;font-weight:850;background:#edf1ff;color:#4264df}.tag.review{background:#e8fbf4;color:#14946d}.tag.questions{background:#fff4dd;color:#bd7900}.focus{background:var(--navy);color:white;border:0;position:relative;overflow:hidden}.focus:after{content:"";position:absolute;width:250px;height:250px;border:1px solid #4a5d8b;border-radius:50%;bottom:-180px;left:-75px}.focus .section-title h3{color:white}.focus .section-title span{color:#b3c1df}.timer{position:relative;z-index:1;width:160px;height:160px;border:8px solid #354b80;border-top-color:#8ba1ff;border-right-color:#8ba1ff;border-radius:50%;display:grid;place-items:center;margin:5px auto 15px;transform:rotate(35deg)}.timer div{transform:rotate(-35deg);text-align:center}.timer strong{font-size:30px;letter-spacing:-1px}.timer span{display:block;color:#adbbda;font-size:11px;margin-top:2px}.controls{display:flex;justify-content:center;gap:8px;position:relative;z-index:1}.controls .btn{border:0;background:#273a61;color:#dce6ff}.controls .btn.primary{background:#6e89ff;color:white}.dash-bottom{grid-template-columns:1fr 1fr;margin-top:18px}.bar-row{margin-top:16px}.bar-label{display:flex;justify-content:space-between;font-size:12px;font-weight:750;margin-bottom:7px}.bar-label span:last-child{color:var(--muted)}.track{height:7px;background:#edf0f5;border-radius:9px;overflow:hidden}.fill{height:100%;background:var(--blue);border-radius:9px}.fill.green{background:var(--green)}.fill.amber{background:var(--amber)}.chart{height:112px;border-bottom:1px solid var(--line);display:flex;align-items:end;gap:10px;padding:0 5px}.day{font-size:9px;color:var(--muted);font-weight:800;flex:1;display:flex;align-items:center;flex-direction:column;gap:7px}.chart-bar{width:100%;max-width:21px;background:#dce4ff;border-radius:7px 7px 2px 2px}.chart-bar.now{background:var(--blue)}.page-hero{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:22px}.page-hero h2{font-size:23px;letter-spacing:-.7px;margin:0 0 5px}.page-hero p{margin:0;color:var(--muted);font-size:13px}.two-col{grid-template-columns:1.2fr .8fr}.contest-title{display:flex;gap:14px;align-items:flex-start}.contest-icon{height:47px;width:47px;border-radius:14px;display:grid;place-items:center;background:#edf1ff;color:var(--blue);font-size:20px}.contest-title h3{margin:2px 0 4px;font-size:16px}.pill{padding:5px 8px;border-radius:99px;color:#167e61;background:#e8faf3;font-size:10px;font-weight:800}.data-list{margin-top:20px;display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.data-list span{color:var(--muted);font-size:11px;display:block;margin-bottom:3px}.data-list b{font-size:13px}.deadline{background:#fff9ed;border:1px solid #ffe6b4}.deadline strong{font-size:29px;display:block;color:#c57d00;margin:6px 0}.deadline p{font-size:12px;color:#886e3d;margin:0}.topic{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.topic:last-child{border:0}.check{height:21px;width:21px;border:2px solid #ced6e4;border-radius:7px;cursor:pointer}.check.done{border-color:var(--green);background:var(--green);color:white;text-align:center;font-size:13px}.topic div{flex:1}.topic b{font-size:13px}.topic span{display:block;color:var(--muted);font-size:11px;margin-top:3px}.progress-sm{width:72px}.upload{border:2px dashed #cbd5ea;border-radius:14px;padding:32px 20px;text-align:center;background:#fafcff}.upload i{font-size:24px;color:var(--blue);font-style:normal}.upload h3{margin:8px 0 5px;font-size:14px}.upload p{color:var(--muted);font-size:12px;margin:0 0 14px}.upload input{display:none}.analysis-result{margin-top:14px;background:#effaf6;border:1px solid #d0f2e6;border-radius:12px;padding:13px;font-size:12px;color:#23765c;display:none}.analysis-result.show{display:block}.priority{display:grid;grid-template-columns:36px 1fr auto;gap:11px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.priority:last-child{border:0}.rank{width:27px;height:27px;border-radius:9px;background:#edf1ff;color:var(--blue);display:grid;place-items:center;font-size:12px;font-weight:850}.priority b{font-size:13px}.priority span{font-size:11px;color:var(--muted);display:block;margin-top:3px}.score{color:#187e62;background:#e7faf3;border-radius:8px;padding:5px 7px;font-size:10px;font-weight:850}.planner{display:grid;grid-template-columns:125px repeat(5,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:720px}.planner>div{min-height:72px;padding:9px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:11px}.planner .head{background:#fafbfd;color:var(--muted);font-weight:800;min-height:auto}.planner .hour{color:var(--muted);font-weight:700;background:#fafbfd}.slot{background:#eef2ff;color:#3755cb;border-radius:7px;padding:6px!important;margin:3px;font-size:10px!important;font-weight:750}.slot.review{background:#e7faf3;color:#157a5c}.planner-wrap{overflow:auto}.availability{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.switch-row{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:750}.switch{width:36px;height:20px;border-radius:99px;background:#d6dce8;padding:3px;cursor:pointer}.switch:after{content:"";display:block;width:14px;height:14px;border-radius:50%;background:white;transition:.2s}.switch.on{background:var(--blue)}.switch.on:after{transform:translateX(16px)}.review-item{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}.review-item:last-child{border:0}.review-day{height:38px;width:38px;border-radius:11px;background:#fff4df;color:#be7a00;display:grid;place-items:center;font-size:11px;font-weight:850}.review-item b{font-size:13px}.review-item span{font-size:11px;color:var(--muted);display:block;margin-top:3px}.empty{padding:25px;text-align:center;color:var(--muted);font-size:12px}.log-form{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:grid;gap:5px}.field label{font-size:11px;font-weight:800;color:#64718a}.field input,.field select{border:1px solid var(--line);border-radius:9px;padding:10px;font:13px inherit;color:var(--ink);background:white}.full{grid-column:1/-1}.history-row{display:grid;grid-template-columns:85px 1fr 70px;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}.history-row small{color:var(--muted)}.history-row b{font-size:13px}.history-row span{font-weight:800;font-size:12px;text-align:right}.modal{display:none;position:fixed;inset:0;z-index:5;background:#0b1433a8;padding:20px;align-items:center;justify-content:center}.modal.open{display:flex}.modal-box{width:min(540px,100%);max-height:92vh;overflow:auto;background:white;border-radius:18px;padding:23px;box-shadow:0 24px 70px #0004}.modal-box h2{margin:0 0 6px;font-size:19px}.modal-box>p{margin:0 0 18px;color:var(--muted);font-size:12px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.toast{position:fixed;right:23px;bottom:23px;background:#182646;color:white;padding:12px 15px;border-radius:11px;box-shadow:0 10px 30px #0003;font-size:12px;font-weight:700;transform:translateY(90px);transition:.25s;z-index:9}.toast.show{transform:translateY(0)}
@@ -28,7 +29,6 @@ body.dark .contest-sources,body.dark .matter-choice{border-color:#2a3958;backgro
   body.dark .day-session-choice,body.dark .slot-topic-choice,body.dark .session-editor-note{background:#111c31;border-color:#2a3958;color:#eaf0ff}body.dark .slot-topic-choice span{color:#aebbd4}
   @media(max-width:680px){.day-session-grid{grid-template-columns:1fr}.planner .hour{min-width:128px}}
 </style>
-
 <style id="finalContestLayoutFix">
 #savedCatalog:has(#savedEditais){grid-template-columns:1fr!important}
 #savedCatalog>article:only-child{grid-column:1/-1!important}
@@ -36,15 +36,12 @@ body.dark .contest-sources,body.dark .matter-choice{border-color:#2a3958;backgro
 #contest .page-hero-actions{display:flex!important;flex-wrap:wrap!important;justify-content:flex-end!important;gap:10px!important}
 @media(max-width:900px){#contest .grid.two-col{grid-template-columns:1fr!important}.canonical-contest-catalog{margin-top:8px}}
 </style>
-
 <style id="credentialSecurityStyles">
 .credential-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.lock-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:132px}.credential-note{margin:9px 0 0;color:var(--muted);font-size:11px;line-height:1.45}.credentials-locked #supabaseCredentials{opacity:.72}.credentials-locked #supabaseUrl,.credentials-locked #supabaseKey{letter-spacing:2px}.credentials-unlocked #supabaseCredentials{opacity:1}.security-dialog{display:grid;gap:12px}.security-dialog .field input{width:100%}.security-help{font-size:11px;color:var(--muted);line-height:1.5;margin:0}.lock-warning{padding:10px 12px;border:1px solid #ffe0a2;background:#fff7e7;color:#8e6200;border-radius:10px;font-size:11px;line-height:1.45}body.dark .lock-warning{background:#2c2518;border-color:#73551d;color:#ffd486}
 </style>
-
 <style id="masterAccessSecurity">
 .master-only-notice{border:1px solid var(--line);background:var(--soft);border-radius:12px;padding:14px;margin-bottom:18px;display:grid;gap:5px}.master-only-notice strong{font-size:13px}.master-only-notice span{font-size:11px;color:var(--muted);line-height:1.45}body.dark .master-only-notice{background:#101b30;border-color:#2a3958}
 </style>
-
 <style id="authPrivacyGuardStyles">
 body.auth-pending .view[data-auth-protected] > :not(.auth-empty-screen),
 body.auth-logged-out .view[data-auth-protected] > :not(.auth-empty-screen){display:none!important}
@@ -62,20 +59,20 @@ body.dark .auth-empty-screen{background:#111c31;border-color:#2a3958}
 </head><body class="auth-pending">
 <div class="app"><aside><div class="brand"><span class="mark">✦</span> Aprova</div><p class="nav-label">MENU PRINCIPAL</p><div class="nav">
 <button class="active" data-view="dashboard"><i class="ico">⌂</i><span>Visão geral</span></button><button data-view="contest"><i class="ico">◫</i><span>Meu concurso</span></button><button data-view="plan"><i class="ico">▤</i><span>Plano de estudos</span></button><button data-view="reviews"><i class="ico">◷</i><span>Revisões</span></button><button data-view="progress"><i class="ico">◉</i><span>Progresso</span></button></div><p class="nav-label">ORGANIZAÇÃO</p><div class="nav"><button data-view="history"><i class="ico">▦</i><span>Histórico</span></button><button data-view="settings"><i class="ico">⚙</i><span>Configurações</span></button></div><div class="side-progress"><b>Seu plano está evoluindo</b><p id="sideDeadline">Faltam 72 dias para sua prova. Continue consistente.</p><button data-view="plan">Ver planejamento</button></div></aside>
-<main class="main"><header class="top"><div><small>Terça-feira, 28 de julho</small><h1 id="heading">Olá. Vamos avançar? 👋</h1></div><div class="top-actions"><button class="icon-btn" id="theme" title="Alternar tema">☾</button><div class="avatar" title="Perfil de estudos"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCA1MDguNiA0OTEuNyI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDMwLjMuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS4zIEJ1aWxkIDE4MikgIC0tPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuc3QwIHsKICAgICAgICBmaWxsOiAjNWVhMmVlOwogICAgICB9CgogICAgICAuc3QxIHsKICAgICAgICBmaWxsOiAjN2JiNzcxOwogICAgICB9CgogICAgICAuc3QyIHsKICAgICAgICBmaWxsOiAjZWY5YjM4OwogICAgICB9CgogICAgICAuc3QzIHsKICAgICAgICBmaWxsOiAjZmRmZGZiOwogICAgICB9CgogICAgICAuc3Q0IHsKICAgICAgICBmaWxsOiAjNjc3Yzg4OwogICAgICB9CgogICAgICAuc3Q1IHsKICAgICAgICBmaWxsOiAjZDhhMjUwOwogICAgICB9CgogICAgICAuc3Q2IHsKICAgICAgICBmaWxsOiAjZjFlM2I0OwogICAgICB9CgogICAgICAuc3Q3IHsKICAgICAgICBmaWxsOiAjNzI1NjRhOwogICAgICB9CgogICAgICAuc3Q4IHsKICAgICAgICBmaWxsOiAjNjQ5NWQ3OwogICAgICB9CgogICAgICAuc3Q5IHsKICAgICAgICBmaWxsOiAjZjJiOTYxOwogICAgICB9CgogICAgICAuc3QxMCB7CiAgICAgICAgZmlsbDogI2RiNmM5MjsKICAgICAgfQoKICAgICAgLnN0MTEgewogICAgICAgIGZpbGw6ICM2NjdjODg7CiAgICAgIH0KCiAgICAgIC5zdDEyIHsKICAgICAgICBmaWxsOiAjZTFjNTgxOwogICAgICB9CgogICAgICAuc3QxMyB7CiAgICAgICAgZmlsbDogI2VmOWMzOTsKICAgICAgfQoKICAgICAgLnN0MTQgewogICAgICAgIGZpbGw6ICNlYTdiNTM7CiAgICAgIH0KCiAgICAgIC5zdDE1IHsKICAgICAgICBmaWxsOiAjYzBkZmVlOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTQ3OC40LDI1Ny4zaC0uNXMwLTM0LjMsMC0zNC4zYy0uNy0uMy0xLjEtLjEtMS41LS4xaC04Yy0uNSwwLS45LS4yLTEtLjVoMTFzMCwzNSwwLDM1WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNMjEuMiwxNDEuMmMtLjMuMi0uNy4yLS45LjQtLjguOC4xLDIuNy0uOSwzLjMtLjEtMS4xLS4yLTIuMS0uNy0zLjcuOS0uNiwxLjgtLjMsMi41LDBaIi8+CiAgPHBhdGggY2xhc3M9InN0MTIiIGQ9Ik0yMS44LDE0MC45Yy0uMSwwLS4zLDAtLjQuMi0uMy0uNSwwLS42LjQtLjJaIi8+CiAgPHBhdGggY2xhc3M9InN0MTIiIGQ9Ik0zNzMuNiwyMjIuNmgtNThzLjUtLjcuNS0uN2MwLC4yLDAsLjQuNS41bDU2LjkuM1oiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNMTc1LjIsMzczLjdjMCwuMywwLC43LDAsMS0uMy0uMi0uOC0uNS0xLjUtLjVoLTUzLjhjLS40LDAtLjYtLjMtLjYtLjVoNTZaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTIyMi4yLDM3NGwtMjMsLjJjMC0uMS0uMi0uMy0uMy0uNWwyMy4zLjNaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTE4Ny43LDc3LjVjLS4yLS4yLS41LS41LS41LTFsLjMtMTEsLjIsMTJaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTIzOC43LDI1aC05LjVjMC0uMy40LS41LDEtLjVoNy42Yy41LDAsLjkuMiwxLC41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDUiIGQ9Ik00NTQuOSwyNTcuOHYuNXMwLC41LDAsLjV2MjA2LjhzMCwxLDAsMWwtMzUsLjR2LTIwOC4yYy4xLS4yLjItMS4yLS4xLTEuNWgtMTM5LjJjLS42LjEtLjYtLjcsMC0uNWgxMzkuNmMuNSwxLjUuNSwyLjUuMiw0LjF2MjA1LjFzMzQsMCwzNCwwdi0yMDUuNmMtLjEtMS4zLS4xLTIuMS41LTIuNloiLz4KICA8cGF0aCBjbGFzcz0ic3QzIiBkPSJNNDU0LjksNDY1LjZ2LTIwNi44Yy4zLjEuNS4zLjUsMS4xdjIwNWMwLC42LS4zLjYtLjUuN1oiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNNDIwLDI1OC44bC0yLjItMWgtMTMzLjFjLTEuOCwwLTIuOCwwLTQuMS41di0xczEzOS4yLDAsMTM5LjIsMGMuMy4zLjMsMS4zLjIsMS41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNNDU0LjksNDY2LjZjMCwuMiwwLC41LS41LjVsLTM0LjUtLjIsMzUtLjRaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTQ3Ny45LDI1Ny4zaC41YzAsLjIsMCwuNS0uNS41aC0yMS41Yy0uNiwwLTEuMi4zLTEuNS41di0uNWMuMiwwLC40LS4zLjUtLjVoMjIuNVoiLz4KICA8cGF0aCBjbGFzcz0ic3Q1IiBkPSJNNDc3LjksMjU3LjNoLTIyLjVjMC0uMi4yLS41LjUtLjVoMjEuNHMwLTMxLjUsMC0zMS41YzAtMS4yLS4xLTItMS0yLjUuNCwwLC44LS4xLDEuNS4xdjM0LjNaIi8+CiAgPHBhdGggY2xhc3M9InN0OSIgZD0iTTIyOS4yLDI1aDkuNWM3LjQsMCwxNC42LDMuMiwyMS4xLDcuNnMxMS43LDEwLjIsMTUuNCwxNi43YzMsNS40LDQuMiwxMS4xLDUuMSwxNi43djExYzAsMS0uNiwyLjItLjcsMy4zLTEsNy4zLTQuNCwxMy41LTguNSwxOS41LTEuOSwyLjgtNC4zLDQuNi02LjcsNi44LTYuOSw2LjQtMTUuNSw5LjctMjQuNywxMWwtMTEuNS0uMmMtMS41LDAtMi44LS4xLTQuNS0uNS0xOS4yLTQuMy0zMy42LTIwLjItMzYtMzkuNWwtLjItMTJjMS4zLTkuOCw1LjQtMTkuMywxMi43LTI2LjNsNS40LTUuMWMuNy0uNywxLjgtMS4yLDIuNy0xLjgsNS43LTMuOCwxNC40LTcuMiwyMC44LTcuMloiLz4KICA8cGF0aCBjbGFzcz0ic3QxMSIgZD0iTTIyNy41LDE4Ny44aDQxLjFjMCwwLDUuNSwwLDUuNSwwbDI1LjQuMmMxMCwuNiwxNi42LDkuNywxNS41LDE5LjUtLjgsNi41LTUuMiwxMS45LTExLjQsMTQuMXMtMSwuNC0xLjEuOWgtODAuM2MwLC4xLTcuMSwwLTcuMSwwLTUuNCwwLTEwLjEtMy4xLTEzLTcuNWwtOS4zLTEyLjhjLTkuNywyMC42LTE3LDQxLjUtMjIuOSw2M2w3NS42LDM4Ljd2NzAuM2MtMS4zLS40LTEuMy0xLjctMS44LTIuNmwtOS0xOC41LTE5LjctNC4zLTMuNS00LjZjLTgtOS4zLTE5LjMtMTYtMzItMTYuNmwtNTguOC0uNWMtMi45LDAtNS45LTEtOC41LTEuOS0xMy42LTQuNy0yMi4yLTE2LjgtMjMuNi0zMC45bC0zLTIwLjUtLjYtNi41YzEwLjMtNDQuOSwyNi4zLTkwLjQsNTAuMS0xMzAuNCw5LjQtMTUuOCwyNy40LTIyLjEsNDUuNC0xNy45czI0LjcsMTQuNCwyOC4zLDI3LjZsMTguNSw0MS4yWiIvPgogIDxwYXRoIGNsYXNzPSJzdDE1IiBkPSJNMjY4LjYsMTg3LjdoLTQxLjFjMCwwLDQxLjEsMCw0MS4xLDBaIi8+CiAgPHBhdGggY2xhc3M9InN0NyIgZD0iTTk1LjgsMzY5LjJjLS44LjktLjgsMi0xLjEsMy40bC0xNy45LDcxLjktNC4zLDE2LjdjLS41LDEuOS0uNSwzLjktMS42LDUuN2wtMjMuNS0uMy42LTMuNSwxNC41LTU4LjMsNS40LTIxLjIsNi44LTI2LjJjNi4zLDQuMiwxMi43LDguMiwyMC4xLDExbDEuMi45WiIvPgogIDxwYXRoIGNsYXNzPSJzdDciIGQ9Ik0xOTguOSwzNzMuN2MwLC4yLjIuNC4zLjVsNiwyNC4zLDguMywzMy4yLDguNywzNC44aC0yNHMtNS4zLTE5LjgtNS4zLTE5LjhsLTguMi0zMy4yLTkuNi0zOC45YzAtLjMsMC0uNywwLTFoMjMuN1oiLz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTIyMi4yLDQ2Ni42YzAsLjEsMCwuNS0uMS41aC0yMy4zYy0uNCwwLS41LS40LS41LS41aDI0WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNNzAuOCw0NjYuOWwtMjMuMy4yYy0uMSwwLS4yLS40LS4yLS41bDIzLjUuM1oiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNMjM5LjYsMTE3LjdsLTEwLjUuM2MtLjUsMC0uOS0uMi0xLS41bDExLjUuMloiLz4KICA8cG9seWdvbiBjbGFzcz0ic3Q2IiBwb2ludHM9IjI4MC4zIDc3IDI4MC4yIDY2IDI4MC42IDY3LjUgMjgwLjMgNzciLz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTMyLjgsMTQxLjljLS40LDAtLjgsMC0xLS41LjQsMCwuOSwwLDEsLjVaIi8+CiAgPHBhdGggY2xhc3M9InN0NCIgZD0iTTI4MS4xLDQ1MC4xYzAtLjMtLjEtLjUtLjYtLjV2LTEwOC44czUuNSwxMS4xLDUuNSwxMS4xbDM3LjQsNzguOWMyLjUsNS4zLDQuNCwxMC40LDMuNCwxNi4yLTEuOCwxMC43LTEwLDE4LjktMjAuOSwyMHMtMjEuNC02LjMtMjQuOC0xNi44WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEzIiBkPSJNMjEuOCwxNDAuOWguNWMwLC4zLjQuNSwxLC41aDhzLjUsMCwuNSwwYy4yLjQuNi41LDEsLjUsOC42LjIsMjEuOSw3LjMsMjcuOCwxNC4yczcuOCwxMC42LDkuOSwxN2wxLjYsNi45LDIuOSwxOS4zLDEuMSw3LjNjLjYsMy43LjIsNi4zLDEuMyw5czAsMi43LjEsMy42bDEuOCwxMC41Yy4yLDEsLjQsMS44LjYsMy4xbDEuMyw4Yy4zLDIsLjUsMy44LjgsNS43bDIsMTMuOSwxLjIsNi44LjYsNi41LDMsMjAuNWMxLjQsMTQuMSwxMCwyNi4yLDIzLjYsMzAuOSwyLjYuOSw1LjYsMS45LDguNSwxLjlsNTguOC41YzEyLjcuNiwyNCw3LjMsMzIsMTYuNmwzLjUsNC42YzQuMSw1LjQsOC40LDE4LjQsNy4yLDI1LjNsLTIzLjMtLjNoLTIzLjdzLTU2LDAtNTYsMGMtNC4zLDAtOC42LS4yLTEzLjEtMS41bC0xMC40LTMtMS4yLS45Yy03LjMtMi44LTEzLjctNi44LTIwLjEtMTFsLTQuNi0zLjdjLTEwLjktOC44LTIzLjQtMjgtMjUtNDEuNGwtLjQtMy42Yy0uMS0xLjItLjEtMi4zLTEuMS0yLjl2LS41YzAtMSwuMy0yLjItLjUtM3YtLjVjLS4xLTMuOC0uNi05LjEtMi4xLTEydi0uNWMwLDAsMC0xLDAtMSwuMi0uMi4xLS4zLDAtLjVsLTEuNS05LjEtNC41LTI4LjRjLjMsMCwuNi0uNS42LTFsLTEuMS03YzAtLjQsMC0xLjItLjMtMS40cy0uNS0uMS0uNiwwbC0zLjgtMjUuOWMuNywwLC43LS42LjItLjZ2LS41YzAtMy0uMi02LjMtMS41LTl2LS41Yy40LTIuNi0uNi01LjEtMS03LjZsLTMuMi0xOS40Yy0uNy00LjYtMi0xMC45LTEuOS0xNHMtLjktNy41LTEuNC0xMS41LjEtMi4yLS45LTIuNWwtLjYtNC41YzEtLjUsMC0yLjQuOS0zLjNzLjYtLjIuOS0uNGguMmMuMS0uMi4zLS4zLjQtLjNaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTIyLjMsMTYzLjRjLS45LTEuNy0uNy0zLjgtMS4xLTUuOWwtLjgtNS4xYy0uMi0xLjItLjMtMi4yLS40LTMsMSwuMy44LDEuNC45LDIuNS41LDQsMS42LDcuNywxLjQsMTEuNVoiLz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTQyLjgsMzAxLjhjLS4zLS4xLS41LS40LS41LTFsLTEuNS0xMWMxLjUsMi44LDEuOSw4LjIsMi4xLDEyWiIvPgogIDxwYXRoIGNsYXNzPSJzdDYiIGQ9Ik00MC45LDI4Ny44di41czAsMSwwLDFjLTEuMS0zLTEuNS03LjEtMS41LTEwLjVsMS41LDkuMVoiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNMzQuOCwyNTAuM2wtMS40LTkuNWMwLDAsLjUsMCwuNiwwLC4zLjIuMiwxLC4zLDEuNGwxLjEsN2MwLC41LS4yLDEtLjYsMVoiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNNzkuMywyMjkuOGwtMS44LTEwLjVjLjYuMy44LDEuMS45LDIsLjQsMywxLjIsNS44LjksOC41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNMjkuOSwyMTMuOGMtLjQtLjItLjUtLjgtLjYtMS40bC0uOS03LjZjMS40LDIuNywxLjUsNS45LDEuNSw5WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNMzEuMywxNDEuNGgtOGMtLjUsMC0uOS0uMi0xLS41aDguNWMuMywwLC42LjMuNS41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDYiIGQ9Ik0yOC4zLDIwNC40Yy0uOC0yLjQtMS4xLTUtMS03LjYuNCwyLjUsMS40LDUsMSw3LjZaIi8+CiAgPHBhdGggY2xhc3M9InN0MTIiIGQ9Ik00NC44LDMxMi4zYy0uMy0uMi0uNy0uNy0uOC0xLjNsLS44LTUuM2MxLC42LjksMS44LDEuMSwyLjlsLjQsMy42WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNNDMuMywzMDUuMmMtLjctLjctLjQtMi0uNS0zLC43LjcuNSwyLC41LDNaIi8+CiAgPHBhdGggY2xhc3M9InN0MTIiIGQ9Ik0yOS43LDIxNC45Yy4yLS4yLjItLjQuMi0uNi42LDAsLjYuNi0uMi42WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNNDAuOCwyODguM3YtLjVjLjEuMi4yLjMsMCwuNVoiLz4KICA8cGF0aCBjbGFzcz0ic3QxNCIgZD0iTTMxNi4xLDIyMS45bC0uNS44LTEzLS4yYy4yLS41LjUtLjcsMS4xLS45LDYuMS0yLjIsMTAuNi03LjUsMTEuNC0xNC4xLDEuMS05LjgtNS41LTE4LjktMTUuNS0xOS41bC0yNS40LS4yaC01LjVzNDYuNS01OC40LDQ2LjUtNTguNGwxMyw5LjUsNi4yLDQuOGMxLjEuOSwxLjksMi4yLDMuNywyLjMuNSwxLjYsMS44LDEuOCwyLjksMi42bDIxLjIsMTUuOC0yMC43LDI1LjktMi43LDMuNC0yMi42LDI4LjNaIi8+CiAgPHBvbHlnb24gY2xhc3M9InN0MSIgcG9pbnRzPSIzOTYuNSAxOTkuNCAzOTcgMTk5LjQgNDY2LjQgMTk5LjQgNDY2LjQgMjIxLjggNDY2LjQgMjIyLjMgMzczLjYgMjIyLjYgMzczLjUgMTk5LjQgMzk2LjUgMTk5LjQiLz4KICA8cG9seWdvbiBjbGFzcz0ic3QxMCIgcG9pbnRzPSI0NzYuOSAxNzUuOSA0NzcuOSAxNzUuOSA0NzguNCAxNzUuOSA0ODkuOSAxNzUuOSA0ODkuOSAxOTkuNCA0NjYuNCAxOTkuNCAzOTcgMTk5LjQgMzk3IDE3NS45IDQ3Ni45IDE3NS45Ii8+CiAgPHBvbHlnb24gY2xhc3M9InN0NiIgcG9pbnRzPSIzOTcgMTk5LjQgMzk2LjUgMTk5LjQgMzk2LjUgMTc1LjkgMzk3IDE3NS45IDM5NyAxOTkuNCIvPgogIDxwb2x5Z29uIGNsYXNzPSJzdDEyIiBwb2ludHM9IjQ2Ni45IDIyMi40IDQ2Ni40IDIyMi4zIDQ2Ni40IDIyMS44IDQ2Ni45IDIyMi40Ii8+CiAgPHBhdGggY2xhc3M9InN0OCIgZD0iTTQ3Ny45LDE3NS45aC0xYy40LTEsLjUtMi4xLjUtMy41di0xOXMtOTEuNCwwLTkxLjQsMHYxOGMtLjEsMS40LS43LDIuNiwwLDRoOS45Yy40LDAsLjUuNC41LjVoLThjLTEuMi4xLTIuMi42LTMuNS0uMnYtMjIuMmMwLS41LjMtLjUuNS0uNWg5Mi40czAsMjMsMCwyM1oiLz4KICA8cGF0aCBjbGFzcz0ic3QxNSIgZD0iTTQ3OC40LDE3NS45aC0uNXMwLTIzLDAtMjNoLTkyLjRjMC0uMi4xLS41LjYtLjVoOTIuMnMwLDIzLjUsMCwyMy41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik00NzYuOSwxNzUuOWgtNzkuOXMtLjUsMC0uNSwwYzAtLjIsMC0uNS0uNS0uNWgtOS45Yy0uOC0xLjQtLjItMi42LS4yLTR2LTE4YzAsMCw5MS41LDAsOTEuNSwwdjE5YzAsMS4zLS4xLDIuNS0uNSwzLjVaIi8+CiAgPHBhdGggY2xhc3M9InN0MiIgZD0iTTMwMi42LDIyMi40bDEzLC4yaDU4czkyLjgtLjMsOTIuOC0uM2guNXMuNSwwLC41LDBjMCwuMy40LjUsMSwuNWg4Yy45LjUsMSwxLjMsMSwyLjV2MzEuNXMtMjEuNSwwLTIxLjUsMGMtLjQsMC0uNi4zLS41LjUsMCwuMi0uMy40LS41LjUtLjYuNS0uNiwxLjMtLjUsMi42djIwNS42cy0zNCwwLTM0LDB2LTIwNS4xYy4zLTEuNy4zLTIuNi0uMi00LjFoLTEzOS42Yy0uNy0uMi0uNy42LDAsLjV2MXMwLC41LDAsLjVjLS4yLDAtLjUuMS0uNS42djc5LjhjMCwuNy4yLjkuNSwxdi42YzAsMCwwLDEwOC44LDAsMTA4LjhsLS41LDE3aC0zNC40czAtOTAuOCwwLTkwLjhjMC0uNy0uMi0uOS0uNS0xLjEsMC0uMSwwLS40LjQtLjR2LTcwLjNjMCwwLS4yLTQ2LjMtLjItNDYuM2gtMjMuMmMwLS4xLDAtMzUuMSwwLTM1LjFoODAuM1oiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNMjQ1LjcsNDY2LjZjLjUtLjIuNS4zLjQuNS0uMi4yLTEsLjEtMS0uNXYtOTEuOWMuMy4yLjUuNC41LDEuMXY5MC45WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNMjgwLjYsMzQwLjJjLS4zLS4xLS41LS4zLS41LTF2LTc5LjhjMC0uNS4zLS42LjUtLjZ2ODEuNFoiLz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTI4MS4xLDQ1MC4xYy0uMiwwLS41LjItLjUuNXYxNi41cy0zNC41LDAtMzQuNSwwYy4xLS4yLDAtLjYtLjQtLjVoMzQuNHMuNS0xNywuNS0xN2MuNCwwLC41LjMuNi41WiIvPgo8L3N2Zz4=" alt="Ilustração de estudante"></div></div></header>
+<main class="main"><header class="top"><div><small>Terça-feira, 28 de julho</small><h1 id="heading">Olá. Vamos avançar? 👋</h1></div><div class="top-actions"><button class="icon-btn" id="theme" title="Alternar tema">☾</button><div class="avatar" title="Perfil de estudos"><img alt="Ilustração de estudante" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCA1MDguNiA0OTEuNyI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDMwLjMuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS4zIEJ1aWxkIDE4MikgIC0tPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuc3QwIHsKICAgICAgICBmaWxsOiAjNWVhMmVlOwogICAgICB9CgogICAgICAuc3QxIHsKICAgICAgICBmaWxsOiAjN2JiNzcxOwogICAgICB9CgogICAgICAuc3QyIHsKICAgICAgICBmaWxsOiAjZWY5YjM4OwogICAgICB9CgogICAgICAuc3QzIHsKICAgICAgICBmaWxsOiAjZmRmZGZiOwogICAgICB9CgogICAgICAuc3Q0IHsKICAgICAgICBmaWxsOiAjNjc3Yzg4OwogICAgICB9CgogICAgICAuc3Q1IHsKICAgICAgICBmaWxsOiAjZDhhMjUwOwogICAgICB9CgogICAgICAuc3Q2IHsKICAgICAgICBmaWxsOiAjZjFlM2I0OwogICAgICB9CgogICAgICAuc3Q3IHsKICAgICAgICBmaWxsOiAjNzI1NjRhOwogICAgICB9CgogICAgICAuc3Q4IHsKICAgICAgICBmaWxsOiAjNjQ5NWQ3OwogICAgICB9CgogICAgICAuc3Q5IHsKICAgICAgICBmaWxsOiAjZjJiOTYxOwogICAgICB9CgogICAgICAuc3QxMCB7CiAgICAgICAgZmlsbDogI2RiNmM5MjsKICAgICAgfQoKICAgICAgLnN0MTEgewogICAgICAgIGZpbGw6ICM2NjdjODg7CiAgICAgIH0KCiAgICAgIC5zdDEyIHsKICAgICAgICBmaWxsOiAjZTFjNTgxOwogICAgICB9CgogICAgICAuc3QxMyB7CiAgICAgICAgZmlsbDogI2VmOWMzOTsKICAgICAgfQoKICAgICAgLnN0MTQgewogICAgICAgIGZpbGw6ICNlYTdiNTM7CiAgICAgIH0KCiAgICAgIC5zdDE1IHsKICAgICAgICBmaWxsOiAjYzBkZmVlOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTQ3OC40LDI1Ny4zaC0uNXMwLTM0LjMsMC0zNC4zYy0uNy0uMy0xLjEtLjEtMS41LS4xaC04Yy0uNSwwLS45LS4yLTEtLjVoMTFzMCwzNSwwLDM1WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNMjEuMiwxNDEuMmMtLjMuMi0uNy4yLS45LjQtLjguOC4xLDIuNy0uOSwzLjMtLjEtMS4xLS4yLTIuMS0uNy0zLjcuOS0uNiwxLjgtLjMsMi41LDBaIi8+CiAgPHBhdGggY2xhc3M9InN0MTIiIGQ9Ik0yMS44LDE0MC45Yy0uMSwwLS4zLDAtLjQuMi0uMy0uNSwwLS42LjQtLjJaIi8+CiAgPHBhdGggY2xhc3M9InN0MTIiIGQ9Ik0zNzMuNiwyMjIuNmgtNThzLjUtLjcuNS0uN2MwLC4yLDAsLjQuNS41bDU2LjkuM1oiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNMTc1LjIsMzczLjdjMCwuMywwLC43LDAsMS0uMy0uMi0uOC0uNS0xLjUtLjVoLTUzLjhjLS40LDAtLjYtLjMtLjYtLjVoNTZaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTIyMi4yLDM3NGwtMjMsLjJjMC0uMS0uMi0uMy0uMy0uNWwyMy4zLjNaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTE4Ny43LDc3LjVjLS4yLS4yLS41LS41LS41LTFsLjMtMTEsLjIsMTJaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTIzOC43LDI1aC05LjVjMC0uMy40LS41LDEtLjVoNy42Yy41LDAsLjkuMiwxLC41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDUiIGQ9Ik00NTQuOSwyNTcuOHYuNXMwLC41LDAsLjV2MjA2LjhzMCwxLDAsMWwtMzUsLjR2LTIwOC4yYy4xLS4yLjItMS4yLS4xLTEuNWgtMTM5LjJjLS42LjEtLjYtLjcsMC0uNWgxMzkuNmMuNSwxLjUuNSwyLjUuMiw0LjF2MjA1LjFzMzQsMCwzNCwwdi0yMDUuNmMtLjEtMS4zLS4xLTIuMS41LTIuNloiLz4KICA8cGF0aCBjbGFzcz0ic3QzIiBkPSJNNDU0LjksNDY1LjZ2LTIwNi44Yy4zLjEuNS4zLjUsMS4xdjIwNWMwLC42LS4zLjYtLjUuN1oiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNNDIwLDI1OC44bC0yLjItMWgtMTMzLjFjLTEuOCwwLTIuOCwwLTQuMS41di0xczEzOS4yLDAsMTM5LjIsMGMuMy4zLjMsMS4zLjIsMS41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNNDU0LjksNDY2LjZjMCwuMiwwLC41LS41LjVsLTM0LjUtLjIsMzUtLjRaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTQ3Ny45LDI1Ny4zaC41YzAsLjIsMCwuNS0uNS41aC0yMS41Yy0uNiwwLTEuMi4zLTEuNS41di0uNWMuMiwwLC40LS4zLjUtLjVoMjIuNVoiLz4KICA8cGF0aCBjbGFzcz0ic3Q1IiBkPSJNNDc3LjksMjU3LjNoLTIyLjVjMC0uMi4yLS41LjUtLjVoMjEuNHMwLTMxLjUsMC0zMS41YzAtMS4yLS4xLTItMS0yLjUuNCwwLC44LS4xLDEuNS4xdjM0LjNaIi8+CiAgPHBhdGggY2xhc3M9InN0OSIgZD0iTTIyOS4yLDI1aDkuNWM3LjQsMCwxNC42LDMuMiwyMS4xLDcuNnMxMS43LDEwLjIsMTUuNCwxNi43YzMsNS40LDQuMiwxMS4xLDUuMSwxNi43djExYzAsMS0uNiwyLjItLjcsMy4zLTEsNy4zLTQuNCwxMy41LTguNSwxOS41LTEuOSwyLjgtNC4zLDQuNi02LjcsNi44LTYuOSw2LjQtMTUuNSw5LjctMjQuNywxMWwtMTEuNS0uMmMtMS41LDAtMi44LS4xLTQuNS0uNS0xOS4yLTQuMy0zMy42LTIwLjItMzYtMzkuNWwtLjItMTJjMS4zLTkuOCw1LjQtMTkuMywxMi43LTI2LjNsNS40LTUuMWMuNy0uNywxLjgtMS4yLDIuNy0xLjgsNS43LTMuOCwxNC40LTcuMiwyMC44LTcuMloiLz4KICA8cGF0aCBjbGFzcz0ic3QxMSIgZD0iTTIyNy41LDE4Ny44aDQxLjFjMCwwLDUuNSwwLDUuNSwwbDI1LjQuMmMxMCwuNiwxNi42LDkuNywxNS41LDE5LjUtLjgsNi41LTUuMiwxMS45LTExLjQsMTQuMXMtMSwuNC0xLjEuOWgtODAuM2MwLC4xLTcuMSwwLTcuMSwwLTUuNCwwLTEwLjEtMy4xLTEzLTcuNWwtOS4zLTEyLjhjLTkuNywyMC42LTE3LDQxLjUtMjIuOSw2M2w3NS42LDM4Ljd2NzAuM2MtMS4zLS40LTEuMy0xLjctMS44LTIuNmwtOS0xOC41LTE5LjctNC4zLTMuNS00LjZjLTgtOS4zLTE5LjMtMTYtMzItMTYuNmwtNTguOC0uNWMtMi45LDAtNS45LTEtOC41LTEuOS0xMy42LTQuNy0yMi4yLTE2LjgtMjMuNi0zMC45bC0zLTIwLjUtLjYtNi41YzEwLjMtNDQuOSwyNi4zLTkwLjQsNTAuMS0xMzAuNCw5LjQtMTUuOCwyNy40LTIyLjEsNDUuNC0xNy45czI0LjcsMTQuNCwyOC4zLDI3LjZsMTguNSw0MS4yWiIvPgogIDxwYXRoIGNsYXNzPSJzdDE1IiBkPSJNMjY4LjYsMTg3LjdoLTQxLjFjMCwwLDQxLjEsMCw0MS4xLDBaIi8+CiAgPHBhdGggY2xhc3M9InN0NyIgZD0iTTk1LjgsMzY5LjJjLS44LjktLjgsMi0xLjEsMy40bC0xNy45LDcxLjktNC4zLDE2LjdjLS41LDEuOS0uNSwzLjktMS42LDUuN2wtMjMuNS0uMy42LTMuNSwxNC41LTU4LjMsNS40LTIxLjIsNi44LTI2LjJjNi4zLDQuMiwxMi43LDguMiwyMC4xLDExbDEuMi45WiIvPgogIDxwYXRoIGNsYXNzPSJzdDciIGQ9Ik0xOTguOSwzNzMuN2MwLC4yLjIuNC4zLjVsNiwyNC4zLDguMywzMy4yLDguNywzNC44aC0yNHMtNS4zLTE5LjgtNS4zLTE5LjhsLTguMi0zMy4yLTkuNi0zOC45YzAtLjMsMC0uNywwLTFoMjMuN1oiLz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTIyMi4yLDQ2Ni42YzAsLjEsMCwuNS0uMS41aC0yMy4zYy0uNCwwLS41LS40LS41LS41aDI0WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNNzAuOCw0NjYuOWwtMjMuMy4yYy0uMSwwLS4yLS40LS4yLS41bDIzLjUuM1oiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNMjM5LjYsMTE3LjdsLTEwLjUuM2MtLjUsMC0uOS0uMi0xLS41bDExLjUuMloiLz4KICA8cG9seWdvbiBjbGFzcz0ic3Q2IiBwb2ludHM9IjI4MC4zIDc3IDI4MC4yIDY2IDI4MC42IDY3LjUgMjgwLjMgNzciLz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTMyLjgsMTQxLjljLS40LDAtLjgsMC0xLS41LjQsMCwuOSwwLDEsLjVaIi8+CiAgPHBhdGggY2xhc3M9InN0NCIgZD0iTTI4MS4xLDQ1MC4xYzAtLjMtLjEtLjUtLjYtLjV2LTEwOC44czUuNSwxMS4xLDUuNSwxMS4xbDM3LjQsNzguOWMyLjUsNS4zLDQuNCwxMC40LDMuNCwxNi4yLTEuOCwxMC43LTEwLDE4LjktMjAuOSwyMHMtMjEuNC02LjMtMjQuOC0xNi44WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEzIiBkPSJNMjEuOCwxNDAuOWguNWMwLC4zLjQuNSwxLC41aDhzLjUsMCwuNSwwYy4yLjQuNi41LDEsLjUsOC42LjIsMjEuOSw3LjMsMjcuOCwxNC4yczcuOCwxMC42LDkuOSwxN2wxLjYsNi45LDIuOSwxOS4zLDEuMSw3LjNjLjYsMy43LjIsNi4zLDEuMyw5czAsMi43LjEsMy42bDEuOCwxMC41Yy4yLDEsLjQsMS44LjYsMy4xbDEuMyw4Yy4zLDIsLjUsMy44LjgsNS43bDIsMTMuOSwxLjIsNi44LjYsNi41LDMsMjAuNWMxLjQsMTQuMSwxMCwyNi4yLDIzLjYsMzAuOSwyLjYuOSw1LjYsMS45LDguNSwxLjlsNTguOC41YzEyLjcuNiwyNCw3LjMsMzIsMTYuNmwzLjUsNC42YzQuMSw1LjQsOC40LDE4LjQsNy4yLDI1LjNsLTIzLjMtLjNoLTIzLjdzLTU2LDAtNTYsMGMtNC4zLDAtOC42LS4yLTEzLjEtMS41bC0xMC40LTMtMS4yLS45Yy03LjMtMi44LTEzLjctNi44LTIwLjEtMTFsLTQuNi0zLjdjLTEwLjktOC44LTIzLjQtMjgtMjUtNDEuNGwtLjQtMy42Yy0uMS0xLjItLjEtMi4zLTEuMS0yLjl2LS41YzAtMSwuMy0yLjItLjUtM3YtLjVjLS4xLTMuOC0uNi05LjEtMi4xLTEydi0uNWMwLDAsMC0xLDAtMSwuMi0uMi4xLS4zLDAtLjVsLTEuNS05LjEtNC41LTI4LjRjLjMsMCwuNi0uNS42LTFsLTEuMS03YzAtLjQsMC0xLjItLjMtMS40cy0uNS0uMS0uNiwwbC0zLjgtMjUuOWMuNywwLC43LS42LjItLjZ2LS41YzAtMy0uMi02LjMtMS41LTl2LS41Yy40LTIuNi0uNi01LjEtMS03LjZsLTMuMi0xOS40Yy0uNy00LjYtMi0xMC45LTEuOS0xNHMtLjktNy41LTEuNC0xMS41LjEtMi4yLS45LTIuNWwtLjYtNC41YzEtLjUsMC0yLjQuOS0zLjNzLjYtLjIuOS0uNGguMmMuMS0uMi4zLS4zLjQtLjNaIi8+CiAgPHBhdGggY2xhc3M9InN0NiIgZD0iTTIyLjMsMTYzLjRjLS45LTEuNy0uNy0zLjgtMS4xLTUuOWwtLjgtNS4xYy0uMi0xLjItLjMtMi4yLS40LTMsMSwuMy44LDEuNC45LDIuNS41LDQsMS42LDcuNywxLjQsMTEuNVoiLz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTQyLjgsMzAxLjhjLS4zLS4xLS41LS40LS41LTFsLTEuNS0xMWMxLjUsMi44LDEuOSw4LjIsMi4xLDEyWiIvPgogIDxwYXRoIGNsYXNzPSJzdDYiIGQ9Ik00MC45LDI4Ny44di41czAsMSwwLDFjLTEuMS0zLTEuNS03LjEtMS41LTEwLjVsMS41LDkuMVoiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNMzQuOCwyNTAuM2wtMS40LTkuNWMwLDAsLjUsMCwuNiwwLC4zLjIuMiwxLC4zLDEuNGwxLjEsN2MwLC41LS4yLDEtLjYsMVoiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNNzkuMywyMjkuOGwtMS44LTEwLjVjLjYuMy44LDEuMS45LDIsLjQsMywxLjIsNS44LjksOC41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNMjkuOSwyMTMuOGMtLjQtLjItLjUtLjgtLjYtMS40bC0uOS03LjZjMS40LDIuNywxLjUsNS45LDEuNSw5WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNMzEuMywxNDEuNGgtOGMtLjUsMC0uOS0uMi0xLS41aDguNWMuMywwLC42LjMuNS41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDYiIGQ9Ik0yOC4zLDIwNC40Yy0uOC0yLjQtMS4xLTUtMS03LjYuNCwyLjUsMS40LDUsMSw3LjZaIi8+CiAgPHBhdGggY2xhc3M9InN0MTIiIGQ9Ik00NC44LDMxMi4zYy0uMy0uMi0uNy0uNy0uOC0xLjNsLS44LTUuM2MxLC42LjksMS44LDEuMSwyLjlsLjQsMy42WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNNDMuMywzMDUuMmMtLjctLjctLjQtMi0uNS0zLC43LjcuNSwyLC41LDNaIi8+CiAgPHBhdGggY2xhc3M9InN0MTIiIGQ9Ik0yOS43LDIxNC45Yy4yLS4yLjItLjQuMi0uNi42LDAsLjYuNi0uMi42WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNNDAuOCwyODguM3YtLjVjLjEuMi4yLjMsMCwuNVoiLz4KICA8cGF0aCBjbGFzcz0ic3QxNCIgZD0iTTMxNi4xLDIyMS45bC0uNS44LTEzLS4yYy4yLS41LjUtLjcsMS4xLS45LDYuMS0yLjIsMTAuNi03LjUsMTEuNC0xNC4xLDEuMS05LjgtNS41LTE4LjktMTUuNS0xOS41bC0yNS40LS4yaC01LjVzNDYuNS01OC40LDQ2LjUtNTguNGwxMyw5LjUsNi4yLDQuOGMxLjEuOSwxLjksMi4yLDMuNywyLjMuNSwxLjYsMS44LDEuOCwyLjksMi42bDIxLjIsMTUuOC0yMC43LDI1LjktMi43LDMuNC0yMi42LDI4LjNaIi8+CiAgPHBvbHlnb24gY2xhc3M9InN0MSIgcG9pbnRzPSIzOTYuNSAxOTkuNCAzOTcgMTk5LjQgNDY2LjQgMTk5LjQgNDY2LjQgMjIxLjggNDY2LjQgMjIyLjMgMzczLjYgMjIyLjYgMzczLjUgMTk5LjQgMzk2LjUgMTk5LjQiLz4KICA8cG9seWdvbiBjbGFzcz0ic3QxMCIgcG9pbnRzPSI0NzYuOSAxNzUuOSA0NzcuOSAxNzUuOSA0NzguNCAxNzUuOSA0ODkuOSAxNzUuOSA0ODkuOSAxOTkuNCA0NjYuNCAxOTkuNCAzOTcgMTk5LjQgMzk3IDE3NS45IDQ3Ni45IDE3NS45Ii8+CiAgPHBvbHlnb24gY2xhc3M9InN0NiIgcG9pbnRzPSIzOTcgMTk5LjQgMzk2LjUgMTk5LjQgMzk2LjUgMTc1LjkgMzk3IDE3NS45IDM5NyAxOTkuNCIvPgogIDxwb2x5Z29uIGNsYXNzPSJzdDEyIiBwb2ludHM9IjQ2Ni45IDIyMi40IDQ2Ni40IDIyMi4zIDQ2Ni40IDIyMS44IDQ2Ni45IDIyMi40Ii8+CiAgPHBhdGggY2xhc3M9InN0OCIgZD0iTTQ3Ny45LDE3NS45aC0xYy40LTEsLjUtMi4xLjUtMy41di0xOXMtOTEuNCwwLTkxLjQsMHYxOGMtLjEsMS40LS43LDIuNiwwLDRoOS45Yy40LDAsLjUuNC41LjVoLThjLTEuMi4xLTIuMi42LTMuNS0uMnYtMjIuMmMwLS41LjMtLjUuNS0uNWg5Mi40czAsMjMsMCwyM1oiLz4KICA8cGF0aCBjbGFzcz0ic3QxNSIgZD0iTTQ3OC40LDE3NS45aC0uNXMwLTIzLDAtMjNoLTkyLjRjMC0uMi4xLS41LjYtLjVoOTIuMnMwLDIzLjUsMCwyMy41WiIvPgogIDxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik00NzYuOSwxNzUuOWgtNzkuOXMtLjUsMC0uNSwwYzAtLjIsMC0uNS0uNS0uNWgtOS45Yy0uOC0xLjQtLjItMi42LS4yLTR2LTE4YzAsMCw5MS41LDAsOTEuNSwwdjE5YzAsMS4zLS4xLDIuNS0uNSwzLjVaIi8+CiAgPHBhdGggY2xhc3M9InN0MiIgZD0iTTMwMi42LDIyMi40bDEzLC4yaDU4czkyLjgtLjMsOTIuOC0uM2guNXMuNSwwLC41LDBjMCwuMy40LjUsMSwuNWg4Yy45LjUsMSwxLjMsMSwyLjV2MzEuNXMtMjEuNSwwLTIxLjUsMGMtLjQsMC0uNi4zLS41LjUsMCwuMi0uMy40LS41LjUtLjYuNS0uNiwxLjMtLjUsMi42djIwNS42cy0zNCwwLTM0LDB2LTIwNS4xYy4zLTEuNy4zLTIuNi0uMi00LjFoLTEzOS42Yy0uNy0uMi0uNy42LDAsLjV2MXMwLC41LDAsLjVjLS4yLDAtLjUuMS0uNS42djc5LjhjMCwuNy4yLjkuNSwxdi42YzAsMCwwLDEwOC44LDAsMTA4LjhsLS41LDE3aC0zNC40czAtOTAuOCwwLTkwLjhjMC0uNy0uMi0uOS0uNS0xLjEsMC0uMSwwLS40LjQtLjR2LTcwLjNjMCwwLS4yLTQ2LjMtLjItNDYuM2gtMjMuMmMwLS4xLDAtMzUuMSwwLTM1LjFoODAuM1oiLz4KICA8cGF0aCBjbGFzcz0ic3Q2IiBkPSJNMjQ1LjcsNDY2LjZjLjUtLjIuNS4zLjQuNS0uMi4yLTEsLjEtMS0uNXYtOTEuOWMuMy4yLjUuNC41LDEuMXY5MC45WiIvPgogIDxwYXRoIGNsYXNzPSJzdDEyIiBkPSJNMjgwLjYsMzQwLjJjLS4zLS4xLS41LS4zLS41LTF2LTc5LjhjMC0uNS4zLS42LjUtLjZ2ODEuNFoiLz4KICA8cGF0aCBjbGFzcz0ic3QxMiIgZD0iTTI4MS4xLDQ1MC4xYy0uMiwwLS41LjItLjUuNXYxNi41cy0zNC41LDAtMzQuNSwwYy4xLS4yLDAtLjYtLjQtLjVoMzQuNHMuNS0xNywuNS0xN2MuNCwwLC41LjMuNi41WiIvPgo8L3N2Zz4="/></div></div></header>
 <section class="view active" id="dashboard"><div class="hero"><div><p>CONCURSO ATIVO · TJ-CE 2026</p><h2>Técnico Judiciário</h2><span>Você concluiu <b id="mainProgress">32%</b> do conteúdo. Hoje é um ótimo dia para ganhar ritmo.</span></div><button class="btn" data-view="contest">Ver edital verticalizado →</button></div>
 <div class="grid stats"><article class="card"><div class="metric"><div><small>HORAS NA SEMANA</small><strong id="weekHours">12h 40min</strong></div><div class="bubble b-blue">◴</div></div><p class="trend"><b>+18%</b> em relação à última semana</p></article><article class="card"><div class="metric"><div><small>CONTEÚDO ESTUDADO</small><strong id="cardProgress">32%</strong></div><div class="bubble b-green">✓</div></div><p class="trend"><b id="topicsDone">14 tópicos</b> concluídos</p></article><article class="card"><div class="metric"><div><small>REVISÕES PENDENTES</small><strong id="pendingReviews">6</strong></div><div class="bubble b-amber">↻</div></div><p class="trend">Priorize as revisões de <b>hoje</b></p></article><article class="card"><div class="metric"><div><small>SEQUÊNCIA ATUAL</small><strong>9 dias</strong></div><div class="bubble b-purple">⚡</div></div><p class="trend"><b>Excelente!</b> sua melhor marca é 13.</p></article></div>
 <div class="grid dash-main"><article class="card sessions"><div class="section-title"><h3>Seu plano para hoje</h3><span class="link" data-view="plan">Ver agenda completa</span></div><div class="session"><div class="time">18:30<span>50 min</span></div><div class="subject"><b>Direito Constitucional</b><span>Direitos e garantias fundamentais · Art. 5º</span></div><span class="tag">TEORIA</span></div><div class="session"><div class="time">19:30<span>30 min</span></div><div class="subject"><b>Revisão estratégica</b><span>Raciocínio Lógico · Proposições e conectivos</span></div><span class="tag review">REVISÃO</span></div><div class="session"><div class="time">20:15<span>40 min</span></div><div class="subject"><b>Língua Portuguesa</b><span>Questões FCC · Concordância verbal</span></div><span class="tag questions">QUESTÕES</span></div></article><article class="card focus"><div class="section-title"><h3>Foco da sessão</h3><span>Pomodoro</span></div><div class="timer"><div><strong id="clock">25:00</strong><span>tempo de foco</span></div></div><div class="controls"><button class="btn primary" id="startTimer">Iniciar foco</button><button class="btn" id="resetTimer">↻</button></div></article></div>
 <div class="grid dash-bottom"><article class="card"><div class="section-title"><h3>Progresso por disciplina</h3><span class="link" data-view="progress">Detalhes</span></div><div class="bar-row"><div class="bar-label"><span>Direito Constitucional</span><span>68%</span></div><div class="track"><div class="fill" style="width:68%"></div></div></div><div class="bar-row"><div class="bar-label"><span>Língua Portuguesa</span><span>51%</span></div><div class="track"><div class="fill green" style="width:51%"></div></div></div><div class="bar-row"><div class="bar-label"><span>Raciocínio Lógico</span><span>36%</span></div><div class="track"><div class="fill amber" style="width:36%"></div></div></div></article><article class="card"><div class="section-title"><h3>Ritmo desta semana</h3><span class="tiny-label">12H 40MIN</span></div><div class="chart"><div class="day"><div class="chart-bar" style="height:43%"></div>SEG</div><div class="day"><div class="chart-bar" style="height:73%"></div>TER</div><div class="day"><div class="chart-bar now" style="height:91%"></div>QUA</div><div class="day"><div class="chart-bar" style="height:52%"></div>QUI</div><div class="day"><div class="chart-bar" style="height:38%"></div>SEX</div><div class="day"><div class="chart-bar" style="height:18%"></div>SÁB</div><div class="day"><div class="chart-bar" style="height:8%"></div>DOM</div></div></article></div></section>
-<section class="view" id="contest"><div class="page-hero"><div><h2>Meu concurso</h2><p>Acompanhe o conteúdo programático</p></div><button class="btn primary" id="newContest">+ Novo concurso</button></div><div class="grid two-col"><article class="card"><div class="contest-title"><div class="contest-icon">⚖</div><div><span class="pill">ATIVO</span><h3>TJ-CE · Técnico Judiciário</h3><span class="muted">Fundação Carlos Chagas · Prova em 08/10/2026</span></div></div><div class="data-list"><div><span>MATÉRIAS</span><b>12 disciplinas</b></div><div><span>TÓPICOS NO EDITAL</span><b>87 tópicos</b></div><div><span>CONTEÚDO CONCLUÍDO</span><b id="contestProgress">32%</b></div><div><span>ÚLTIMA ATUALIZAÇÃO</span><b>Hoje, 14:25</b></div></div><hr style="border:0;border-top:1px solid var(--line);margin:20px 0"><div class="section-title"><h3>Edital verticalizado</h3><span class="link" id="expandTopics">Marcar todos estudados</span></div><div id="topics"><div class="topic"><div class="check done">✓</div><div><b>Direito Constitucional</b><span>Direitos e garantias fundamentais · 8 de 12 tópicos</span></div><div class="progress-sm"><div class="track"><div class="fill" style="width:68%"></div></div></div></div><div class="topic"><div class="check done">✓</div><div><b>Língua Portuguesa</b><span>Concordância e regência · 7 de 14 tópicos</span></div><div class="progress-sm"><div class="track"><div class="fill green" style="width:51%"></div></div></div></div><div class="topic"><div class="check"></div><div><b>Raciocínio Lógico</b><span>Proposições e conectivos · 4 de 11 tópicos</span></div><div class="progress-sm"><div class="track"><div class="fill amber" style="width:36%"></div></div></div></div><div class="topic"><div class="check"></div><div><b>Direito Administrativo</b><span>Atos administrativos · 3 de 13 tópicos</span></div><div class="progress-sm"><div class="track"><div class="fill" style="width:23%"></div></div></div></div></div></article><aside class="card" style="position:static;height:auto;color:var(--ink);padding:19px"><div class="section-title"><h3>Seu acervo de editais</h3></div><div class="upload"><i>⌁</i><h3>Vincule a análise do ChatGPT</h3><p>Arquive o PDF, salve o link da conversa privada e volte a estudar sem pagar por nova análise.</p><button class="btn primary" id="newChatGptAnalysis">Cadastrar edital</button><input id="fileInput" type="file" accept="application/pdf"></div><div class="analysis-result" id="analysis">A análise será feita na conversa do ChatGPT que você vincular.</div><div class="card deadline" style="margin-top:15px"><span class="tiny-label">FALTAM PARA A PROVA</span><strong id="daysLeft">72 dias</strong><p id="deadlineDescription">O seu plano está distribuindo o conteúdo e as revisões sem exceder sua carga semanal.</p></div></aside></div></section>
-<section class="view" id="plan"><div class="page-hero"><div><h2>Plano de estudos</h2><p>Seu cronograma foi gerado para as horas livres que você informou.</p></div><button class="btn primary" id="regenPlan">↻ Recalcular plano</button></div><div class="grid two-col"><article class="card"><div class="section-title"><h3>Grade semanal</h3><span class="tiny-label">CICLO ADAPTATIVO</span></div><div class="planner-wrap"><div class="planner"><div class="head">Horário</div><div class="head">SEG</div><div class="head">TER</div><div class="head">QUA</div><div class="head">QUI</div><div class="head">SEX</div><div class="hour">18:30</div><div class="slot">Constitucional<br>50 min</div><div class="slot">Português<br>50 min</div><div class="slot">Constitucional<br>50 min</div><div class="slot">Administrativo<br>50 min</div><div class="slot">Português<br>50 min</div><div class="hour">19:30</div><div class="slot review">Revisão D+7<br>30 min</div><div class="slot">R. Lógico<br>40 min</div><div class="slot review">Revisão D+1<br>30 min</div><div class="slot">Legislação<br>40 min</div><div class="slot review">Revisão geral<br>30 min</div><div class="hour">20:15</div><div class="slot">Questões FCC<br>40 min</div><div class="slot">Informática<br>40 min</div><div class="slot">Questões FCC<br>40 min</div><div class="slot">Português<br>40 min</div><div class="slot">Questões FCC<br>40 min</div></div></div></article><article class="card"><div class="section-title"><h3>Disponibilidade</h3><span class="link" id="saveAvailability">Salvar</span></div><p class="muted" style="font-size:12px;margin-top:0">Ative os dias em que você pode estudar. O cronograma será recalculado automaticamente.</p><div class="availability" id="availability"></div><div class="card" style="margin-top:16px;background:#f8faff"><span class="tiny-label">META SEMANAL</span><b style="font-size:20px;display:block;margin:5px 0">15 horas</b><span class="muted" style="font-size:12px">Distribuídas em 5 dias, respeitando suas pausas.</span></div></article></div></section>
+<section class="view" id="contest"><div class="page-hero"><div><h2>Meu concurso</h2><p>Acompanhe o conteúdo programático</p></div><button class="btn primary" id="newContest">+ Novo concurso</button></div><div class="grid two-col"><article class="card"><div class="contest-title"><div class="contest-icon">⚖</div><div><span class="pill">ATIVO</span><h3>TJ-CE · Técnico Judiciário</h3><span class="muted">Fundação Carlos Chagas · Prova em 08/10/2026</span></div></div><div class="data-list"><div><span>MATÉRIAS</span><b>12 disciplinas</b></div><div><span>TÓPICOS NO EDITAL</span><b>87 tópicos</b></div><div><span>CONTEÚDO CONCLUÍDO</span><b id="contestProgress">32%</b></div><div><span>ÚLTIMA ATUALIZAÇÃO</span><b>Hoje, 14:25</b></div></div><hr style="border:0;border-top:1px solid var(--line);margin:20px 0"/><div class="section-title"><h3>Edital verticalizado</h3><span class="link" id="expandTopics">Marcar todos estudados</span></div><div id="topics"><div class="topic"><div class="check done">✓</div><div><b>Direito Constitucional</b><span>Direitos e garantias fundamentais · 8 de 12 tópicos</span></div><div class="progress-sm"><div class="track"><div class="fill" style="width:68%"></div></div></div></div><div class="topic"><div class="check done">✓</div><div><b>Língua Portuguesa</b><span>Concordância e regência · 7 de 14 tópicos</span></div><div class="progress-sm"><div class="track"><div class="fill green" style="width:51%"></div></div></div></div><div class="topic"><div class="check"></div><div><b>Raciocínio Lógico</b><span>Proposições e conectivos · 4 de 11 tópicos</span></div><div class="progress-sm"><div class="track"><div class="fill amber" style="width:36%"></div></div></div></div><div class="topic"><div class="check"></div><div><b>Direito Administrativo</b><span>Atos administrativos · 3 de 13 tópicos</span></div><div class="progress-sm"><div class="track"><div class="fill" style="width:23%"></div></div></div></div></div></article><aside class="card" style="position:static;height:auto;color:var(--ink);padding:19px"><div class="section-title"><h3>Seu acervo de editais</h3></div><div class="upload"><i>⌁</i><h3>Vincule a análise do ChatGPT</h3><p>Arquive o PDF, salve o link da conversa privada e volte a estudar sem pagar por nova análise.</p><button class="btn primary" id="newChatGptAnalysis">Cadastrar edital</button><input accept="application/pdf" id="fileInput" type="file"/></div><div class="analysis-result" id="analysis">A análise será feita na conversa do ChatGPT que você vincular.</div><div class="card deadline" style="margin-top:15px"><span class="tiny-label">FALTAM PARA A PROVA</span><strong id="daysLeft">72 dias</strong><p id="deadlineDescription">O seu plano está distribuindo o conteúdo e as revisões sem exceder sua carga semanal.</p></div></aside></div></section>
+<section class="view" id="plan"><div class="page-hero"><div><h2>Plano de estudos</h2><p>Seu cronograma foi gerado para as horas livres que você informou.</p></div><button class="btn primary" id="regenPlan">↻ Recalcular plano</button></div><div class="grid two-col"><article class="card"><div class="section-title"><h3>Grade semanal</h3><span class="tiny-label">CICLO ADAPTATIVO</span></div><div class="planner-wrap"><div class="planner"><div class="head">Horário</div><div class="head">SEG</div><div class="head">TER</div><div class="head">QUA</div><div class="head">QUI</div><div class="head">SEX</div><div class="hour">18:30</div><div class="slot">Constitucional<br/>50 min</div><div class="slot">Português<br/>50 min</div><div class="slot">Constitucional<br/>50 min</div><div class="slot">Administrativo<br/>50 min</div><div class="slot">Português<br/>50 min</div><div class="hour">19:30</div><div class="slot review">Revisão D+7<br/>30 min</div><div class="slot">R. Lógico<br/>40 min</div><div class="slot review">Revisão D+1<br/>30 min</div><div class="slot">Legislação<br/>40 min</div><div class="slot review">Revisão geral<br/>30 min</div><div class="hour">20:15</div><div class="slot">Questões FCC<br/>40 min</div><div class="slot">Informática<br/>40 min</div><div class="slot">Questões FCC<br/>40 min</div><div class="slot">Português<br/>40 min</div><div class="slot">Questões FCC<br/>40 min</div></div></div></article><article class="card"><div class="section-title"><h3>Disponibilidade</h3><span class="link" id="saveAvailability">Salvar</span></div><p class="muted" style="font-size:12px;margin-top:0">Ative os dias em que você pode estudar. O cronograma será recalculado automaticamente.</p><div class="availability" id="availability"></div><div class="card" style="margin-top:16px;background:#f8faff"><span class="tiny-label">META SEMANAL</span><b style="font-size:20px;display:block;margin:5px 0">15 horas</b><span class="muted" style="font-size:12px">Distribuídas em 5 dias, respeitando suas pausas.</span></div></article></div></section>
 <section class="view" id="reviews"><div class="page-hero"><div><h2>Revisões</h2><p>Estude no momento certo com revisões espaçadas.</p></div><button class="btn primary" id="completeAll">Concluir revisões de hoje</button></div><div class="grid two-col"><article class="card"><div class="section-title"><h3>Para hoje <span class="pill" style="margin-left:7px;background:#fff4df;color:#b67300">6 PENDENTES</span></h3></div><div id="reviewList"><div class="review-item"><div class="review-day">D+7</div><div><b>Direito Constitucional</b><span>Art. 5º · Direitos fundamentais</span></div><button class="btn complete-review">Concluir</button></div><div class="review-item"><div class="review-day">D+1</div><div><b>Raciocínio Lógico</b><span>Proposições simples e compostas</span></div><button class="btn complete-review">Concluir</button></div><div class="review-item"><div class="review-day">D+15</div><div><b>Língua Portuguesa</b><span>Concordância verbal</span></div><button class="btn complete-review">Concluir</button></div><div class="review-item"><div class="review-day">D+30</div><div><b>Direito Administrativo</b><span>Atos administrativos</span></div><button class="btn complete-review">Concluir</button></div></div></article><article class="card"><div class="section-title"><h3>Como funciona</h3></div><div class="priority"><div class="rank">1</div><div><b>Primeiro contato</b><span>Estude o tópico e registre a sessão.</span></div></div><div class="priority"><div class="rank">2</div><div><b>Revisões programadas</b><span>O sistema cria D+1, D+7, D+15 e D+30.</span></div></div><div class="priority"><div class="rank">3</div><div><b>Prioridade inteligente</b><span>Os atrasos e erros ganham prioridade no plano.</span></div></div></article></div></section>
 <section class="view" id="progress"><div class="page-hero"><div><h2>Seu desempenho</h2><p>Veja onde sua energia está trazendo mais resultado.</p></div><button class="btn primary" id="newLog">+ Registrar estudo</button></div><div class="grid stats"><article class="card"><div class="metric"><div><small>HORAS REGISTRADAS</small><strong id="totalHours">46h 20min</strong></div><div class="bubble b-blue">◷</div></div><p class="trend"><b>12h 40min</b> nesta semana</p></article><article class="card"><div class="metric"><div><small>SESSÕES CONCLUÍDAS</small><strong id="sessionsCount">38</strong></div><div class="bubble b-green">✓</div></div><p class="trend"><b>89%</b> do planejado</p></article><article class="card"><div class="metric"><div><small>ACERTOS EM QUESTÕES</small><strong>71%</strong></div><div class="bubble b-amber">◎</div></div><p class="trend"><b>+6 p.p.</b> no último mês</p></article><article class="card"><div class="metric"><div><small>TÓPICOS DOMINADOS</small><strong>14</strong></div><div class="bubble b-purple">✦</div></div><p class="trend">de 87 tópicos no edital</p></article></div><div class="grid two-col"><article class="card"><div class="section-title"><h3>Mapa de atenção</h3><span class="tiny-label">ATUALIZADO HOJE</span></div><div class="priority"><div class="rank">1</div><div><b>Raciocínio Lógico</b><span>36% concluído · menor desempenho</span></div><span class="score" style="background:#fff0f1;color:#c04557">PRIORIDADE ALTA</span></div><div class="priority"><div class="rank">2</div><div><b>Direito Administrativo</b><span>23% concluído · precisa de continuidade</span></div><span class="score" style="background:#fff4df;color:#b67300">PRIORIDADE MÉDIA</span></div><div class="priority"><div class="rank">3</div><div><b>Língua Portuguesa</b><span>51% concluído · evolução constante</span></div><span class="score">BOM RITMO</span></div></article><article class="card"><div class="section-title"><h3>Evolução semanal</h3><span class="tiny-label">HORAS</span></div><div class="chart"><div class="day"><div class="chart-bar" style="height:26%"></div>S1</div><div class="day"><div class="chart-bar" style="height:43%"></div>S2</div><div class="day"><div class="chart-bar" style="height:36%"></div>S3</div><div class="day"><div class="chart-bar" style="height:62%"></div>S4</div><div class="day"><div class="chart-bar now" style="height:86%"></div>S5</div></div></article></div></section>
-<section class="view" id="history"><div class="page-hero"><div><h2>Histórico de estudos</h2><p>Registre o que foi estudado para melhorar seus próximos ciclos.</p></div><button class="btn primary" id="newLog2">+ Registrar estudo</button></div><article class="card"><div class="section-title"><h3>Registros recentes</h3><span class="tiny-label">TODOS OS REGISTROS</span></div><div id="historyList"><div class="history-row"><small>Hoje<br>20:15</small><div><b>Língua Portuguesa</b><small>Questões FCC · Concordância verbal</small></div><span>40 min</span></div><div class="history-row"><small>Hoje<br>19:30</small><div><b>Raciocínio Lógico</b><small>Revisão · Conectivos</small></div><span>30 min</span></div><div class="history-row"><small>Ontem<br>18:30</small><div><b>Direito Constitucional</b><small>Art. 5º · Direitos fundamentais</small></div><span>50 min</span></div></div></article></section>
-<section class="view" id="settings"><div class="page-hero"><div><h2>Configurações</h2><p>Personalize seu ritmo e conecte o app à sua conta Supabase.</p></div></div><div class="grid two-col"><article class="card"><div class="section-title"><h3>Preferências de estudo</h3></div><div class="field" style="margin-bottom:14px"><label>Duração do Pomodoro</label><select id="pomodoroPref"><option value="25">25 minutos de foco</option><option value="40">40 minutos de foco</option><option value="50">50 minutos de foco</option></select></div><div class="field"><label>Ciclo de revisões</label><select><option>D+1, D+7, D+15 e D+30</option><option>D+1, D+7 e D+30</option><option>Personalizado</option></select></div><div class="modal-actions"><button class="btn primary" id="savePrefs">Salvar preferências</button></div></article><article class="card"><div id="masterSupabaseAdmin" hidden><div class="section-title"><h3>Conectar Supabase</h3><span class="pill" id="connectionStatus" style="background:#fff4df;color:#b67300">NÃO CONECTADO</span></div><p class="muted" style="font-size:12px;line-height:1.55;margin-top:0">Área administrativa exclusiva do usuário master. As credenciais ficam ocultas e bloqueadas até a autenticação da conta autorizada.</p><div id="supabaseCredentials"><div class="field" style="margin-bottom:10px"><label>Project URL</label><input id="supabaseUrl" type="password" autocomplete="off" placeholder="••••••••••••••••••••"></div><div class="field" style="margin-bottom:12px"><label>Publishable key</label><input id="supabaseKey" type="password" autocomplete="off" placeholder="••••••••••••••••••••"></div></div><div class="credential-actions"><button class="btn primary" id="connectSupabase">Salvar conexão</button><button class="btn lock-btn" id="toggleCredentialLock" type="button" title="Bloquear ou desbloquear credenciais"><span id="credentialLockIcon">🔒</span><span id="credentialLockText">Desbloquear</span></button></div><p class="credential-note" id="credentialLockNote">Project URL e Publishable Key estão protegidas contra visualização e edição.</p><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"></div><div id="masterOnlyNotice" class="master-only-notice" hidden><strong>Área administrativa restrita</strong><span>Somente o usuário master pode visualizar ou editar a conexão do Supabase.</span></div><div class="section-title"><h3>Minha conta</h3><span class="muted" id="accountState" style="font-size:11px">Conecte o Supabase primeiro.</span></div><div class="field" style="margin-bottom:9px"><label>E-mail</label><input id="authEmail" type="email" placeholder="voce@email.com"></div><div class="field" style="margin-bottom:12px"><label>Senha</label><input id="authPassword" type="password" placeholder="Mínimo de 6 caracteres"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="signIn">Entrar</button><button class="btn" id="signUp">Criar conta</button><button class="btn" id="signOut">Sair</button></div></article></div></section>
+<section class="view" id="history"><div class="page-hero"><div><h2>Histórico de estudos</h2><p>Registre o que foi estudado para melhorar seus próximos ciclos.</p></div><button class="btn primary" id="newLog2">+ Registrar estudo</button></div><article class="card"><div class="section-title"><h3>Registros recentes</h3><span class="tiny-label">TODOS OS REGISTROS</span></div><div id="historyList"><div class="history-row"><small>Hoje<br/>20:15</small><div><b>Língua Portuguesa</b><small>Questões FCC · Concordância verbal</small></div><span>40 min</span></div><div class="history-row"><small>Hoje<br/>19:30</small><div><b>Raciocínio Lógico</b><small>Revisão · Conectivos</small></div><span>30 min</span></div><div class="history-row"><small>Ontem<br/>18:30</small><div><b>Direito Constitucional</b><small>Art. 5º · Direitos fundamentais</small></div><span>50 min</span></div></div></article></section>
+<section class="view" id="settings"><div class="page-hero"><div><h2>Configurações</h2><p>Personalize seu ritmo e conecte o app à sua conta Supabase.</p></div></div><div class="grid two-col"><article class="card"><div class="section-title"><h3>Preferências de estudo</h3></div><div class="field" style="margin-bottom:14px"><label>Duração do Pomodoro</label><select id="pomodoroPref"><option value="25">25 minutos de foco</option><option value="40">40 minutos de foco</option><option value="50">50 minutos de foco</option></select></div><div class="field"><label>Ciclo de revisões</label><select><option>D+1, D+7, D+15 e D+30</option><option>D+1, D+7 e D+30</option><option>Personalizado</option></select></div><div class="modal-actions"><button class="btn primary" id="savePrefs">Salvar preferências</button></div></article><article class="card"><div hidden="" id="masterSupabaseAdmin"><div class="section-title"><h3>Conectar Supabase</h3><span class="pill" id="connectionStatus" style="background:#fff4df;color:#b67300">NÃO CONECTADO</span></div><p class="muted" style="font-size:12px;line-height:1.55;margin-top:0">Área administrativa exclusiva do usuário master. As credenciais ficam ocultas e bloqueadas até a autenticação da conta autorizada.</p><div id="supabaseCredentials"><div class="field" style="margin-bottom:10px"><label>Project URL</label><input autocomplete="off" id="supabaseUrl" placeholder="••••••••••••••••••••" type="password"/></div><div class="field" style="margin-bottom:12px"><label>Publishable key</label><input autocomplete="off" id="supabaseKey" placeholder="••••••••••••••••••••" type="password"/></div></div><div class="credential-actions"><button class="btn primary" id="connectSupabase">Salvar conexão</button><button class="btn lock-btn" id="toggleCredentialLock" title="Bloquear ou desbloquear credenciais" type="button"><span id="credentialLockIcon">🔒</span><span id="credentialLockText">Desbloquear</span></button></div><p class="credential-note" id="credentialLockNote">Project URL e Publishable Key estão protegidas contra visualização e edição.</p><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"/></div><div class="master-only-notice" hidden="" id="masterOnlyNotice"><strong>Área administrativa restrita</strong><span>Somente o usuário master pode visualizar ou editar a conexão do Supabase.</span></div><div class="section-title"><h3>Minha conta</h3><span class="muted" id="accountState" style="font-size:11px">Conecte o Supabase primeiro.</span></div><div class="field" style="margin-bottom:9px"><label>E-mail</label><input id="authEmail" placeholder="voce@email.com" type="email"/></div><div class="field" style="margin-bottom:12px"><label>Senha</label><input id="authPassword" placeholder="Mínimo de 6 caracteres" type="password"/></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="signIn">Entrar</button><button class="btn" id="signUp">Criar conta</button><button class="btn" id="signOut">Sair</button></div></article></div></section>
 </main></div>
-<div class="modal" id="logModal"><div class="modal-box"><h2>Registrar estudo</h2><p>Guarde sua sessão para que o app ajuste as próximas metas.</p><form id="logForm" class="log-form"><div class="field"><label>Matéria</label><select id="logSubject"><option>Direito Constitucional</option><option>Língua Portuguesa</option><option>Raciocínio Lógico</option><option>Direito Administrativo</option></select></div><div class="field"><label>Tempo (minutos)</label><input id="logMinutes" type="number" value="50" min="1"></div><div class="field full"><label>O que você estudou?</label><input id="logDetail" placeholder="Ex.: Art. 5º — Direitos fundamentais"></div></form><div class="modal-actions"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="saveLog">Salvar registro</button></div></div></div>
-<div class="modal" id="contestModal"><div class="modal-box"><h2>Novo concurso</h2><p>Cadastre seu objetivo. Depois, envie o edital para a IA organizar o conteúdo.</p><form class="log-form"><div class="field full"><label>Órgão / concurso</label><input value="TJ-CE 2026"></div><div class="field"><label>Cargo</label><input value="Técnico Judiciário"></div><div class="field"><label>Banca</label><input value="FCC"></div><div class="field"><label>Data da prova</label><input type="date" value="2026-10-08"></div></form><div class="modal-actions"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="saveContest">Salvar concurso</button></div></div></div><div class="modal" id="credentialLockModal"><div class="modal-box" style="max-width:460px"><h2 id="credentialLockTitle">Proteger credenciais</h2><p id="credentialLockDescription">Cadastre uma senha local para controlar a visualização e edição das credenciais do Supabase neste navegador.</p><div class="security-dialog"><div class="field"><label id="credentialPasswordLabel">Nova senha de proteção</label><input id="credentialPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo de 6 caracteres"></div><div class="field" id="credentialPasswordConfirmField"><label>Confirmar senha</label><input id="credentialPasswordConfirm" type="password" minlength="6" autocomplete="new-password" placeholder="Repita a senha"></div><p class="security-help">Essa senha protege apenas a interface deste navegador. A Publishable Key continua sendo uma credencial pública do frontend e não substitui as políticas RLS do Supabase.</p></div><div class="modal-actions"><button class="btn" type="button" data-close>Cancelar</button><button class="btn primary" type="button" id="confirmCredentialLock">Confirmar</button></div></div></div><div class="toast" id="toast">Alteração salva.</div>
+<div class="modal" id="logModal"><div class="modal-box"><h2>Registrar estudo</h2><p>Guarde sua sessão para que o app ajuste as próximas metas.</p><form class="log-form" id="logForm"><div class="field"><label>Matéria</label><select id="logSubject"><option>Direito Constitucional</option><option>Língua Portuguesa</option><option>Raciocínio Lógico</option><option>Direito Administrativo</option></select></div><div class="field"><label>Tempo (minutos)</label><input id="logMinutes" min="1" type="number" value="50"/></div><div class="field full"><label>O que você estudou?</label><input id="logDetail" placeholder="Ex.: Art. 5º — Direitos fundamentais"/></div></form><div class="modal-actions"><button class="btn" data-close="">Cancelar</button><button class="btn primary" id="saveLog">Salvar registro</button></div></div></div>
+<div class="modal" id="contestModal"><div class="modal-box"><h2>Novo concurso</h2><p>Cadastre seu objetivo. Depois, envie o edital para a IA organizar o conteúdo.</p><form class="log-form"><div class="field full"><label>Órgão / concurso</label><input value="TJ-CE 2026"/></div><div class="field"><label>Cargo</label><input value="Técnico Judiciário"/></div><div class="field"><label>Banca</label><input value="FCC"/></div><div class="field"><label>Data da prova</label><input type="date" value="2026-10-08"/></div></form><div class="modal-actions"><button class="btn" data-close="">Cancelar</button><button class="btn primary" id="saveContest">Salvar concurso</button></div></div></div><div class="modal" id="credentialLockModal"><div class="modal-box" style="max-width:460px"><h2 id="credentialLockTitle">Proteger credenciais</h2><p id="credentialLockDescription">Cadastre uma senha local para controlar a visualização e edição das credenciais do Supabase neste navegador.</p><div class="security-dialog"><div class="field"><label id="credentialPasswordLabel">Nova senha de proteção</label><input autocomplete="new-password" id="credentialPassword" minlength="6" placeholder="Mínimo de 6 caracteres" type="password"/></div><div class="field" id="credentialPasswordConfirmField"><label>Confirmar senha</label><input autocomplete="new-password" id="credentialPasswordConfirm" minlength="6" placeholder="Repita a senha" type="password"/></div><p class="security-help">Essa senha protege apenas a interface deste navegador. A Publishable Key continua sendo uma credencial pública do frontend e não substitui as políticas RLS do Supabase.</p></div><div class="modal-actions"><button class="btn" data-close="" type="button">Cancelar</button><button class="btn primary" id="confirmCredentialLock" type="button">Confirmar</button></div></div></div><div class="toast" id="toast">Alteração salva.</div>
 <!-- Versão UMD: disponibiliza window.supabase para este app HTML simples. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script id="aprovaSupabaseFixedConfig">
@@ -1579,10 +1576,17 @@ renderPlanoEstavel();
     if(c&&!localStorage.getItem('aprovaConcurso')) write('aprovaConcurso',{nome:c.titulo,orgao:c.orgao,cargo:c.cargo,banca:c.banca,prova:c.data_prova,materias:'',topicos:0});
   }
   function migrate(){
-    let list=registry();
-    const legacy=read('aprovaConcurso',null);
-    if(!list.length&&legacy){const c=normalize(legacy);list=[c];saveRegistry(list);localStorage.setItem(ACTIVE,c.id);snapshot(c.id);}
-    if(list.length&&!list.some(c=>String(c.id)===activeId())){localStorage.setItem(ACTIVE,String(list[0].id));restore(String(list[0].id));}
+    const list=registry();
+    if(!list.length){
+      localStorage.removeItem(ACTIVE);
+      clearActive();
+      return;
+    }
+    if(!list.some(c=>String(c.id)===activeId())){
+      const first=String(list[0].id);
+      localStorage.setItem(ACTIVE,first);
+      restore(first);
+    }
   }
   function upsertCurrent(forceNew=false){
     const local=read('aprovaConcurso',null);if(!local)return;
@@ -1674,11 +1678,11 @@ renderPlanoEstavel();
     const c=activeContest();btn.title=c?`Importar ou retificar matérias de ${c.titulo} · ${c.cargo}`:'Cadastre um concurso para importar matérias';
   }
   function openImport(){
+    if(window.aprovaVerticalImport?.open){window.aprovaVerticalImport.open();return;}
     const c=activeContest();if(!c){notify('Cadastre ou habilite um concurso antes de importar a verticalização.');return;}
-    restore(c.id);
-    try{window.concursoEditavel=read('aprovaConcurso',null);window.verticalizacaoImportada=read('aprovaVerticalizacao',null);}catch{}
-    const note=document.querySelector('#importVerticalModal .edit-note');if(note)note.textContent=`A importação será aplicada somente a “${c.titulo} · ${c.cargo}”. Você pode adicionar ou retificar matérias e tópicos deste concurso.`;
-    if(typeof window.openModal==='function')window.openModal('importVerticalModal');else document.getElementById('importVerticalModal')?.classList.add('open');
+    const modal=document.getElementById('importVerticalModal');
+    if(!modal){notify('A janela de importação ainda não foi inicializada. Aguarde um instante e tente novamente.');return;}
+    modal.classList.add('open');modal.style.display='flex';
   }
   function renderAll(){ensureImport();renderContestPage();removeDashboardPreparation();syncLabels();}
 
@@ -1699,9 +1703,6 @@ renderPlanoEstavel();
   window.aprovaContestManager={open:openContest,remove:deleteOnly,render:renderAll,registry,snapshot,restore};
 })();
 </script>
-
-
-
 <style id="aprova-hotfix-edital-ui">
 .edital-empty-manager{border:1px dashed var(--line);border-radius:18px;padding:22px;background:color-mix(in srgb,var(--panel) 92%,transparent);display:grid;gap:14px}
 .edital-empty-manager h4{margin:0;font-size:18px}.edital-empty-manager p{margin:0;color:var(--muted);line-height:1.55}
@@ -1799,7 +1800,6 @@ renderPlanoEstavel();
   setTimeout(()=>{try{renderTopicosImportados()}catch(err){console.warn(err)}},0);
 })();
 </script>
-
 <!-- layout-polish-2026-07-31 -->
 <style>
 /* Cabeçalhos contextuais alinhados e consistentes */
@@ -1935,8 +1935,6 @@ renderPlanoEstavel();
   setTimeout(()=>{syncHeader();openVerticalized()},350);
 })();
 </script>
-
-
 <!-- FIX 2026-07-31: persistência visual do edital verticalizado -->
 <script id="fix-persistent-verticalization">
 (() => {
@@ -2024,8 +2022,6 @@ renderPlanoEstavel();
   setTimeout(()=>{persistVerticalization();refreshContestVerticalization()},0);
 })();
 </script>
-
-
 <script id="aprovaCloudPersistence">
 /* Persistência compartilhada: sincroniza o catálogo de concursos com a tabela public.concursos. */
 (()=>{
@@ -2198,8 +2194,6 @@ renderPlanoEstavel();
   setTimeout(()=>sync(),900);
 })();
 </script>
-
-
 <!-- MASTER REAUTH + SUPABASE AUTO SESSION 2026-07-31 -->
 <style id="masterReauthStyles">
 #masterOnlyNotice{cursor:pointer;transition:border-color .18s,transform .18s,box-shadow .18s;position:relative;padding-right:58px}
@@ -2211,22 +2205,21 @@ renderPlanoEstavel();
 body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6c5}
 .account-session-note{margin:10px 0 0;font-size:11px;color:var(--muted);line-height:1.45}
 </style>
-<div class="modal" id="masterReauthModal" aria-hidden="true">
-  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="masterReauthTitle">
-    <h2 id="masterReauthTitle">Autenticação administrativa</h2>
-    <p>Digite a senha da conta master para visualizar ou modificar a conexão do Supabase.</p>
-    <div class="field">
-      <label for="masterReauthPassword">Senha da conta master</label>
-      <input id="masterReauthPassword" type="password" autocomplete="current-password" placeholder="Digite sua senha">
-    </div>
-    <div class="master-auth-status" id="masterReauthStatus">A autenticação será validada diretamente pelo Supabase.</div>
-    <div class="modal-actions">
-      <button class="btn" type="button" id="cancelMasterReauth">Cancelar</button>
-      <button class="btn primary" type="button" id="confirmMasterReauth">Autenticar e desbloquear</button>
-    </div>
-  </div>
+<div aria-hidden="true" class="modal" id="masterReauthModal">
+<div aria-labelledby="masterReauthTitle" aria-modal="true" class="modal-box" role="dialog">
+<h2 id="masterReauthTitle">Autenticação administrativa</h2>
+<p>Digite a senha da conta master para visualizar ou modificar a conexão do Supabase.</p>
+<div class="field">
+<label for="masterReauthPassword">Senha da conta master</label>
+<input autocomplete="current-password" id="masterReauthPassword" placeholder="Digite sua senha" type="password"/>
 </div>
-
+<div class="master-auth-status" id="masterReauthStatus">A autenticação será validada diretamente pelo Supabase.</div>
+<div class="modal-actions">
+<button class="btn" id="cancelMasterReauth" type="button">Cancelar</button>
+<button class="btn primary" id="confirmMasterReauth" type="button">Autenticar e desbloquear</button>
+</div>
+</div>
+</div>
 <style id="loggedOutWorkspaceStyles">
 </style>
 <script id="authoritativeSupabaseAuthController">
@@ -2363,122 +2356,6 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
 })();
 </script>
 
-
-<script id="final-import-verticalization-guard">
-(() => {
-  'use strict';
-  const ACTIVE='aprovaActiveContestId';
-  const REGISTRY='aprovaContestRegistryV2';
-  const STATE_PREFIX='aprovaContestState:';
-  const VERTICAL='aprovaVerticalizacao';
-
-  const parse=(raw,fallback)=>{try{return raw?JSON.parse(raw):fallback}catch{return fallback}};
-  const activeContest=()=>{
-    const id=String(localStorage.getItem(ACTIVE)||'');
-    const list=parse(localStorage.getItem(REGISTRY),[]);
-    return Array.isArray(list)?list.find(item=>String(item.id)===id)||null:null;
-  };
-
-  function restoreActiveVerticalization(){
-    const contest=activeContest();
-    if(!contest)return false;
-    const state=parse(localStorage.getItem(STATE_PREFIX+contest.id),{})||{};
-    if(!localStorage.getItem(VERTICAL) && state[VERTICAL]){
-      localStorage.setItem(VERTICAL,typeof state[VERTICAL]==='string'?state[VERTICAL]:JSON.stringify(state[VERTICAL]));
-    }
-    const value=parse(localStorage.getItem(VERTICAL),null);
-    if(value){
-      try{verticalizacaoImportada=value}catch{}
-      window.verticalizacaoImportada=value;
-    }
-    return true;
-  }
-
-  function ensurePersistentImportButton(){
-    let button=document.getElementById('importVertical');
-    const newContest=document.getElementById('newContest');
-    const context=document.getElementById('contextActions');
-    const contestVisible=document.getElementById('contest')?.classList.contains('active');
-
-    if(!button){
-      button=document.createElement('button');
-      button.id='importVertical';
-      button.type='button';
-      button.className='btn';
-      button.textContent='⇩ Importar verticalização';
-    }
-
-    button.hidden=false;
-    button.disabled=false;
-    button.style.display='inline-flex';
-    button.style.alignItems='center';
-    button.style.justifyContent='center';
-    button.removeAttribute('disabled');
-    button.setAttribute('aria-disabled','false');
-
-    const contest=activeContest();
-    button.title=contest
-      ? `Importar ou retificar a verticalização de ${contest.titulo} · ${contest.cargo}`
-      : 'Cadastre ou habilite um concurso para importar a verticalização';
-
-    if(contestVisible && context){
-      context.hidden=false;
-      if(button.parentElement!==context){
-        if(newContest?.parentElement===context)context.insertBefore(button,newContest);
-        else context.prepend(button);
-      }
-    }else if(!button.isConnected && newContest){
-      newContest.before(button);
-    }
-    return button;
-  }
-
-  function openForActiveContest(){
-    const contest=activeContest();
-    if(!contest){
-      (window.toast||window.alert)('Cadastre ou habilite um concurso antes de importar a verticalização.');
-      return;
-    }
-    restoreActiveVerticalization();
-    const note=document.querySelector('#importVerticalModal .edit-note');
-    if(note)note.textContent=`A importação será aplicada somente a “${contest.titulo} · ${contest.cargo}”. Você pode adicionar ou retificar matérias e tópicos deste concurso.`;
-    const modal=document.getElementById('importVerticalModal');
-    if(modal)modal.classList.add('open');
-  }
-
-  // Captura prioritária: funciona mesmo que algum handler legado seja removido ou sobrescrito.
-  document.addEventListener('click',event=>{
-    const control=event.target.closest('#importVertical');
-    if(!control)return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    openForActiveContest();
-  },true);
-
-  // Reinstala o botão ao trocar de guia, habilitar concurso ou renderizar listas.
-  document.addEventListener('click',event=>{
-    if(event.target.closest('[data-view="contest"],[data-canonical-open],#newContest,#saveContest')){
-      setTimeout(()=>{restoreActiveVerticalization();ensurePersistentImportButton()},0);
-      setTimeout(ensurePersistentImportButton,180);
-    }
-  },true);
-  document.addEventListener('aprova:render',()=>setTimeout(ensurePersistentImportButton,0));
-  window.addEventListener('pageshow',()=>setTimeout(ensurePersistentImportButton,0));
-  window.addEventListener('storage',()=>setTimeout(ensurePersistentImportButton,0));
-
-  const contest=document.getElementById('contest');
-  if(contest)new MutationObserver(()=>ensurePersistentImportButton()).observe(contest,{attributes:true,attributeFilter:['class']});
-  const context=document.getElementById('contextActions');
-  if(context)new MutationObserver(()=>ensurePersistentImportButton()).observe(context,{childList:true});
-
-  restoreActiveVerticalization();
-  ensurePersistentImportButton();
-  setTimeout(ensurePersistentImportButton,120);
-  setTimeout(ensurePersistentImportButton,500);
-})();
-</script>
-
-
 <script id="authPrivacyGuard">
 (() => {
   'use strict';
@@ -2589,139 +2466,266 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
 })();
 </script>
 
-<script id="finalVerticalImportActivationFix">
+<script id="canonicalVerticalImportModule">
 (() => {
   'use strict';
+  const ACTIVE='aprovaActiveContestId';
+  const REGISTRY='aprovaContestRegistryV2';
+  const STATE_PREFIX='aprovaContestState:';
+  const VERTICAL='aprovaVerticalizacao';
+  const CONTEST='aprovaConcurso';
+  const parse=(raw,fallback=null)=>{try{return raw?JSON.parse(raw):fallback}catch{return fallback}};
+  const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
+  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  const notify=message=>{if(typeof window.toast==='function')window.toast(message);else alert(message)};
 
-  const parse = (raw, fallback = null) => {
-    try { return raw ? JSON.parse(raw) : fallback; } catch { return fallback; }
-  };
-
-  function resolveActiveContest() {
-    const activeId = String(localStorage.getItem('aprovaActiveContestId') || '');
-    const registry = parse(localStorage.getItem('aprovaContestRegistryV2'), []);
-    if (activeId && Array.isArray(registry)) {
-      const found = registry.find(item => String(item?.id) === activeId);
-      if (found) return found;
-    }
-
-    try {
-      if (window.concursoEditavel && typeof window.concursoEditavel === 'object') {
-        return {
-          id: activeId || window.concursoEditavel.id || 'active',
-          titulo: window.concursoEditavel.nome || window.concursoEditavel.titulo || 'Concurso ativo',
-          cargo: window.concursoEditavel.cargo || ''
-        };
-      }
-    } catch (_) {}
-
-    const activeCard = document.querySelector('.canonical-contest-item.active, .canonical-contest-item [class*="pill"], [data-contest-active="true"]');
-    const card = activeCard?.closest('.canonical-contest-item, .catalog-item, article, li, div');
-    if (card) {
-      const title = card.querySelector('b,h3,strong')?.textContent?.trim() || 'Concurso ativo';
-      return { id: activeId || 'active-dom', titulo: title, cargo: '' };
-    }
-
-    const title = document.querySelector('#contest .contest-title h3')?.textContent?.trim();
-    if (title) return { id: activeId || 'active-view', titulo: title, cargo: '' };
-    return null;
+  function resolveActive(){
+    const id=String(localStorage.getItem(ACTIVE)||'');
+    const list=parse(localStorage.getItem(REGISTRY),[]);
+    if(!id||!Array.isArray(list)||!list.length)return null;
+    return list.find(item=>String(item?.id)===id)||null;
   }
 
-  function ensureButton() {
-    let button = document.getElementById('importVertical');
-    const actions = document.getElementById('contextActions') || document.querySelector('#contest .page-hero-actions');
-    const newContest = document.getElementById('newContest');
+  function ensureModal(){
+    let modal=document.getElementById('importVerticalModal');
+    if(modal)return modal;
+    modal=document.createElement('div');
+    modal.className='modal';modal.id='importVerticalModal';
+    modal.innerHTML=`<div class="modal-box"><h2>Importar edital verticalizado</h2><p class="edit-note">A importação será aplicada somente ao concurso ativo.</p><div class="field full"><label>JSON da verticalização</label><textarea id="importVerticalJson" rows="14" placeholder='Cole aqui o JSON gerado pelo ChatGPT'></textarea></div><div class="field full" style="margin-top:14px"><label>Ou envie um arquivo JSON</label><input id="importVerticalFile" type="file" accept="application/json,.json"></div><div class="modal-actions"><button class="btn" type="button" data-import-close>Cancelar</button><button class="btn primary" type="button" id="confirmImportVertical">Importar edital</button></div></div>`;
+    document.body.appendChild(modal);
+    return modal;
+  }
 
-    if (!button) {
-      button = document.createElement('button');
-      button.id = 'importVertical';
-      button.type = 'button';
-      button.className = 'btn';
-      button.textContent = '⇩ Importar verticalização';
+  function ensureButton(){
+    const context=document.getElementById('contextActions')||document.querySelector('#contest .page-hero-actions');
+    const newContest=document.getElementById('newContest');
+    let button=document.getElementById('importVertical');
+    if(!button){button=document.createElement('button');button.id='importVertical';button.type='button';button.className='btn';button.textContent='⇩ Importar verticalização';}
+    button.hidden=false;button.disabled=false;button.removeAttribute('disabled');button.setAttribute('aria-disabled','false');
+    Object.assign(button.style,{display:'inline-flex',alignItems:'center',justifyContent:'center',pointerEvents:'auto',opacity:'1',cursor:'pointer'});
+    if(document.getElementById('contest')?.classList.contains('active')&&context&&button.parentElement!==context){
+      if(newContest?.parentElement===context)context.insertBefore(button,newContest);else context.prepend(button);
+      context.hidden=false;
     }
-
-    button.type = 'button';
-    button.hidden = false;
-    button.disabled = false;
-    button.removeAttribute('disabled');
-    button.setAttribute('aria-disabled', 'false');
-    button.style.display = 'inline-flex';
-    button.style.alignItems = 'center';
-    button.style.justifyContent = 'center';
-    button.style.pointerEvents = 'auto';
-    button.style.opacity = '1';
-    button.style.cursor = 'pointer';
-
-    if (document.getElementById('contest')?.classList.contains('active') && actions && button.parentElement !== actions) {
-      if (newContest?.parentElement === actions) actions.insertBefore(button, newContest);
-      else actions.prepend(button);
-    }
-
-    button.onclick = event => {
-      event.preventDefault();
-      event.stopPropagation();
-      openImportModal();
-    };
     return button;
   }
 
-  function openImportModal() {
-    const contest = resolveActiveContest();
-    if (!contest) {
-      const message = 'Cadastre ou habilite um concurso antes de importar a verticalização.';
-      if (typeof window.toast === 'function') window.toast(message); else alert(message);
-      return;
-    }
-
-    const modal = document.getElementById('importVerticalModal');
-    if (!modal) {
-      const message = 'A janela de importação não foi encontrada. Atualize a página e tente novamente.';
-      if (typeof window.toast === 'function') window.toast(message); else alert(message);
-      return;
-    }
-
-    const note = modal.querySelector('.edit-note');
-    if (note) {
-      const name = [contest.titulo || contest.nome, contest.cargo].filter(Boolean).join(' · ');
-      note.textContent = `A importação será aplicada somente a “${name || 'Concurso ativo'}”. Você pode adicionar ou retificar matérias e tópicos deste concurso.`;
-    }
-
-    modal.classList.add('open');
-    modal.style.display = 'flex';
-    const field = document.getElementById('importVerticalJson');
-    setTimeout(() => field?.focus(), 0);
+  function normalize(raw){
+    if(!raw||typeof raw!=='object')throw new Error('Estrutura JSON vazia ou inválida.');
+    const source=raw.concurso||{};
+    const disciplines=Array.isArray(raw.disciplinas)?raw.disciplinas:[];
+    if(!disciplines.length)throw new Error('O JSON não contém disciplinas.');
+    return {
+      concurso:{nome:String(source.nome||''),orgao:String(source.orgao||''),cargo:String(source.cargo||''),banca:String(source.banca||''),data_prova:String(source.data_prova||source.prova||'')},
+      disciplinas:disciplines.map((d,index)=>({
+        nome:String(d?.nome||`Disciplina ${index+1}`).trim(),
+        prioridade:['alta','media','baixa'].includes(String(d?.prioridade||'').toLowerCase())?String(d.prioridade).toLowerCase():'media',
+        peso:Math.max(1,Number(d?.peso)||1),ordem:Number.isFinite(Number(d?.ordem))?Number(d.ordem):index,
+        topicos:(Array.isArray(d?.topicos)?d.topicos:[]).map(t=>typeof t==='string'?{nome:t,concluido:false}:{nome:String(t?.nome||'').trim(),concluido:Boolean(t?.concluido)}).filter(t=>t.nome)
+      })),
+      estrategia:String(raw.estrategia||'')
+    };
   }
 
-  // Captura final para neutralizar handlers antigos que bloqueiem o clique.
-  document.addEventListener('click', event => {
-    if (!event.target.closest('#importVertical')) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    openImportModal();
-  }, true);
+  function merge(previous,incoming){
+    if(!previous?.disciplinas?.length)return incoming;
+    const map=new Map(previous.disciplinas.map(d=>[d.nome.trim().toLowerCase(),d]));
+    incoming.disciplinas=incoming.disciplinas.map((d,index)=>{
+      const old=map.get(d.nome.trim().toLowerCase());
+      if(!old)return {...d,ordem:index};
+      const status=new Map((old.topicos||[]).map(t=>[String(t.nome).trim().toLowerCase(),Boolean(t.concluido)]));
+      return {...old,...d,ordem:Number.isFinite(Number(old.ordem))?Number(old.ordem):index,topicos:d.topicos.map(t=>({...t,concluido:status.has(t.nome.toLowerCase())?status.get(t.nome.toLowerCase()):t.concluido}))};
+    });
+    return incoming;
+  }
 
-  const refresh = () => requestAnimationFrame(ensureButton);
-  document.addEventListener('click', event => {
-    if (event.target.closest('[data-view="contest"], [data-canonical-open], [data-contest-id], #newContest, #saveContest, .canonical-contest-item')) {
-      setTimeout(refresh, 0);
-      setTimeout(refresh, 150);
+  function persist(vertical,active){
+    write(VERTICAL,vertical);
+    const previous=parse(localStorage.getItem(CONTEST),{})||{};
+    const total=vertical.disciplinas.reduce((sum,d)=>sum+d.topicos.length,0);
+    const info=vertical.concurso||{};
+    const contest={...previous,nome:info.nome||previous.nome||active.titulo,orgao:info.orgao||previous.orgao||active.orgao||'',cargo:info.cargo||previous.cargo||active.cargo||'',banca:info.banca||previous.banca||active.banca||'',prova:info.data_prova||previous.prova||active.data_prova||'',materias:vertical.disciplinas.map(d=>d.nome).join(', '),topicos:total};
+    write(CONTEST,contest);
+    const activeId=String(localStorage.getItem(ACTIVE)||active.id||'');
+    if(activeId){
+      const state=parse(localStorage.getItem(STATE_PREFIX+activeId),{})||{};
+      state[VERTICAL]=localStorage.getItem(VERTICAL);
+      state[CONTEST]=localStorage.getItem(CONTEST);
+      write(STATE_PREFIX+activeId,state);
     }
-  }, true);
-  document.addEventListener('aprova:render', refresh);
-  window.addEventListener('pageshow', refresh);
-  window.addEventListener('storage', refresh);
+    try{window.verticalizacaoImportada=vertical;verticalizacaoImportada=vertical}catch(_){ }
+    try{window.concursoEditavel=contest;concursoEditavel=contest}catch(_){ }
+    try{window.aprovaContestManager?.snapshot?.(activeId)}catch(_){ }
+  }
 
-  const observer = new MutationObserver(refresh);
-  const contestView = document.getElementById('contest');
-  const context = document.getElementById('contextActions');
-  if (contestView) observer.observe(contestView, {subtree:true, childList:true, attributes:true, attributeFilter:['class']});
-  if (context) observer.observe(context, {childList:true});
+  function refresh(){
+    try{if(typeof window.renderTopicosImportados==='function')window.renderTopicosImportados();else if(typeof renderTopicosImportados==='function')renderTopicosImportados()}catch(error){console.warn('Render verticalização:',error)}
+    try{if(typeof renderConcurso==='function')renderConcurso()}catch(_){ }
+    try{if(typeof atualizarMateriasDisponiveis==='function')atualizarMateriasDisponiveis()}catch(_){ }
+    try{if(typeof gerarPlanoAdaptativo==='function')gerarPlanoAdaptativo()}catch(_){ }
+    document.dispatchEvent(new CustomEvent('aprova:render'));
+  }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refresh, {once:true});
-  else refresh();
-  setTimeout(refresh, 250);
+  function open(){
+    const active=resolveActive();
+    if(!active){notify('Cadastre ou habilite um concurso antes de importar a verticalização.');return;}
+    const modal=ensureModal();
+    const note=modal.querySelector('.edit-note');if(note)note.textContent=`A importação será aplicada somente a “${active.titulo}${active.cargo?' · '+active.cargo:''}”. Você pode importar novamente para retificar matérias e tópicos.`;
+    modal.classList.add('open');modal.style.display='flex';modal.setAttribute('aria-hidden','false');
+    requestAnimationFrame(()=>document.getElementById('importVerticalJson')?.focus());
+  }
+
+  async function confirm(){
+    const active=resolveActive();if(!active){notify('Nenhum concurso ativo foi encontrado.');return;}
+    const field=document.getElementById('importVerticalJson');
+    try{
+      const parsed=JSON.parse(field?.value?.trim()||'');
+      const incoming=normalize(parsed);
+      const previous=parse(localStorage.getItem(VERTICAL),null);
+      const vertical=merge(previous,incoming);
+      persist(vertical,active);refresh();
+      const modal=ensureModal();modal.classList.remove('open');modal.style.display='';modal.setAttribute('aria-hidden','true');
+      if(field)field.value='';
+      notify(`Edital verticalizado importado: ${vertical.disciplinas.length} disciplinas.`);
+    }catch(error){notify(error instanceof SyntaxError?'O conteúdo não é um JSON válido.':`Não foi possível importar: ${error.message}`)}
+  }
+
+  function bind(){
+    ensureModal();ensureButton();
+    const file=document.getElementById('importVerticalFile');
+    if(file&&!file.dataset.bound){file.dataset.bound='1';file.addEventListener('change',async()=>{const selected=file.files?.[0];if(!selected)return;try{document.getElementById('importVerticalJson').value=await selected.text()}catch{notify('Não foi possível ler o arquivo JSON.')}})}
+    const confirmButton=document.getElementById('confirmImportVertical');
+    if(confirmButton){const fresh=confirmButton.cloneNode(true);confirmButton.replaceWith(fresh);fresh.addEventListener('click',confirm)}
+  }
+
+  document.addEventListener('click',event=>{
+    const importButton=event.target.closest('#importVertical,#emptyImportVertical');
+    if(importButton){event.preventDefault();event.stopPropagation();open();return;}
+    if(event.target.closest('[data-import-close]')){const modal=ensureModal();modal.classList.remove('open');modal.style.display='';return;}
+    if(event.target.closest('[data-view="contest"],[data-canonical-open],#newContest,#saveContest'))setTimeout(()=>{ensureButton();bind()},0);
+  },false);
+  document.addEventListener('aprova:render',()=>setTimeout(()=>{ensureButton();bind()},0));
+  window.addEventListener('pageshow',()=>setTimeout(()=>{ensureButton();bind()},0));
+  window.aprovaVerticalImport={open,confirm,bind};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+  setTimeout(bind,250);setTimeout(bind,900);
 })();
 </script>
+<style id="contestStateInvariantStyles">
+#contest.no-active-contest .contest-active-detail,
+#contest.no-active-contest .contest-active-aside{display:none!important}
+#contest .contest-empty-state{display:none;grid-column:1/-1;min-height:260px;place-items:center;text-align:center}
+#contest.no-active-contest .contest-empty-state{display:grid}
+#contest .contest-empty-state h3{margin:0 0 8px;font-size:18px}
+#contest .contest-empty-state p{margin:0;color:var(--muted);max-width:520px;line-height:1.55}
+</style>
+<script id="contestStateInvariantModule">
+(() => {
+  'use strict';
+  const REGISTRY='aprovaContestRegistryV2';
+  const ACTIVE='aprovaActiveContestId';
+  const ACTIVE_KEYS=['aprovaConcurso','aprovaVerticalizacao','aprovaPlano','aprovaConfiguracaoPlano','aprovaAvailable','aprovaDone','aprovaReviewQueue','aprovaReviews','aprovaHistory','aprovaStudyHistory','aprovaStudySessions','aprovaSequence','aprovaProgress','aprovaPomo','aprovaPlanCompleted'];
+  const parse=(raw,fallback)=>{try{return raw===null?fallback:JSON.parse(raw)}catch{return fallback}};
+  const list=()=>{const value=parse(localStorage.getItem(REGISTRY),[]);return Array.isArray(value)?value:[]};
+  const active=()=>{const items=list(),id=String(localStorage.getItem(ACTIVE)||'');return id?items.find(item=>String(item?.id)===id)||null:null};
+  const setText=(selector,value)=>{const el=document.querySelector(selector);if(el)el.textContent=value};
 
+  function clearOrphanActiveState(){
+    if(list().length)return;
+    localStorage.removeItem(ACTIVE);
+    ACTIVE_KEYS.forEach(key=>localStorage.removeItem(key));
+    try{window.verticalizacaoImportada=null}catch(_){ }
+    try{window.concursoEditavel=null}catch(_){ }
+  }
+
+  function ensureContestMarkup(){
+    const view=document.getElementById('contest');
+    const grid=view?.querySelector('.grid.two-col');
+    if(!view||!grid)return;
+    const children=[...grid.children];
+    const detail=children.find(el=>el.matches('article.card'));
+    const aside=children.find(el=>el.matches('aside.card'));
+    if(detail)detail.classList.add('contest-active-detail');
+    if(aside)aside.classList.add('contest-active-aside');
+    let empty=grid.querySelector('.contest-empty-state');
+    if(!empty){
+      empty=document.createElement('article');
+      empty.className='card contest-empty-state';
+      empty.innerHTML='<div><h3>Nenhum concurso ativo</h3><p>Cadastre um novo concurso para importar o edital verticalizado, gerar o plano e acompanhar seu progresso.</p></div>';
+      grid.appendChild(empty);
+    }
+  }
+
+  function resetDashboard(){
+    const hero=document.querySelector('#dashboard .hero');
+    if(hero){
+      setText('#dashboard .hero p','NENHUM CONCURSO ATIVO');
+      setText('#dashboard .hero h2','Cadastre seu próximo objetivo');
+      const span=hero.querySelector('span');if(span)span.innerHTML='Cadastre um concurso para começar seu planejamento.';
+    }
+    const values={weekHours:'0h 0min',cardProgress:'0%',topicsDone:'0 tópicos',pendingReviews:'0',mainProgress:'0%',contestProgress:'0%'};
+    Object.entries(values).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value});
+    const sessions=document.querySelector('#dashboard .sessions');
+    if(sessions){
+      [...sessions.querySelectorAll('.session')].forEach(el=>el.remove());
+      if(!sessions.querySelector('.empty'))sessions.insertAdjacentHTML('beforeend','<p class="empty">Nenhuma sessão planejada. Cadastre um concurso para começar.</p>');
+    }
+  }
+
+  function resetContest(){
+    const view=document.getElementById('contest');if(!view)return;
+    ensureContestMarkup();
+    view.classList.add('no-active-contest');
+    const importButton=document.getElementById('importVertical');
+    if(importButton){importButton.disabled=true;importButton.setAttribute('aria-disabled','true');importButton.title='Cadastre um concurso antes de importar a verticalização';}
+    setText('#daysLeft','Sem prova');
+    setText('#deadlineDescription','Cadastre um concurso para acompanhar o prazo da prova.');
+  }
+
+  function resetPlan(){
+    const planner=document.querySelector('#plan .planner');
+    if(planner)planner.innerHTML='<div class="empty" style="grid-column:1/-1">Nenhum plano disponível. Cadastre um concurso para gerar a grade semanal.</div>';
+  }
+
+  function resetProgress(){
+    const progress=document.getElementById('progress');if(!progress)return;
+    progress.querySelectorAll('.metric strong').forEach(el=>el.textContent=el.closest('.card')?.textContent?.includes('ACERTOS')?'0%':'0');
+    progress.querySelectorAll('.priority').forEach(el=>el.remove());
+  }
+
+  function resetHistory(){
+    const history=document.getElementById('history');if(!history)return;
+    history.querySelectorAll('.history-row').forEach(el=>el.remove());
+    const card=history.querySelector('.card');
+    if(card&&!card.querySelector('.empty'))card.insertAdjacentHTML('beforeend','<p class="empty">Nenhum estudo registrado para um concurso ativo.</p>');
+  }
+
+  function render(){
+    const items=list();
+    const current=active();
+    const contest=document.getElementById('contest');
+    ensureContestMarkup();
+    if(!items.length||!current){
+      clearOrphanActiveState();
+      resetDashboard();resetContest();resetPlan();resetProgress();resetHistory();
+      document.body.dataset.hasActiveContest='false';
+      return;
+    }
+    contest?.classList.remove('no-active-contest');
+    const importButton=document.getElementById('importVertical');
+    if(importButton){importButton.disabled=false;importButton.removeAttribute('disabled');importButton.setAttribute('aria-disabled','false');importButton.title=`Importar ou retificar matérias de ${current.titulo||current.nome||'concurso ativo'}`;}
+    document.body.dataset.hasActiveContest='true';
+  }
+
+  let queued=false;
+  const schedule=()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;render()})};
+  document.addEventListener('aprova:render',schedule);
+  document.addEventListener('click',event=>{if(event.target.closest('[data-view],#newContest,#saveContest,[data-canonical-open],[data-canonical-delete]'))setTimeout(schedule,0)},true);
+  window.addEventListener('storage',schedule);
+  window.addEventListener('pageshow',schedule);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
+  setTimeout(render,300);setTimeout(render,1200);
+  window.aprovaContestInvariant={render,active,list};
+})();
+</script>
 </body></html>
