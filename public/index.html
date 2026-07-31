@@ -57,7 +57,7 @@ body.dark .contest-sources,body.dark .matter-choice{border-color:#2a3958;backgro
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const app={logs:JSON.parse(localStorage.getItem('aprovaLogs')||'[]'),done:+localStorage.getItem('aprovaDone')||14,available:JSON.parse(localStorage.getItem('aprovaAvailable')||'[true,true,true,true,true,false,false]')};
-const headings={dashboard:'Olá, Dell. Vamos avançar? 👋',contest:'Meu concurso',plan:'Plano de estudos',reviews:'Revisar é consolidar.',progress:'Os dados mostram sua evolução.',history:'Tudo o que você estuda conta.',settings:'Ajuste o app ao seu ritmo.'};
+const headings={dashboard:'Olá, Dell. Vamos avançar? 👋',contest:'Meu concurso',plan:'Plano de estudos',reviews:'Revisar é consolidar',progress:'Os dados mostram sua evolução.',history:'Tudo o que você estuda conta.',settings:'Ajuste o app ao seu ritmo.'};
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===id&&x.tagName==='BUTTON'));document.getElementById('heading').textContent=headings[id]||headings.dashboard;window.scrollTo({top:0,behavior:'smooth'})}
 document.addEventListener('click',e=>{const v=e.target.closest('[data-view]');if(v)showView(v.dataset.view);if(e.target.matches('[data-close]'))e.target.closest('.modal').classList.remove('open')});
@@ -1667,7 +1667,7 @@ renderPlanoEstavel();
       subtitle.hidden=false;subtitle.textContent='Seu cronograma foi gerado para as horas livres que você informou.';
     }else if(view==='reviews'){
       if(small){small.hidden=false;small.textContent='Terça-feira, 28 de julho'}
-      if(heading)heading.textContent='Revisar é consolidar.';
+      if(heading)heading.textContent='Revisar é consolidar';
       subtitle.hidden=true;subtitle.textContent='';
     }else{
       if(small)small.hidden=false;
