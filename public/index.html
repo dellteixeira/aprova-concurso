@@ -2884,7 +2884,24 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
   function priorityMeta(p){p=String(p||'media').toLowerCase();return p==='alta'?['high','Alta']:p==='baixa'?['low','Baixa']:['medium','Média']}
   function persistVertical(v){saveKey(VERTICAL,v);syncGlobals(v);document.dispatchEvent(new CustomEvent('aprova:render'))}
 
+  // Mantém o estado de expansão das disciplinas mesmo após qualquer re-renderização.
+  const openDisciplineKeys=new Set();
+  const disciplineKey=(d)=>encodeURIComponent(String(d?.nome||'').trim().toLocaleLowerCase('pt-BR'));
+  function captureOpenDetails(){
+    document.querySelectorAll('#topics details[data-final-detail-key]').forEach(detail=>{
+      const key=detail.dataset.finalDetailKey;
+      if(!key)return;
+      if(detail.open)openDisciplineKeys.add(key);else openDisciplineKeys.delete(key);
+    });
+  }
+  function updateToggleAllLabel(host=document.getElementById('topics')){
+    const button=host?.querySelector('[data-final-toggle-all]');
+    const details=[...(host?.querySelectorAll('details[data-final-detail-key]')||[])];
+    if(button)button.textContent=details.length&&details.every(detail=>detail.open)?'Recolher todas':'Expandir todas';
+  }
+
   function renderVertical(){
+    captureOpenDetails();
     const host=document.getElementById('topics'); if(!host)return;
     const contest=activeContest(), v=vertical();
     if(!contest){host.innerHTML='<p class="empty">Cadastre e habilite um concurso para visualizar o edital verticalizado.</p>';return}
@@ -2893,7 +2910,15 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
     v.disciplinas.forEach((d,i)=>{if(!Number.isFinite(Number(d.ordem)))d.ordem=i;if(!Array.isArray(d.topicos))d.topicos=[]});
     v.disciplinas.sort((a,b)=>Number(a.ordem)-Number(b.ordem));
     const total=v.disciplinas.reduce((n,d)=>n+d.topicos.length,0), done=v.disciplinas.reduce((n,d)=>n+d.topicos.filter(t=>t.concluido).length,0);
-    host.innerHTML=`<div class="vertical-toolbar"><p><b>${v.disciplinas.length} disciplinas</b> · ${done} de ${total} tópicos concluídos</p><div class="vertical-toolbar-actions"><button class="btn" type="button" data-final-sort>Ordenar por prioridade</button><button class="btn" type="button" data-final-toggle-all>Expandir todas</button></div></div><div class="vertical-list">${v.disciplinas.map((d,i)=>{const [cls,label]=priorityMeta(d.prioridade),td=d.topicos.length,dd=d.topicos.filter(t=>t.concluido).length,pct=td?Math.round(dd/td*100):0;return `<article class="vertical-card ${cls}"><div class="vertical-card-head"><div class="priority-rank">${i+1}</div><div class="vertical-title"><b>${esc(d.nome)}</b><span>Peso ${Number(d.peso)||1} · ${dd}/${td} tópicos · ${pct}% concluído</span><div class="track" style="margin-top:8px"><div class="fill ${cls==='high'?'amber':cls==='low'?'green':''}" style="width:${pct}%"></div></div></div><div class="priority-controls"><select class="priority-select ${cls}" data-final-priority="${i}"><option value="alta" ${d.prioridade==='alta'?'selected':''}>Alta</option><option value="media" ${d.prioridade==='media'?'selected':''}>Média</option><option value="baixa" ${d.prioridade==='baixa'?'selected':''}>Baixa</option></select><button class="order-btn" data-final-move="${i}" data-dir="-1" ${i===0?'disabled':''}>↑</button><button class="order-btn" data-final-move="${i}" data-dir="1" ${i===v.disciplinas.length-1?'disabled':''}>↓</button></div></div><details><summary><span>Ver ${td} tópicos verticalizados</span><span class="priority-chip ${cls}">PRIORIDADE ${label.toUpperCase()}</span></summary><div class="topic-list">${d.topicos.map((t,j)=>`<div class="vertical-topic"><button class="topic-check ${t.concluido?'done':''}" type="button" data-final-topic="${i}:${j}">${t.concluido?'✓':''}</button><b>${esc(t.nome)}</b><span>${t.concluido?'Estudado':'Pendente'}</span></div>`).join('')||'<div class="empty">Nenhum tópico nesta disciplina.</div>'}</div></details></article>`}).join('')}</div>`;
+    host.innerHTML=`<div class="vertical-toolbar"><p><b>${v.disciplinas.length} disciplinas</b> · ${done} de ${total} tópicos concluídos</p><div class="vertical-toolbar-actions"><button class="btn" type="button" data-final-sort>Ordenar por prioridade</button><button class="btn" type="button" data-final-toggle-all>Expandir todas</button></div></div><div class="vertical-list">${v.disciplinas.map((d,i)=>{const [cls,label]=priorityMeta(d.prioridade),td=d.topicos.length,dd=d.topicos.filter(t=>t.concluido).length,pct=td?Math.round(dd/td*100):0,key=disciplineKey(d),isOpen=openDisciplineKeys.has(key);return `<article class="vertical-card ${cls}"><div class="vertical-card-head"><div class="priority-rank">${i+1}</div><div class="vertical-title"><b>${esc(d.nome)}</b><span>Peso ${Number(d.peso)||1} · ${dd}/${td} tópicos · ${pct}% concluído</span><div class="track" style="margin-top:8px"><div class="fill ${cls==='high'?'amber':cls==='low'?'green':''}" style="width:${pct}%"></div></div></div><div class="priority-controls"><select class="priority-select ${cls}" data-final-priority="${i}"><option value="alta" ${d.prioridade==='alta'?'selected':''}>Alta</option><option value="media" ${d.prioridade==='media'?'selected':''}>Média</option><option value="baixa" ${d.prioridade==='baixa'?'selected':''}>Baixa</option></select><button class="order-btn" data-final-move="${i}" data-dir="-1" ${i===0?'disabled':''}>↑</button><button class="order-btn" data-final-move="${i}" data-dir="1" ${i===v.disciplinas.length-1?'disabled':''}>↓</button></div></div><details data-final-detail-key="${esc(key)}"${isOpen?' open':''}><summary><span>Ver ${td} tópicos verticalizados</span><span class="priority-chip ${cls}">PRIORIDADE ${label.toUpperCase()}</span></summary><div class="topic-list">${d.topicos.map((t,j)=>`<div class="vertical-topic"><button class="topic-check ${t.concluido?'done':''}" type="button" data-final-topic="${i}:${j}">${t.concluido?'✓':''}</button><b>${esc(t.nome)}</b><span>${t.concluido?'Estudado':'Pendente'}</span></div>`).join('')||'<div class="empty">Nenhum tópico nesta disciplina.</div>'}</div></details></article>`}).join('')}</div>`;
+    host.querySelectorAll('details[data-final-detail-key]').forEach(detail=>{
+      detail.addEventListener('toggle',()=>{
+        const key=detail.dataset.finalDetailKey;
+        if(detail.open)openDisciplineKeys.add(key);else openDisciplineKeys.delete(key);
+        updateToggleAllLabel(host);
+      });
+    });
+    updateToggleAllLabel(host);
   }
 
   function ensurePlanButton(){
@@ -2937,7 +2962,16 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
     const t=e.target.closest('[data-final-topic]');if(t){const [i,j]=t.dataset.finalTopic.split(':').map(Number),v=vertical();v.disciplinas[i].topicos[j].concluido=!v.disciplinas[i].topicos[j].concluido;persistVertical(v);renderVertical();return}
     const mv=e.target.closest('[data-final-move]');if(mv){const i=Number(mv.dataset.finalMove),to=i+Number(mv.dataset.dir),v=vertical();if(to>=0&&to<v.disciplinas.length){[v.disciplinas[i],v.disciplinas[to]]=[v.disciplinas[to],v.disciplinas[i]];v.disciplinas.forEach((d,k)=>d.ordem=k);persistVertical(v);renderVertical()}return}
     if(e.target.closest('[data-final-sort]')){const v=vertical(),rank={alta:0,media:1,baixa:2};v.disciplinas.sort((a,b)=>(rank[a.prioridade]??1)-(rank[b.prioridade]??1)||Number(b.peso||1)-Number(a.peso||1));v.disciplinas.forEach((d,k)=>d.ordem=k);persistVertical(v);renderVertical();return}
-    const all=e.target.closest('[data-final-toggle-all]');if(all){const details=[...document.querySelectorAll('#topics .vertical-card details')],open=details.some(d=>!d.open);details.forEach(d=>d.open=open);all.textContent=open?'Recolher todas':'Expandir todas';return}
+    const all=e.target.closest('[data-final-toggle-all]');if(all){
+      const details=[...document.querySelectorAll('#topics .vertical-card details[data-final-detail-key]')],open=details.some(d=>!d.open);
+      details.forEach(detail=>{
+        detail.open=open;
+        const key=detail.dataset.finalDetailKey;
+        if(open)openDisciplineKeys.add(key);else openDisciplineKeys.delete(key);
+      });
+      updateToggleAllLabel(document.getElementById('topics'));
+      return
+    }
   },true);
   document.addEventListener('change',e=>{const s=e.target.closest('[data-final-priority]');if(!s)return;const v=vertical(),i=Number(s.dataset.finalPriority);v.disciplinas[i].prioridade=s.value;persistVertical(v);renderVertical()},true);
   document.addEventListener('submit',e=>{if(e.target.id==='finalSubjectForm'){e.stopImmediatePropagation();saveSubjects(e)}},true);
@@ -3482,6 +3516,151 @@ body.dark .final-session-summary,body.dark .final-topic-select{background:#101b3
     openSelector(button);
   },true);
   window.aprovaSessionTopicSelector={open:openSelector};
+})();
+</script>
+
+
+<script id="crossViewProgressSyncV1">
+(() => {
+  'use strict';
+  const ACTIVE='aprovaActiveContestId';
+  const REGISTRY='aprovaContestRegistryV2';
+  const PREFIX='aprovaContestState:';
+  const VERTICAL='aprovaVerticalizacao';
+  let timer=0;
+
+  const parse=(raw,fallback=null)=>{try{return raw==null?fallback:JSON.parse(raw)}catch{return fallback}};
+  const unpack=value=>typeof value==='string'?parse(value,null):(value&&typeof value==='object'?value:null);
+  const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const activeId=()=>String(localStorage.getItem(ACTIVE)||'');
+  const registry=()=>{const value=parse(localStorage.getItem(REGISTRY),[]);return Array.isArray(value)?value:[]};
+  const activeContest=()=>registry().find(item=>String(item?.id)===activeId())||null;
+  const state=id=>parse(localStorage.getItem(PREFIX+String(id||activeId())),{})||{};
+
+  function vertical(){
+    const contest=activeContest();
+    if(!contest)return null;
+    const value=unpack(state(contest.id)[VERTICAL]);
+    return value?.disciplinas?.length?value:null;
+  }
+
+  function stats(){
+    const value=vertical();
+    const disciplines=value?.disciplinas||[];
+    const topics=disciplines.flatMap(d=>Array.isArray(d.topicos)?d.topicos:[]);
+    const done=topics.filter(t=>Boolean(t?.concluido)).length;
+    const total=topics.length;
+    return {value,disciplines,topics,done,total,percent:total?Math.round(done/total*100):0};
+  }
+
+  function text(id,value){const el=document.getElementById(id);if(el)el.textContent=value}
+
+  function updateContestSummary(data){
+    const contest=activeContest();
+    const card=document.querySelector('#contest .grid.two-col > article.card:first-child');
+    if(!card)return;
+    const values=card.querySelectorAll('.data-list b');
+    if(values[0])values[0].textContent=`${data.disciplines.length} disciplinas`;
+    if(values[1])values[1].textContent=`${data.total} tópicos`;
+    if(values[2])values[2].textContent=`${data.percent}%`;
+    const title=card.querySelector('.contest-title h3');
+    if(title&&contest)title.textContent=[contest.titulo,contest.cargo].filter(Boolean).join(' · ');
+  }
+
+  function updateDashboard(data){
+    text('mainProgress',`${data.percent}%`);
+    text('cardProgress',`${data.percent}%`);
+    text('contestProgress',`${data.percent}%`);
+    text('topicsDone',`${data.done} tópicos`);
+
+    const hero=document.querySelector('#dashboard .hero');
+    const contest=activeContest();
+    if(hero&&contest){
+      const p=hero.querySelector('p');
+      const h2=hero.querySelector('h2');
+      const span=hero.querySelector('span');
+      if(p)p.textContent=`CONCURSO ATIVO · ${String(contest.titulo||'').toUpperCase()}`;
+      if(h2)h2.textContent=contest.cargo||contest.titulo||'Concurso ativo';
+      if(span)span.innerHTML=`Você concluiu <b id="mainProgress">${data.percent}%</b> do conteúdo. Hoje é um ótimo dia para ganhar ritmo.`;
+    }
+
+    const progressCard=[...document.querySelectorAll('#dashboard .card')].find(card=>card.querySelector('.section-title h3')?.textContent?.includes('Progresso por disciplina'));
+    if(progressCard){
+      const header=progressCard.querySelector('.section-title');
+      progressCard.querySelectorAll('.bar-row').forEach(el=>el.remove());
+      const ranked=[...data.disciplines].sort((a,b)=>{
+        const pa=(a.topicos?.length?Math.round(a.topicos.filter(t=>t.concluido).length/a.topicos.length*100):0);
+        const pb=(b.topicos?.length?Math.round(b.topicos.filter(t=>t.concluido).length/b.topicos.length*100):0);
+        return pb-pa;
+      }).slice(0,5);
+      if(!ranked.length){
+        const empty=document.createElement('p');empty.className='empty';empty.textContent='Nenhuma disciplina verticalizada.';progressCard.appendChild(empty);
+      } else {
+        progressCard.querySelector('.empty')?.remove();
+        ranked.forEach((d,index)=>{
+          const total=d.topicos?.length||0,done=d.topicos?.filter(t=>t.concluido).length||0,pct=total?Math.round(done/total*100):0;
+          const row=document.createElement('div');row.className='bar-row';
+          row.innerHTML=`<div class="bar-label"><span>${esc(d.nome)}</span><span>${pct}%</span></div><div class="track"><div class="fill ${index%3===1?'green':index%3===2?'amber':''}" style="width:${pct}%"></div></div>`;
+          progressCard.appendChild(row);
+        });
+      }
+    }
+  }
+
+  function updateProgressView(data){
+    const metrics=document.querySelectorAll('#progress .metric strong');
+    if(metrics[3])metrics[3].textContent=String(data.done);
+    const topicCaption=[...document.querySelectorAll('#progress .trend')].find(el=>el.textContent.includes('tópicos no edital'));
+    if(topicCaption)topicCaption.textContent=`de ${data.total} tópicos no edital`;
+
+    const attention=document.querySelector('#progress .card .section-title h3')?.textContent?.includes('Mapa de atenção')
+      ? document.querySelector('#progress .card') : [...document.querySelectorAll('#progress .card')].find(c=>c.querySelector('.section-title h3')?.textContent?.includes('Mapa de atenção'));
+    if(attention){
+      attention.querySelectorAll('.priority').forEach(el=>el.remove());
+      const list=[...data.disciplines].map(d=>{
+        const total=d.topicos?.length||0,done=d.topicos?.filter(t=>t.concluido).length||0,pct=total?Math.round(done/total*100):0;
+        return {d,pct};
+      }).sort((a,b)=>a.pct-b.pct).slice(0,5);
+      list.forEach((item,index)=>{
+        const row=document.createElement('div');row.className='priority';
+        const level=item.pct<35?'PRIORIDADE ALTA':item.pct<70?'PRIORIDADE MÉDIA':'BOM RITMO';
+        row.innerHTML=`<div class="rank">${index+1}</div><div><b>${esc(item.d.nome)}</b><span>${item.pct}% concluído</span></div><span class="score">${level}</span>`;
+        attention.appendChild(row);
+      });
+    }
+  }
+
+  function sync(){
+    const contest=activeContest();
+    if(!contest)return;
+    const data=stats();
+    try{window.aprovaFinalSubjects?.renderVertical?.()}catch(error){console.warn('Falha ao atualizar verticalização:',error)}
+    updateContestSummary(data);
+    updateDashboard(data);
+    updateProgressView(data);
+  }
+
+  function schedule(){
+    clearTimeout(timer);
+    timer=setTimeout(()=>{sync();setTimeout(sync,80);},0);
+  }
+
+  document.addEventListener('aprova:render',schedule);
+  document.addEventListener('click',event=>{
+    if(event.target.closest('[data-final-session-save],[data-final-topic],.topic-check,.check')){
+      setTimeout(()=>{
+        schedule();
+        try{window.aprovaSupabaseAuto?.save?.()}catch(error){console.warn('Falha ao sincronizar estado:',error)}
+      },30);
+    }
+    if(event.target.closest('[data-view="dashboard"],[data-view="contest"],[data-view="progress"],[data-view="plan"],[data-canonical-open]'))schedule();
+  },true);
+  document.addEventListener('change',event=>{
+    if(event.target.closest('#finalSessionTopicModal input[type="checkbox"],#contest input[type="checkbox"],#contest select'))schedule();
+  },true);
+  window.addEventListener('pageshow',schedule);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
+  window.aprovaCrossViewSync={sync,schedule,stats};
 })();
 </script>
 
