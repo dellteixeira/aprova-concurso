@@ -55,6 +55,17 @@ body.dark .contest-sources,body.dark .matter-choice{border-color:#2a3958;backgro
 <div class="modal" id="contestModal"><div class="modal-box"><h2>Novo concurso</h2><p>Cadastre seu objetivo. Depois, envie o edital para a IA organizar o conteúdo.</p><form class="log-form"><div class="field full"><label>Órgão / concurso</label><input value="TJ-CE 2026"></div><div class="field"><label>Cargo</label><input value="Técnico Judiciário"></div><div class="field"><label>Banca</label><input value="FCC"></div><div class="field"><label>Data da prova</label><input type="date" value="2026-10-08"></div></form><div class="modal-actions"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="saveContest">Salvar concurso</button></div></div></div><div class="toast" id="toast">Alteração salva.</div>
 <!-- Versão UMD: disponibiliza window.supabase para este app HTML simples. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script id="aprovaSupabaseFixedConfig">
+/*
+  CONEXÃO FIXA DO SUPABASE
+  Substitua uma única vez os dois valores abaixo pelos dados públicos do seu projeto.
+  A Project URL e a Publishable Key podem ficar no frontend. Nunca use Service Role/Secret.
+*/
+window.APROVA_SUPABASE_CONFIG = Object.freeze({
+  url: "https://pggvpldafprjiocflogl.supabase.co",
+  publishableKey: "sb_publishable_7Hxf6ej6i20v355ye7SnFQ_VlAsG0L_"
+});
+</script>
 <script>
 const app={logs:JSON.parse(localStorage.getItem('aprovaLogs')||'[]'),done:+localStorage.getItem('aprovaDone')||14,available:JSON.parse(localStorage.getItem('aprovaAvailable')||'[true,true,true,true,true,false,false]')};
 const headings={dashboard:'Olá, Dell. Vamos avançar? 👋',contest:'Meu concurso',plan:'Plano de estudos',reviews:'Revisar é consolidar',progress:'Os dados mostram sua evolução.',history:'Tudo o que você estuda conta.',settings:'Ajuste o app ao seu ritmo.'};
@@ -70,11 +81,58 @@ function openModal(id){document.getElementById(id).classList.add('open')}documen
 document.getElementById('savePrefs').onclick=()=>{localStorage.setItem('aprovaPomo',document.getElementById('pomodoroPref').value);seconds=+document.getElementById('pomodoroPref').value*60;paint();toast('Preferências salvas.')} ;const resetButton=document.getElementById('resetApp');if(resetButton)resetButton.onclick=()=>{localStorage.removeItem('aprovaLogs');localStorage.removeItem('aprovaDone');localStorage.removeItem('aprovaAvailable');location.reload()};const themeButton=document.getElementById('theme');function aplicarTema(escuro){document.body.classList.toggle('dark',escuro);themeButton.textContent=escuro?'☀':'☾';themeButton.title=escuro?'Usar tema claro':'Usar tema escuro'}aplicarTema(localStorage.getItem('aprovaTheme')==='dark');themeButton.onclick=()=>{const escuro=!document.body.classList.contains('dark');aplicarTema(escuro);localStorage.setItem('aprovaTheme',escuro?'dark':'light');toast(escuro?'Tema escuro ativado.':'Tema claro ativado.')} ;
 
 let supabaseClient=null;
-const savedUrl=localStorage.getItem('aprovaSupabaseUrl')||'',savedKey=localStorage.getItem('aprovaSupabaseKey')||'';
-document.getElementById('supabaseUrl').value=savedUrl;document.getElementById('supabaseKey').value=savedKey;
+function fixedSupabaseConfig(){
+  const cfg=window.APROVA_SUPABASE_CONFIG||{};
+  const url=String(cfg.url||'').trim().replace(/\/$/,'');
+  const key=String(cfg.publishableKey||'').trim();
+  const valid=url.startsWith('https://')&&!url.includes('COLE_AQUI')&&key.length>20&&!key.includes('COLE_AQUI');
+  return valid?{url,key}:null;
+}
+function currentSupabaseConfig(){
+  return fixedSupabaseConfig()||{
+    url:(localStorage.getItem('aprovaSupabaseUrl')||'').replace(/\/$/,''),
+    key:localStorage.getItem('aprovaSupabaseKey')||''
+  };
+}
+const initialConfig=currentSupabaseConfig();
+document.getElementById('supabaseUrl').value=initialConfig.url||'';
+document.getElementById('supabaseKey').value=initialConfig.key||'';
+if(fixedSupabaseConfig()){
+  document.getElementById('supabaseUrl').readOnly=true;
+  document.getElementById('supabaseKey').readOnly=true;
+  document.getElementById('connectSupabase').textContent='Conexão configurada';
+}
 function setConnection(connected,message){const badge=document.getElementById('connectionStatus');badge.textContent=message;badge.style.background=connected?'#e8faf3':'#fff4df';badge.style.color=connected?'#167e61':'#b67300'}
-async function initSupabase(){const url=localStorage.getItem('aprovaSupabaseUrl'),key=localStorage.getItem('aprovaSupabaseKey');if(!url||!key)return false;setConnection(false,'TESTANDO…');document.getElementById('accountState').textContent='Testando a conexão com o projeto…';try{const response=await fetch(`${url}/auth/v1/settings`,{headers:{apikey:key}});if(!response.ok)throw new Error(`A API respondeu HTTP ${response.status}.`);if(!window.supabase)throw new Error('A biblioteca do Supabase não carregou.');supabaseClient=window.supabase.createClient(url,key);const {data:{session},error}=await supabaseClient.auth.getSession();if(error)throw error;setConnection(true,'CONECTADO');document.getElementById('accountState').textContent=session?session.user.email:'Nenhuma sessão ativa.';return true}catch(error){supabaseClient=null;const message=error instanceof Error?error.message:'Erro desconhecido.';setConnection(false,'ERRO: VER DETALHE');document.getElementById('accountState').textContent=message;return false}}
-document.getElementById('connectSupabase').onclick=async()=>{const url=document.getElementById('supabaseUrl').value.trim().replace(/\/$/,''),key=document.getElementById('supabaseKey').value.trim();if(!url.startsWith('https://')){setConnection(false,'URL INVÁLIDA');document.getElementById('accountState').textContent='A URL deve começar com https://';return}if(!key.startsWith('sb_publishable_')){setConnection(false,'CHAVE INVÁLIDA');document.getElementById('accountState').textContent='Copie a chave completa que começa com sb_publishable_.';return}localStorage.setItem('aprovaSupabaseUrl',url);localStorage.setItem('aprovaSupabaseKey',key);const connected=await initSupabase();if(connected)carregarCatalogoInicial();toast(connected?'Supabase conectado com segurança.':'Veja o detalhe exibido em Minha conta.')} ;
+async function initSupabase(){
+  const {url,key}=currentSupabaseConfig();
+  if(!url||!key)return false;
+  setConnection(false,'CONECTANDO…');
+  document.getElementById('accountState').textContent='Restaurando a conexão e a sessão…';
+  try{
+    if(!window.supabase)throw new Error('A biblioteca do Supabase não carregou.');
+    supabaseClient=window.supabase.createClient(url,key,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},
+      global:{headers:{'x-application-name':'AprovaConcurso'}}
+    });
+    window.supabaseClient=supabaseClient;
+    const {data:{session},error}=await supabaseClient.auth.getSession();
+    if(error)throw error;
+    setConnection(true,'CONECTADO');
+    document.getElementById('accountState').textContent=session?session.user.email:'Conectado. Entre para sincronizar seus concursos.';
+    supabaseClient.auth.onAuthStateChange((event,newSession)=>{
+      document.getElementById('accountState').textContent=newSession?.user?.email||'Nenhuma sessão ativa.';
+      if(newSession?.user)setTimeout(()=>window.aprovaCloudSync?.sync(),0);
+    });
+    return true;
+  }catch(error){
+    supabaseClient=null;window.supabaseClient=null;
+    const message=error instanceof Error?error.message:'Erro desconhecido.';
+    setConnection(false,'ERRO: VER DETALHE');
+    document.getElementById('accountState').textContent=message;
+    return false;
+  }
+}
+document.getElementById('connectSupabase').onclick=async()=>{const fixed=fixedSupabaseConfig();const url=fixed?.url||document.getElementById('supabaseUrl').value.trim().replace(/\/$/,''),key=fixed?.key||document.getElementById('supabaseKey').value.trim();if(!url.startsWith('https://')){setConnection(false,'URL INVÁLIDA');document.getElementById('accountState').textContent='A URL deve começar com https://';return}if(!key.startsWith('sb_publishable_')){setConnection(false,'CHAVE INVÁLIDA');document.getElementById('accountState').textContent='Copie a chave completa que começa com sb_publishable_.';return}localStorage.setItem('aprovaSupabaseUrl',url);localStorage.setItem('aprovaSupabaseKey',key);const connected=await initSupabase();if(connected)carregarCatalogoInicial();toast(connected?'Supabase conectado com segurança.':'Veja o detalhe exibido em Minha conta.')} ;
 document.getElementById('signIn').onclick=async()=>{if(!supabaseClient){toast('Conecte o Supabase primeiro.');return}const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error){toast(error.message);return}document.getElementById('accountState').textContent=data.user.email;await carregarCatalogoInicial();toast('Login realizado.')} ;
 document.getElementById('signUp').onclick=async()=>{if(!supabaseClient){toast('Conecte o Supabase primeiro.');return}const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;const {error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:location.origin==='null'?undefined:location.origin}});if(error){toast(error.message);return}toast('Conta criada. Confirme o e-mail antes de entrar.')} ;
 document.getElementById('signOut').onclick=async()=>{if(!supabaseClient)return;await supabaseClient.auth.signOut();document.getElementById('accountState').textContent='Nenhuma sessão ativa.';await carregarCatalogoInicial();toast('Sessão encerrada.')} ;
@@ -1482,15 +1540,16 @@ renderPlanoEstavel();
     const local=read('aprovaConcurso',null);if(!local)return;
     let list=registry(),id=forceNew?'':activeId(),idx=list.findIndex(c=>String(c.id)===id);
     if(forceNew||idx<0){const c=normalize(local);list.push(c);id=c.id;localStorage.setItem(ACTIVE,id);}else list[idx]={...list[idx],...normalize({...list[idx],...local,id}),id};
-    saveRegistry(list);snapshot(id);renderAll();
+    saveRegistry(list);snapshot(id);renderAll();setTimeout(()=>window.aprovaCloudSync?.sync(),0);
   }
   function openContest(id){
     id=String(id||'');if(!registry().some(c=>String(c.id)===id))return;
     snapshot();localStorage.setItem(ACTIVE,id);restore(id);sessionStorage.setItem('aprovaFlash','Concurso habilitado. Todas as páginas foram atualizadas para este objetivo.');location.reload();
   }
-  function deleteOnly(id=activeId()){
+  async function deleteOnly(id=activeId()){
     id=String(id||'');const list=registry();const removed=list.find(c=>String(c.id)===id);if(!removed){notify('Concurso não encontrado.');return;}
     snapshot();
+    try{await window.aprovaCloudSync?.deleteContest(id);}catch(error){console.warn('Falha ao excluir na nuvem:',error)}
     const remaining=list.filter(c=>String(c.id)!==id);
     saveRegistry(remaining);localStorage.removeItem(STATE_PREFIX+id);
     const ed=read(EDITAIS,[]);if(Array.isArray(ed))write(EDITAIS,ed.filter(e=>String(e.concurso_id)!==id));
@@ -1853,6 +1912,80 @@ renderPlanoEstavel();
   window.addEventListener('pageshow',()=>setTimeout(refreshContestVerticalization,0));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshContestVerticalization()});
   setTimeout(()=>{persistVerticalization();refreshContestVerticalization()},0);
+})();
+</script>
+
+
+<script id="aprovaCloudPersistence">
+/* Persistência compartilhada: sincroniza o catálogo de concursos com a tabela public.concursos. */
+(()=>{
+  'use strict';
+  const REGISTRY='aprovaContestRegistryV2';
+  const ACTIVE='aprovaActiveContestId';
+  const STATE_PREFIX='aprovaContestState:';
+  const read=(key,fallback)=>{try{const value=localStorage.getItem(key);return value===null?fallback:JSON.parse(value)}catch{return fallback}};
+  const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
+  const validUuid=value=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value||''));
+  const payload=(contest,userId,includeId=true)=>({
+    ...(includeId&&validUuid(contest.id)?{id:contest.id}:{}),
+    user_id:userId,
+    titulo:contest.titulo||contest.nome||'Concurso',
+    cargo:contest.cargo||'Cargo não informado',
+    orgao:contest.orgao||null,
+    banca:contest.banca||null,
+    data_prova:contest.data_prova||contest.prova||null
+  });
+  function migrateLocalId(oldId,newId){
+    oldId=String(oldId);newId=String(newId);if(oldId===newId)return;
+    const state=localStorage.getItem(STATE_PREFIX+oldId);
+    if(state&&!localStorage.getItem(STATE_PREFIX+newId))localStorage.setItem(STATE_PREFIX+newId,state);
+    localStorage.removeItem(STATE_PREFIX+oldId);
+    if(String(localStorage.getItem(ACTIVE)||'')===oldId)localStorage.setItem(ACTIVE,newId);
+  }
+  async function user(){if(!window.supabaseClient)return null;const {data,error}=await window.supabaseClient.auth.getUser();if(error)return null;return data.user||null}
+  async function pushLocal(localList,userId){
+    const synced=[];
+    for(const local of localList){
+      let remote=null;
+      if(validUuid(local.id)){
+        const {data,error}=await window.supabaseClient.from('concursos').upsert(payload(local,userId,true),{onConflict:'id'}).select('id,titulo,cargo,orgao,banca,data_prova,created_at').single();
+        if(!error)remote=data;
+      }
+      if(!remote){
+        const {data,error}=await window.supabaseClient.from('concursos').insert(payload(local,userId,false)).select('id,titulo,cargo,orgao,banca,data_prova,created_at').single();
+        if(error){console.warn('Não foi possível enviar concurso ao Supabase:',error.message);synced.push(local);continue}
+        remote=data;migrateLocalId(local.id,remote.id);
+      }
+      synced.push({...local,...remote,id:String(remote.id),data_prova:remote.data_prova||''});
+    }
+    return synced;
+  }
+  async function sync(){
+    if(!window.supabaseClient)return false;
+    const currentUser=await user();if(!currentUser)return false;
+    let local=read(REGISTRY,[]);if(!Array.isArray(local))local=[];
+    local=await pushLocal(local,currentUser.id);
+    const {data:remote,error}=await window.supabaseClient.from('concursos').select('id,titulo,cargo,orgao,banca,data_prova,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:true});
+    if(error){console.warn('Não foi possível baixar concursos:',error.message);return false}
+    const localById=new Map(local.map(item=>[String(item.id),item]));
+    const merged=(remote||[]).map(item=>({...localById.get(String(item.id)),...item,id:String(item.id),data_prova:item.data_prova||''}));
+    write(REGISTRY,merged);
+    const active=String(localStorage.getItem(ACTIVE)||'');
+    if(merged.length&&!merged.some(item=>String(item.id)===active))localStorage.setItem(ACTIVE,String(merged[0].id));
+    window.aprovaContestManager?.render?.();
+    document.dispatchEvent(new CustomEvent('aprova:render'));
+    return true;
+  }
+  async function deleteContest(id){
+    if(!window.supabaseClient||!id)return false;
+    const currentUser=await user();if(!currentUser)return false;
+    const {error}=await window.supabaseClient.from('concursos').delete().eq('id',id).eq('user_id',currentUser.id);
+    if(error)throw error;return true;
+  }
+  window.aprovaCloudSync={sync,deleteContest};
+  window.addEventListener('online',()=>sync());
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
+  setTimeout(()=>sync(),900);
 })();
 </script>
 
