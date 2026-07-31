@@ -2837,4 +2837,561 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
   window.aprovaContestCreation={create:createContest};
 })();
 </script>
+
+<style id="finalSubjectsAndVerticalStyles">
+#finalEditPlanButton{display:inline-flex;align-items:center;justify-content:center}
+#finalSubjectModal .modal-box{width:min(760px,96vw)}
+#finalSubjectModal .final-subject-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:48vh;overflow:auto;padding:3px}
+#finalSubjectModal .final-subject-choice{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:11px;padding:11px;background:var(--soft);cursor:pointer;user-select:none}
+#finalSubjectModal .final-subject-choice:hover{border-color:var(--blue)}
+#finalSubjectModal .final-subject-choice input{width:18px;height:18px;flex:0 0 18px;margin:1px 0 0;accent-color:var(--blue);pointer-events:auto}
+#finalSubjectModal .final-subject-choice b{display:block;font-size:12px}.final-subject-choice small{display:block;color:var(--muted);margin-top:3px}
+#contest #topics .vertical-card details>summary{user-select:none}
+#contest #topics .vertical-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.session-topics-tooltip{pointer-events:none!important}
+@media(max-width:680px){#finalSubjectModal .final-subject-grid{grid-template-columns:1fr}}
+</style>
+<script id="finalSubjectsAndVerticalController">
+(() => {
+  'use strict';
+  const ACTIVE='aprovaActiveContestId', REGISTRY='aprovaContestRegistryV2', PREFIX='aprovaContestState:';
+  const VERTICAL='aprovaVerticalizacao', CONFIG='aprovaConfiguracaoPlano', PLAN='aprovaPlano';
+  const parse=(v,f=null)=>{try{return v?JSON.parse(v):f}catch{return f}};
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  const notice=m=>typeof window.toast==='function'?window.toast(m):alert(m);
+  const activeId=()=>String(localStorage.getItem(ACTIVE)||'');
+  const registry=()=>{const v=parse(localStorage.getItem(REGISTRY),[]);return Array.isArray(v)?v:[]};
+  const activeContest=()=>registry().find(c=>String(c?.id)===activeId())||null;
+  function state(id=activeId()){const v=parse(localStorage.getItem(PREFIX+id),{});return v&&typeof v==='object'?v:{}}
+  function unpack(v){if(typeof v==='string')return parse(v,null);return v&&typeof v==='object'?v:null}
+  function vertical(){
+    const id=activeId(); if(!id||!activeContest())return null;
+    const st=state(id); let v=unpack(st[VERTICAL]);
+    if(!v){
+      const global=unpack(localStorage.getItem(VERTICAL));
+      if(global?.disciplinas?.length)v=global;
+    }
+    return v?.disciplinas?.length?v:null;
+  }
+  function saveKey(key,value){
+    localStorage.setItem(key,JSON.stringify(value));
+    const id=activeId(); if(!id)return;
+    const st=state(id); st[key]=JSON.stringify(value); localStorage.setItem(PREFIX+id,JSON.stringify(st));
+  }
+  function syncGlobals(v){
+    try{window.verticalizacaoImportada=v;verticalizacaoImportada=v}catch(_){ }
+  }
+  function priorityMeta(p){p=String(p||'media').toLowerCase();return p==='alta'?['high','Alta']:p==='baixa'?['low','Baixa']:['medium','Média']}
+  function persistVertical(v){saveKey(VERTICAL,v);syncGlobals(v);document.dispatchEvent(new CustomEvent('aprova:render'))}
+
+  function renderVertical(){
+    const host=document.getElementById('topics'); if(!host)return;
+    const contest=activeContest(), v=vertical();
+    if(!contest){host.innerHTML='<p class="empty">Cadastre e habilite um concurso para visualizar o edital verticalizado.</p>';return}
+    if(!v){host.innerHTML='<p class="empty">Nenhum edital verticalizado ainda. Use “Importar verticalização” para adicionar disciplinas e tópicos.</p>';return}
+    syncGlobals(v);
+    v.disciplinas.forEach((d,i)=>{if(!Number.isFinite(Number(d.ordem)))d.ordem=i;if(!Array.isArray(d.topicos))d.topicos=[]});
+    v.disciplinas.sort((a,b)=>Number(a.ordem)-Number(b.ordem));
+    const total=v.disciplinas.reduce((n,d)=>n+d.topicos.length,0), done=v.disciplinas.reduce((n,d)=>n+d.topicos.filter(t=>t.concluido).length,0);
+    host.innerHTML=`<div class="vertical-toolbar"><p><b>${v.disciplinas.length} disciplinas</b> · ${done} de ${total} tópicos concluídos</p><div class="vertical-toolbar-actions"><button class="btn" type="button" data-final-sort>Ordenar por prioridade</button><button class="btn" type="button" data-final-toggle-all>Expandir todas</button></div></div><div class="vertical-list">${v.disciplinas.map((d,i)=>{const [cls,label]=priorityMeta(d.prioridade),td=d.topicos.length,dd=d.topicos.filter(t=>t.concluido).length,pct=td?Math.round(dd/td*100):0;return `<article class="vertical-card ${cls}"><div class="vertical-card-head"><div class="priority-rank">${i+1}</div><div class="vertical-title"><b>${esc(d.nome)}</b><span>Peso ${Number(d.peso)||1} · ${dd}/${td} tópicos · ${pct}% concluído</span><div class="track" style="margin-top:8px"><div class="fill ${cls==='high'?'amber':cls==='low'?'green':''}" style="width:${pct}%"></div></div></div><div class="priority-controls"><select class="priority-select ${cls}" data-final-priority="${i}"><option value="alta" ${d.prioridade==='alta'?'selected':''}>Alta</option><option value="media" ${d.prioridade==='media'?'selected':''}>Média</option><option value="baixa" ${d.prioridade==='baixa'?'selected':''}>Baixa</option></select><button class="order-btn" data-final-move="${i}" data-dir="-1" ${i===0?'disabled':''}>↑</button><button class="order-btn" data-final-move="${i}" data-dir="1" ${i===v.disciplinas.length-1?'disabled':''}>↓</button></div></div><details><summary><span>Ver ${td} tópicos verticalizados</span><span class="priority-chip ${cls}">PRIORIDADE ${label.toUpperCase()}</span></summary><div class="topic-list">${d.topicos.map((t,j)=>`<div class="vertical-topic"><button class="topic-check ${t.concluido?'done':''}" type="button" data-final-topic="${i}:${j}">${t.concluido?'✓':''}</button><b>${esc(t.nome)}</b><span>${t.concluido?'Estudado':'Pendente'}</span></div>`).join('')||'<div class="empty">Nenhum tópico nesta disciplina.</div>'}</div></details></article>`}).join('')}</div>`;
+  }
+
+  function ensurePlanButton(){
+    const hero=document.querySelector('#plan .page-hero'); if(!hero)return null;
+    let actions=hero.querySelector('.page-hero-actions');
+    if(!actions){actions=document.createElement('div');actions.className='page-hero-actions';const recalc=document.getElementById('regenPlan');if(recalc){hero.appendChild(actions);actions.appendChild(recalc)}}
+    let b=document.getElementById('finalEditPlanButton');
+    if(!b){b=document.createElement('button');b.id='finalEditPlanButton';b.type='button';b.className='btn';b.textContent='✎ Editar horários e matérias';actions.insertBefore(b,actions.firstChild)}
+    return b;
+  }
+  function ensureSubjectModal(){
+    let m=document.getElementById('finalSubjectModal'); if(m)return m;
+    m=document.createElement('div');m.id='finalSubjectModal';m.className='modal';m.innerHTML='<div class="modal-box"></div>';document.body.appendChild(m);return m;
+  }
+  function config(){const st=state();return unpack(st[CONFIG])||parse(localStorage.getItem(CONFIG),{})||{}}
+  function matterList(){return (vertical()?.disciplinas||[]).map(d=>String(d.nome||'').trim()).filter(Boolean)}
+  function openSubjects(){
+    if(!activeContest()){notice('Cadastre ou habilite um concurso primeiro.');return}
+    const list=matterList(); if(!list.length){notice('Importe a verticalização para listar as matérias do concurso.');return}
+    const c=config(), selected=Array.isArray(c.materias)&&c.materias.length?c.materias:list;
+    const modal=ensureSubjectModal(),box=modal.querySelector('.modal-box');
+    box.innerHTML=`<h2>Editar horários e matérias</h2><p>Selecione as disciplinas que participarão do ciclo. Você pode marcar e desmarcar livremente.</p><form id="finalSubjectForm" class="log-form"><div class="field"><label>Início</label><input id="finalPlanStart" type="time" value="${esc(c.inicio||'18:30')}"></div><div class="field"><label>Duração</label><select id="finalPlanDuration">${[25,30,40,45,50,60].map(n=>`<option value="${n}" ${Number(c.duracao||40)===n?'selected':''}>${n} minutos</option>`).join('')}</select></div><div class="field"><label>Sessões por dia</label><select id="finalPlanCount">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${Number(c.porDia||2)===n?'selected':''}>${n}</option>`).join('')}</select></div><div class="field"><label>Intervalo</label><select id="finalPlanBreak">${[5,10,15,20,30].map(n=>`<option value="${n}" ${Number(c.pausa??10)===n?'selected':''}>${n} minutos</option>`).join('')}</select></div><div class="field full"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><label>Matérias do ciclo</label><button class="btn" type="button" data-final-select-all>Marcar/desmarcar todas</button></div><div class="final-subject-grid">${list.map((name,i)=>{const d=vertical().disciplinas.find(x=>x.nome===name),[,label]=priorityMeta(d?.prioridade);return `<label class="final-subject-choice"><input type="checkbox" name="finalSubject" value="${esc(name)}" ${selected.includes(name)?'checked':''}><span><b>${esc(name)}</b><small>Prioridade ${label} · ${d?.topicos?.length||0} tópicos</small></span></label>`}).join('')}</div></div></form><div class="modal-actions"><button class="btn" type="button" data-final-subject-close>Cancelar</button><button class="btn primary" type="submit" form="finalSubjectForm">Salvar ciclo</button></div>`;
+    modal.classList.add('open');
+  }
+  function saveSubjects(event){
+    event.preventDefault();const modal=ensureSubjectModal();
+    const selected=[...modal.querySelectorAll('input[name="finalSubject"]:checked')].map(i=>i.value);
+    if(!selected.length){notice('Escolha ao menos uma matéria.');return}
+    const c={...config(),inicio:modal.querySelector('#finalPlanStart').value||'18:30',duracao:Number(modal.querySelector('#finalPlanDuration').value),porDia:Number(modal.querySelector('#finalPlanCount').value),pausa:Number(modal.querySelector('#finalPlanBreak').value),materias:selected};
+    saveKey(CONFIG,c);
+    try{if(typeof gerarPlanoAdaptativo==='function')gerarPlanoAdaptativo(c);else if(typeof window.gerarPlanoAdaptativo==='function')window.gerarPlanoAdaptativo(c)}catch(err){console.warn(err)}
+    try{if(typeof renderPlanoEstavel==='function')renderPlanoEstavel();else if(typeof renderPlano==='function')renderPlano()}catch(err){console.warn(err)}
+    const plan=parse(localStorage.getItem(PLAN),null);if(plan)saveKey(PLAN,plan);
+    modal.classList.remove('open');notice('Matérias do ciclo atualizadas.');document.dispatchEvent(new CustomEvent('aprova:render'));
+  }
+
+  document.addEventListener('click',e=>{
+    if(e.target.closest('#finalEditPlanButton')){e.preventDefault();e.stopImmediatePropagation();openSubjects();return}
+    if(e.target.closest('[data-final-subject-close]')){ensureSubjectModal().classList.remove('open');return}
+    if(e.target.closest('[data-final-select-all]')){const boxes=[...ensureSubjectModal().querySelectorAll('input[name="finalSubject"]')],all=boxes.every(b=>b.checked);boxes.forEach(b=>b.checked=!all);return}
+    const t=e.target.closest('[data-final-topic]');if(t){const [i,j]=t.dataset.finalTopic.split(':').map(Number),v=vertical();v.disciplinas[i].topicos[j].concluido=!v.disciplinas[i].topicos[j].concluido;persistVertical(v);renderVertical();return}
+    const mv=e.target.closest('[data-final-move]');if(mv){const i=Number(mv.dataset.finalMove),to=i+Number(mv.dataset.dir),v=vertical();if(to>=0&&to<v.disciplinas.length){[v.disciplinas[i],v.disciplinas[to]]=[v.disciplinas[to],v.disciplinas[i]];v.disciplinas.forEach((d,k)=>d.ordem=k);persistVertical(v);renderVertical()}return}
+    if(e.target.closest('[data-final-sort]')){const v=vertical(),rank={alta:0,media:1,baixa:2};v.disciplinas.sort((a,b)=>(rank[a.prioridade]??1)-(rank[b.prioridade]??1)||Number(b.peso||1)-Number(a.peso||1));v.disciplinas.forEach((d,k)=>d.ordem=k);persistVertical(v);renderVertical();return}
+    const all=e.target.closest('[data-final-toggle-all]');if(all){const details=[...document.querySelectorAll('#topics .vertical-card details')],open=details.some(d=>!d.open);details.forEach(d=>d.open=open);all.textContent=open?'Recolher todas':'Expandir todas';return}
+  },true);
+  document.addEventListener('change',e=>{const s=e.target.closest('[data-final-priority]');if(!s)return;const v=vertical(),i=Number(s.dataset.finalPriority);v.disciplinas[i].prioridade=s.value;persistVertical(v);renderVertical()},true);
+  document.addEventListener('submit',e=>{if(e.target.id==='finalSubjectForm'){e.stopImmediatePropagation();saveSubjects(e)}},true);
+  function refresh(){ensurePlanButton();renderVertical()}
+  document.addEventListener('aprova:render',()=>setTimeout(refresh,0));
+  document.addEventListener('click',e=>{if(e.target.closest('[data-view="contest"],[data-view="plan"],[data-canonical-open],#saveContest,#confirmImportVertical'))setTimeout(refresh,30)},true);
+  window.addEventListener('pageshow',refresh);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh,{once:true});else refresh();
+  setTimeout(refresh,300);setTimeout(refresh,1000);
+  window.aprovaFinalSubjects={renderVertical,openSubjects,refresh};
+})();
+</script>
+
+<script id="supabaseAutomaticIntegrationV3">
+(() => {
+  'use strict';
+
+  const REGISTRY = 'aprovaContestRegistryV2';
+  const ACTIVE = 'aprovaActiveContestId';
+  const STATE_PREFIX = 'aprovaContestState:';
+  const STATE_KEYS = [
+    'aprovaConcurso','aprovaVerticalizacao','aprovaPlano','aprovaConfiguracaoPlano',
+    'aprovaAvailable','aprovaDone','aprovaReviewQueue','aprovaReviews','aprovaHistory',
+    'aprovaStudyHistory','aprovaStudySessions','aprovaSequence','aprovaProgress',
+    'aprovaPomo','aprovaPlanCompleted'
+  ];
+  const AUTH_STORAGE_KEY = 'aprova-auth-session';
+  let client = null;
+  let currentUser = null;
+  let syncTimer = 0;
+  let loadingRemote = false;
+
+  const readJSON = (key, fallback) => {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw === null ? fallback : JSON.parse(raw);
+    } catch {
+      return fallback;
+    }
+  };
+  const writeJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const notify = message => typeof window.toast === 'function' ? window.toast(message) : alert(message);
+  const validEmail = value => /^\S+@\S+\.\S+$/.test(String(value || '').trim());
+  const isUuid = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+
+  function config() {
+    const cfg = window.APROVA_SUPABASE_CONFIG || {};
+    return {
+      url: String(cfg.url || '').trim().replace(/\/$/, ''),
+      key: String(cfg.publishableKey || '').trim()
+    };
+  }
+
+  function ensureClient() {
+    if (client) return client;
+    if (window.supabaseClient) {
+      client = window.supabaseClient;
+      return client;
+    }
+    const { url, key } = config();
+    if (!url.startsWith('https://') || key.length < 20 || !window.supabase?.createClient) return null;
+    client = window.supabase.createClient(url, key, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: AUTH_STORAGE_KEY
+      },
+      global: { headers: { 'x-application-name': 'AprovaConcurso' } }
+    });
+    window.supabaseClient = client;
+    return client;
+  }
+
+  function captureActiveState() {
+    const id = String(localStorage.getItem(ACTIVE) || '');
+    if (!id) return null;
+    const state = {};
+    STATE_KEYS.forEach(key => {
+      const value = localStorage.getItem(key);
+      if (value !== null) state[key] = value;
+    });
+    writeJSON(STATE_PREFIX + id, state);
+    return state;
+  }
+
+  function clearActiveState() {
+    STATE_KEYS.forEach(key => localStorage.removeItem(key));
+    try { window.verticalizacaoImportada = null; } catch {}
+    try { window.concursoEditavel = null; } catch {}
+  }
+
+  function restoreContestState(id) {
+    clearActiveState();
+    const state = readJSON(STATE_PREFIX + id, {});
+    Object.entries(state || {}).forEach(([key, value]) => {
+      localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+    });
+  }
+
+  function refreshUI() {
+    try { window.aprovaContestManager?.render?.(); } catch {}
+    try { window.aprovaContestInvariant?.render?.(); } catch {}
+    try { window.aprovaFinalSubjects?.refresh?.(); } catch {}
+    try { window.renderTopicosImportados?.(); } catch {}
+    try { window.renderPlano?.(); } catch {}
+    try { window.renderGrade?.(); } catch {}
+    document.dispatchEvent(new CustomEvent('aprova:render'));
+  }
+
+  function setLoggedOutState() {
+    currentUser = null;
+    writeJSON(REGISTRY, []);
+    localStorage.removeItem(ACTIVE);
+    clearActiveState();
+    refreshUI();
+    const status = document.getElementById('authStatus');
+    if (status) status.textContent = 'Nenhuma sessão ativa.';
+    const heading = document.getElementById('heading');
+    if (heading) heading.textContent = 'Olá. Vamos avançar? 👋';
+  }
+
+  function setLoggedInState(user) {
+    currentUser = user;
+    const status = document.getElementById('authStatus');
+    if (status) status.textContent = `${user.email} · sessão restaurada automaticamente`;
+    const email = document.getElementById('authEmail');
+    if (email) email.value = user.email || '';
+  }
+
+  async function loadRemoteContests() {
+    if (!client || !currentUser || loadingRemote) return;
+    loadingRemote = true;
+    try {
+      const { data, error } = await client
+        .from('concursos')
+        .select('id,user_id,titulo,orgao,cargo,banca,data_prova,estado,created_at,updated_at')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+
+      const remote = (data || []).map(item => ({
+        id: String(item.id),
+        titulo: item.titulo || 'Concurso',
+        nome: item.titulo || 'Concurso',
+        orgao: item.orgao || '',
+        cargo: item.cargo || 'Cargo não informado',
+        banca: item.banca || '',
+        data_prova: item.data_prova || '',
+        prova: item.data_prova || '',
+        created_at: item.created_at || new Date().toISOString(),
+        updated_at: item.updated_at || item.created_at || new Date().toISOString()
+      }));
+
+      writeJSON(REGISTRY, remote);
+
+      (data || []).forEach(item => {
+        if (item.estado && typeof item.estado === 'object') {
+          writeJSON(STATE_PREFIX + item.id, item.estado);
+        }
+      });
+
+      let activeId = String(localStorage.getItem(ACTIVE) || '');
+      if (!remote.some(item => item.id === activeId)) {
+        activeId = remote[0]?.id || '';
+        if (activeId) localStorage.setItem(ACTIVE, activeId);
+        else localStorage.removeItem(ACTIVE);
+      }
+
+      if (activeId) restoreContestState(activeId);
+      else clearActiveState();
+
+      refreshUI();
+    } catch (error) {
+      console.error('Falha ao carregar concursos do Supabase:', error);
+      notify(`Não foi possível carregar os concursos: ${error.message || error}`);
+    } finally {
+      loadingRemote = false;
+    }
+  }
+
+  async function saveActiveStateRemote() {
+    clearTimeout(syncTimer);
+    if (!client || !currentUser) return;
+    const id = String(localStorage.getItem(ACTIVE) || '');
+    if (!isUuid(id)) return;
+    const estado = captureActiveState() || {};
+    const { error } = await client
+      .from('concursos')
+      .update({ estado, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', currentUser.id);
+    if (error) console.warn('Não foi possível sincronizar o estado do concurso:', error.message);
+  }
+
+  function scheduleStateSave() {
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(saveActiveStateRemote, 650);
+  }
+
+  function contestFields() {
+    const modal = document.getElementById('contestModal');
+    const inputs = [...(modal?.querySelectorAll('input') || [])];
+    return {
+      titulo: String(inputs[0]?.value || '').trim(),
+      cargo: String(inputs[1]?.value || '').trim(),
+      banca: String(inputs[2]?.value || '').trim(),
+      data_prova: String(inputs[3]?.value || '').trim() || null,
+      orgao: String(inputs[4]?.value || '').trim() || null
+    };
+  }
+
+  async function createContest() {
+    if (!client || !currentUser) return notify('Entre na sua conta antes de cadastrar um concurso.');
+    const form = contestFields();
+    if (!form.titulo || !form.cargo) return notify('Informe o nome do concurso e o cargo.');
+
+    const button = document.getElementById('saveContest');
+    if (button) button.disabled = true;
+    try {
+      const payload = {
+        user_id: currentUser.id,
+        titulo: form.titulo,
+        orgao: form.orgao,
+        cargo: form.cargo,
+        banca: form.banca || null,
+        data_prova: form.data_prova,
+        estado: {}
+      };
+      const { data, error } = await client
+        .from('concursos')
+        .insert(payload)
+        .select('id,user_id,titulo,orgao,cargo,banca,data_prova,estado,created_at,updated_at')
+        .single();
+      if (error) throw error;
+
+      const list = readJSON(REGISTRY, []);
+      const contest = {
+        id: String(data.id),
+        titulo: data.titulo,
+        nome: data.titulo,
+        orgao: data.orgao || '',
+        cargo: data.cargo,
+        banca: data.banca || '',
+        data_prova: data.data_prova || '',
+        prova: data.data_prova || '',
+        created_at: data.created_at,
+        updated_at: data.updated_at || data.created_at
+      };
+      writeJSON(REGISTRY, [...list.filter(item => String(item.id) !== contest.id), contest]);
+      localStorage.setItem(ACTIVE, contest.id);
+      clearActiveState();
+      writeJSON('aprovaConcurso', {
+        nome: contest.titulo,
+        orgao: contest.orgao,
+        cargo: contest.cargo,
+        banca: contest.banca,
+        prova: contest.data_prova,
+        materias: '',
+        topicos: 0
+      });
+      captureActiveState();
+      document.getElementById('contestModal')?.classList.remove('open');
+      refreshUI();
+      notify('Concurso cadastrado e sincronizado com o Supabase.');
+    } catch (error) {
+      console.error('Falha ao cadastrar concurso:', error);
+      notify(`Não foi possível cadastrar: ${error.message || error}`);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function deleteContest(id) {
+    id = String(id || '');
+    if (!client || !currentUser || !isUuid(id)) return notify('Não foi possível identificar o concurso no Supabase.');
+    const list = readJSON(REGISTRY, []);
+    const contest = list.find(item => String(item.id) === id);
+    if (!contest) return;
+    if (!confirm(`Excluir definitivamente “${contest.titulo} · ${contest.cargo}”?`)) return;
+
+    try {
+      const { data, error } = await client
+        .from('concursos')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', currentUser.id)
+        .select('id');
+      if (error) throw error;
+      if (!data?.length) throw new Error('Nenhuma linha foi removida. Revise a política DELETE da tabela concursos.');
+
+      const remaining = list.filter(item => String(item.id) !== id);
+      writeJSON(REGISTRY, remaining);
+      localStorage.removeItem(STATE_PREFIX + id);
+
+      if (String(localStorage.getItem(ACTIVE) || '') === id) {
+        const nextId = remaining[0]?.id || '';
+        if (nextId) {
+          localStorage.setItem(ACTIVE, nextId);
+          restoreContestState(nextId);
+        } else {
+          localStorage.removeItem(ACTIVE);
+          clearActiveState();
+        }
+      }
+      refreshUI();
+      notify('Concurso excluído definitivamente.');
+    } catch (error) {
+      console.error('Falha ao excluir concurso:', error);
+      notify(`Não foi possível excluir: ${error.message || error}`);
+    }
+  }
+
+  async function switchContest(id) {
+    id = String(id || '');
+    const list = readJSON(REGISTRY, []);
+    if (!list.some(item => String(item.id) === id)) return;
+    await saveActiveStateRemote();
+    localStorage.setItem(ACTIVE, id);
+    restoreContestState(id);
+    refreshUI();
+    await saveActiveStateRemote();
+  }
+
+  async function signIn() {
+    const email = String(document.getElementById('authEmail')?.value || '').trim();
+    const password = String(document.getElementById('authPassword')?.value || '');
+    if (!validEmail(email) || password.length < 6) return notify('Informe e-mail e senha válidos.');
+    const { error } = await client.auth.signInWithPassword({ email, password });
+    if (error) notify(error.message);
+  }
+
+  async function signUp() {
+    const email = String(document.getElementById('authEmail')?.value || '').trim();
+    const password = String(document.getElementById('authPassword')?.value || '');
+    if (!validEmail(email) || password.length < 6) return notify('Informe e-mail válido e senha com pelo menos 6 caracteres.');
+    const { error } = await client.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: `${location.origin}${location.pathname}` }
+    });
+    if (error) notify(error.message);
+    else notify('Conta criada. Confira seu e-mail se a confirmação estiver habilitada.');
+  }
+
+  async function signOut() {
+    await saveActiveStateRemote();
+    const { error } = await client.auth.signOut();
+    if (error) notify(error.message);
+    else setLoggedOutState();
+  }
+
+  async function initialize() {
+    client = ensureClient();
+    if (!client) {
+      console.error('Configuração fixa do Supabase ausente ou inválida.');
+      return;
+    }
+
+    const { data: { session }, error } = await client.auth.getSession();
+    if (error) console.warn('Falha ao restaurar sessão:', error.message);
+    if (session?.user) {
+      setLoggedInState(session.user);
+      await loadRemoteContests();
+    } else {
+      setLoggedOutState();
+    }
+
+    client.auth.onAuthStateChange((event, session) => {
+      setTimeout(async () => {
+        if (session?.user) {
+          setLoggedInState(session.user);
+          await loadRemoteContests();
+        } else {
+          setLoggedOutState();
+        }
+      }, 0);
+    });
+  }
+
+  window.addEventListener('click', event => {
+    const target = event.target;
+
+    if (target.closest('#saveContest')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      createContest();
+      return;
+    }
+    const deleteButton = target.closest('[data-canonical-delete]');
+    if (deleteButton) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      deleteContest(deleteButton.getAttribute('data-canonical-delete'));
+      return;
+    }
+    const openButton = target.closest('[data-canonical-open]');
+    if (openButton) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      switchContest(openButton.getAttribute('data-canonical-open'));
+      return;
+    }
+    if (target.closest('#signIn')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      signIn();
+      return;
+    }
+    if (target.closest('#signUp')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      signUp();
+      return;
+    }
+    if (target.closest('#signOut')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      signOut();
+      return;
+    }
+
+    if (target.closest(
+      '#confirmImportVertical,#saveMatter,#savePlanConfig,#regenPlan,' +
+      '.topic-check,.check,.priority-select,.order-btn,.plan-complete-check,' +
+      '[data-plan-subject],[data-subject-choice]'
+    )) scheduleStateSave();
+  }, true);
+
+  window.addEventListener('change', event => {
+    if (event.target.closest(
+      '#contest,#plan,#reviews,#progress,#history,' +
+      '.priority-select,.topic-check,input[type="checkbox"],select'
+    )) scheduleStateSave();
+  }, true);
+
+  window.addEventListener('beforeunload', () => {
+    captureActiveState();
+  });
+
+  window.aprovaSupabaseAuto = {
+    reload: loadRemoteContests,
+    save: saveActiveStateRemote,
+    createContest,
+    deleteContest,
+    switchContest
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize, { once: true });
+  } else {
+    initialize();
+  }
+})();
+</script>
+
 </body></html>
