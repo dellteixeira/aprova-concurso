@@ -1648,7 +1648,7 @@ renderPlanoEstavel();
   function openVerticalized(){
     const topics=$('#topics');if(!topics)return;
     topics.hidden=false;topics.style.display='block';
-    $$('details',topics).forEach(d=>d.open=true);
+    // Mantém o estado de expansão escolhido pelo usuário.
   }
   function syncHeader(){
     const view=$('.view.active')?.id||'dashboard';
@@ -1727,7 +1727,7 @@ renderPlanoEstavel();
     if(topics){
       topics.hidden=false;
       topics.style.display='block';
-      topics.querySelectorAll('details').forEach(detail=>detail.open=true);
+      // Não força todas as disciplinas abertas; o estado é controlado pelos próprios <details>.
     }
     return true;
   }
