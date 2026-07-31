@@ -2728,4 +2728,113 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
   window.aprovaContestInvariant={render,active,list};
 })();
 </script>
+
+<script id="finalContestCreationController">
+(() => {
+  'use strict';
+  const REGISTRY='aprovaContestRegistryV2';
+  const ACTIVE='aprovaActiveContestId';
+  const STATE_PREFIX='aprovaContestState:';
+  const read=(key,fallback)=>{try{const raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch{return fallback}};
+  const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
+  const notify=message=>{if(typeof window.toast==='function')window.toast(message);else alert(message)};
+  const uid=()=>crypto.randomUUID?crypto.randomUUID():`contest-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+  function fields(){
+    const modal=document.getElementById('contestModal');
+    const inputs=[...(modal?.querySelectorAll('input')||[])];
+    return {
+      titulo:(inputs[0]?.value||'').trim(),
+      cargo:(inputs[1]?.value||'').trim(),
+      banca:(inputs[2]?.value||'').trim(),
+      data_prova:(inputs[3]?.value||'').trim()
+    };
+  }
+
+  function localContest(data,id){
+    return {
+      id:String(id||uid()),
+      titulo:data.titulo,
+      nome:data.titulo,
+      orgao:data.titulo,
+      cargo:data.cargo,
+      banca:data.banca,
+      data_prova:data.data_prova,
+      prova:data.data_prova,
+      created_at:new Date().toISOString(),
+      updated_at:new Date().toISOString()
+    };
+  }
+
+  function persistContest(contest){
+    const registry=read(REGISTRY,[]);
+    const list=Array.isArray(registry)?registry:[];
+    const index=list.findIndex(item=>String(item?.id)===String(contest.id));
+    if(index>=0)list[index]={...list[index],...contest};else list.push(contest);
+    write(REGISTRY,list);
+    localStorage.setItem(ACTIVE,String(contest.id));
+    const active={nome:contest.titulo,orgao:contest.orgao||contest.titulo,cargo:contest.cargo,banca:contest.banca||'',prova:contest.data_prova||'',materias:'',topicos:0};
+    write('aprovaConcurso',active);
+    write(STATE_PREFIX+contest.id,{'aprovaConcurso':JSON.stringify(active)});
+    try{concursoEditavel=active}catch(_){ }
+    try{verticalizacaoImportada=null}catch(_){ }
+    try{planoEditavel={horarios:[],sessoes:[]}}catch(_){ }
+    return list;
+  }
+
+  async function createContest(){
+    const button=document.getElementById('saveContest');
+    const data=fields();
+    if(!data.titulo||!data.cargo){notify('Informe o nome do concurso e o cargo.');return}
+    if(button)button.disabled=true;
+    try{
+      let contest=null;
+      const client=window.supabaseClient;
+      if(client){
+        const {data:sessionData}=await client.auth.getSession();
+        const user=sessionData?.session?.user||null;
+        if(user){
+          const payload={user_id:user.id,titulo:data.titulo,cargo:data.cargo,orgao:data.titulo,banca:data.banca||null,data_prova:data.data_prova||null};
+          const {data:remote,error}=await client.from('concursos').insert(payload).select('id,titulo,cargo,orgao,banca,data_prova,created_at').single();
+          if(error)throw error;
+          contest=localContest({...data,...remote},remote.id);
+          contest={...contest,...remote,id:String(remote.id),data_prova:remote.data_prova||''};
+          if(Array.isArray(window.concursosDaConta))window.concursosDaConta=[...window.concursosDaConta.filter(item=>String(item.id)!==String(contest.id)),contest];
+          try{if(typeof concursosDaConta!=='undefined'&&Array.isArray(concursosDaConta))concursosDaConta=[...concursosDaConta.filter(item=>String(item.id)!==String(contest.id)),contest]}catch(_){ }
+        }
+      }
+      if(!contest)contest=localContest(data);
+      persistContest(contest);
+      document.getElementById('contestModal')?.classList.remove('open');
+      try{renderConcurso()}catch(_){ }
+      window.aprovaContestManager?.render?.();
+      window.aprovaContestInvariant?.render?.();
+      document.dispatchEvent(new CustomEvent('aprova:render'));
+      if(typeof window.showView==='function')window.showView('contest');else if(typeof showView==='function')showView('contest');
+      if(typeof window.carregarCatalogoInicial==='function')await window.carregarCatalogoInicial();else try{if(typeof carregarCatalogoInicial==='function')await carregarCatalogoInicial()}catch(_){ }
+      notify(`Concurso “${contest.titulo} · ${contest.cargo}” cadastrado com sucesso.`);
+    }catch(error){
+      console.error('Falha ao cadastrar concurso:',error);
+      notify(error?.message||'Não foi possível cadastrar o concurso.');
+    }finally{
+      if(button)button.disabled=false;
+    }
+  }
+
+  document.addEventListener('click',event=>{
+    if(!event.target.closest('#saveContest'))return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    createContest();
+  },true);
+
+  document.getElementById('contestModal')?.querySelector('form')?.addEventListener('submit',event=>{
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    createContest();
+  },true);
+
+  window.aprovaContestCreation={create:createContest};
+})();
+</script>
 </body></html>
