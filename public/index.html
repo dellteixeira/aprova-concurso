@@ -2210,4 +2210,232 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
 })();
 </script>
 
+
+<script id="authControlsReliabilityFix">
+(() => {
+  'use strict';
+
+  const MASTER_EMAIL_FIX = 'd3.concursos@gmail.com';
+  const byId = id => document.getElementById(id);
+  const notify = message => {
+    if (typeof window.toast === 'function') window.toast(message);
+    else {
+      const el = byId('toast');
+      if (el) {
+        el.textContent = message;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 3200);
+      } else alert(message);
+    }
+  };
+
+  async function getActiveSession() {
+    const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+    if (!client) return { client: null, session: null };
+    try {
+      const { data, error } = await client.auth.getSession();
+      if (error) throw error;
+      return { client, session: data?.session || null };
+    } catch (error) {
+      console.error('Falha ao recuperar sessão:', error);
+      return { client, session: null, error };
+    }
+  }
+
+  function closeModal(id) {
+    const modal = byId(id);
+    if (modal) modal.classList.remove('open');
+  }
+
+  function openLockDialog() {
+    const hasPassword = Boolean(
+      localStorage.getItem('aprovaCredentialLockHash') &&
+      localStorage.getItem('aprovaCredentialLockSalt')
+    );
+    if (typeof window.openCredentialLockModal === 'function') {
+      window.openCredentialLockModal(hasPassword ? 'unlock' : 'create');
+      return;
+    }
+    if (typeof openCredentialLockModal === 'function') {
+      openCredentialLockModal(hasPassword ? 'unlock' : 'create');
+      return;
+    }
+    const modal = byId('credentialLockModal');
+    if (!modal) {
+      notify('A janela de autenticação administrativa não foi encontrada.');
+      return;
+    }
+    modal.dataset.mode = hasPassword ? 'unlock' : 'create';
+    const title = byId('credentialLockTitle');
+    const description = byId('credentialLockDescription');
+    const confirmField = byId('credentialPasswordConfirmField');
+    if (title) title.textContent = hasPassword ? 'Desbloquear credenciais' : 'Criar senha de proteção';
+    if (description) description.textContent = hasPassword
+      ? 'Digite a senha de proteção para visualizar e editar as credenciais.'
+      : 'Cadastre uma senha local para proteger as credenciais neste navegador.';
+    if (confirmField) confirmField.style.display = hasPassword ? 'none' : 'grid';
+    modal.classList.add('open');
+    setTimeout(() => byId('credentialPassword')?.focus(), 80);
+  }
+
+  async function handleUnlock(event) {
+    event?.preventDefault();
+    event?.stopImmediatePropagation();
+
+    const { session } = await getActiveSession();
+    const email = String(session?.user?.email || '').trim().toLowerCase();
+    if (email !== MASTER_EMAIL_FIX) {
+      notify('Acesso permitido somente à conta master.');
+      return;
+    }
+
+    const unlocked = typeof credentialsUnlocked !== 'undefined' && credentialsUnlocked;
+    if (unlocked) {
+      if (typeof setCredentialLockState === 'function') setCredentialLockState(false);
+      notify('Credenciais bloqueadas.');
+      return;
+    }
+    openLockDialog();
+  }
+
+  async function handleSignOut(event) {
+    event?.preventDefault();
+    event?.stopImmediatePropagation();
+
+    const { client } = await getActiveSession();
+    if (!client) {
+      notify('A conexão com o Supabase ainda não foi inicializada.');
+      return;
+    }
+
+    const button = byId('signOut');
+    if (button) button.disabled = true;
+    try {
+      const { error } = await client.auth.signOut({ scope: 'local' });
+      if (error) throw error;
+
+      byId('accountState') && (byId('accountState').textContent = 'Nenhuma sessão ativa.');
+      byId('authPassword') && (byId('authPassword').value = '');
+      byId('authNickname') && (byId('authNickname').value = '');
+      if (typeof applyMasterAccess === 'function') applyMasterAccess(null);
+      if (typeof setCredentialLockState === 'function') setCredentialLockState(false);
+      localStorage.removeItem('aprovaNickname');
+      if (typeof currentNickname !== 'undefined') currentNickname = 'Dell';
+      if (byId('heading') && typeof dashboardGreeting === 'function') {
+        byId('heading').textContent = dashboardGreeting();
+      }
+      notify('Sessão encerrada com sucesso.');
+    } catch (error) {
+      console.error('Erro ao sair:', error);
+      notify(`Não foi possível sair: ${error?.message || 'erro desconhecido'}`);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function handleSignUp(event) {
+    event?.preventDefault();
+    event?.stopImmediatePropagation();
+
+    const nickname = byId('authNickname')?.value.trim() || '';
+    const email = byId('authEmail')?.value.trim() || '';
+    const password = byId('authPassword')?.value || '';
+
+    if (nickname.length < 2) {
+      notify('Informe um nickname com pelo menos 2 caracteres.');
+      byId('authNickname')?.focus();
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      notify('Informe um e-mail válido.');
+      byId('authEmail')?.focus();
+      return;
+    }
+    if (password.length < 6) {
+      notify('A senha precisa ter pelo menos 6 caracteres.');
+      byId('authPassword')?.focus();
+      return;
+    }
+
+    const { client, session } = await getActiveSession();
+    if (!client) {
+      notify('A conexão automática com o Supabase ainda não foi inicializada.');
+      return;
+    }
+
+    if (session) {
+      const proceed = confirm('Há uma conta conectada. Deseja encerrar esta sessão e criar uma nova conta?');
+      if (!proceed) return;
+      const { error: signOutError } = await client.auth.signOut({ scope: 'local' });
+      if (signOutError) {
+        notify(`Não foi possível encerrar a sessão atual: ${signOutError.message}`);
+        return;
+      }
+    }
+
+    const button = byId('signUp');
+    if (button) button.disabled = true;
+    try {
+      const redirect = location.protocol === 'file:' ? undefined : `${location.origin}${location.pathname}`;
+      const { data, error } = await client.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { nickname },
+          ...(redirect ? { emailRedirectTo: redirect } : {})
+        }
+      });
+      if (error) throw error;
+
+      if (typeof aplicarNickname === 'function') aplicarNickname(nickname);
+      byId('authPassword') && (byId('authPassword').value = '');
+      if (data?.session) {
+        notify('Conta criada e sessão iniciada.');
+      } else {
+        notify('Conta criada. Verifique seu e-mail para confirmar o cadastro.');
+      }
+    } catch (error) {
+      console.error('Erro ao criar conta:', error);
+      notify(`Não foi possível criar a conta: ${error?.message || 'erro desconhecido'}`);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  function bindReliableHandler(id, handler) {
+    const oldButton = byId(id);
+    if (!oldButton) return;
+    const button = oldButton.cloneNode(true);
+    oldButton.replaceWith(button);
+    button.type = 'button';
+    button.addEventListener('click', handler, { capture: true });
+  }
+
+  function bindAdminCard() {
+    const notice = byId('masterOnlyNotice');
+    if (!notice) return;
+    notice.setAttribute('role', 'button');
+    notice.setAttribute('tabindex', '0');
+    notice.style.cursor = 'pointer';
+    notice.addEventListener('click', handleUnlock, { capture: true });
+    notice.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') handleUnlock(event);
+    });
+  }
+
+  function initializeReliableControls() {
+    bindReliableHandler('toggleCredentialLock', handleUnlock);
+    bindReliableHandler('signOut', handleSignOut);
+    bindReliableHandler('signUp', handleSignUp);
+    bindAdminCard();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeReliableControls, { once: true });
+  } else {
+    initializeReliableControls();
+  }
+})();
+</script>
+
 </body></html>
