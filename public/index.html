@@ -1580,18 +1580,52 @@ renderPlanoEstavel();
     snapshot();localStorage.setItem(ACTIVE,id);restore(id);sessionStorage.setItem('aprovaFlash','Concurso habilitado. Todas as páginas foram atualizadas para este objetivo.');location.reload();
   }
   async function deleteOnly(id=activeId()){
-    id=String(id||'');const list=registry();const removed=list.find(c=>String(c.id)===id);if(!removed){notify('Concurso não encontrado.');return;}
-    snapshot();
-    const deleted=read(DELETED,[]);const tombstones=new Set(Array.isArray(deleted)?deleted.map(String):[]);tombstones.add(id);write(DELETED,[...tombstones]);
-    const remaining=list.filter(c=>String(c.id)!==id);
-    saveRegistry(remaining);localStorage.removeItem(STATE_PREFIX+id);
-    const ed=read(EDITAIS,[]);if(Array.isArray(ed))write(EDITAIS,ed.filter(e=>String(e.concurso_id)!==id));
-    if(activeId()===id){clearActive();if(remaining.length){const next=String(remaining[0].id);localStorage.setItem(ACTIVE,next);restore(next);}else localStorage.removeItem(ACTIVE);}
+    id=String(id||'');
+    const list=registry();
+    const removed=list.find(c=>String(c.id)===id);
+    if(!removed){notify('Concurso não encontrado.');return;}
+
+    // Mantém a exclusão registrada até o Supabase confirmar que a linha sumiu.
+    const deleted=read(DELETED,[]);
+    const tombstones=new Set(Array.isArray(deleted)?deleted.map(String):[]);
+    tombstones.add(id);
+    write(DELETED,[...tombstones]);
+
     try{
       const ok=await window.aprovaCloudSync?.deleteContest(id);
-      if(ok){const after=read(DELETED,[]);write(DELETED,(Array.isArray(after)?after:[]).filter(x=>String(x)!==id));}
-    }catch(error){console.warn('Falha ao excluir na nuvem:',error);sessionStorage.setItem('aprovaFlash','Concurso ocultado neste dispositivo. A exclusão no Supabase será repetida automaticamente quando a conexão estiver disponível.');location.reload();return;}
-    sessionStorage.setItem('aprovaFlash',`Somente o concurso “${removed.titulo} · ${removed.cargo}” foi excluído do aplicativo e do Supabase.`);location.reload();
+      if(!ok)throw new Error('A exclusão ainda não foi confirmada no Supabase.');
+
+      snapshot();
+      const remaining=list.filter(c=>String(c.id)!==id);
+      saveRegistry(remaining);
+      localStorage.removeItem(STATE_PREFIX+id);
+      const ed=read(EDITAIS,[]);
+      if(Array.isArray(ed))write(EDITAIS,ed.filter(e=>String(e.concurso_id)!==id));
+
+      if(activeId()===id){
+        clearActive();
+        if(remaining.length){
+          const next=String(remaining[0].id);
+          localStorage.setItem(ACTIVE,next);
+          restore(next);
+        }else{
+          localStorage.removeItem(ACTIVE);
+        }
+      }
+
+      const after=read(DELETED,[]);
+      write(DELETED,(Array.isArray(after)?after:[]).filter(x=>String(x)!==id));
+
+      renderAll();
+      window.aprovaContestManager?.render?.();
+      document.dispatchEvent(new CustomEvent('aprova:render'));
+      if(typeof window.carregarCatalogoInicial==='function')await window.carregarCatalogoInicial();
+      showView?.('contest');
+      notify(`Somente o concurso “${removed.titulo} · ${removed.cargo}” foi excluído do aplicativo e do Supabase.`);
+    }catch(error){
+      console.error('Falha ao excluir concurso:',error);
+      notify('Não foi possível excluir no Supabase. Verifique as políticas RLS e os vínculos das tabelas dependentes. O concurso não foi removido localmente.');
+    }
   }
 
   function ensureCatalog(){
@@ -2007,8 +2041,12 @@ renderPlanoEstavel();
       const confirmed=[];
       for(const id of deleted){
         if(!validUuid(id)){confirmed.push(id);continue}
-        const {error}=await window.supabaseClient.from('concursos').delete().eq('id',id).eq('user_id',currentUser.id);
-        if(!error)confirmed.push(id);else console.warn('Exclusão pendente no Supabase:',id,error.message);
+        try{
+          const ok=await deleteContest(id);
+          if(ok)confirmed.push(id);
+        }catch(error){
+          console.warn('Exclusão pendente no Supabase:',id,error.message);
+        }
       }
       if(confirmed.length){confirmed.forEach(id=>deleted.delete(String(id)));write(DELETED,[...deleted]);}
     }
@@ -2030,11 +2068,91 @@ renderPlanoEstavel();
   }
   async function deleteContest(id){
     if(!window.supabaseClient||!id)return false;
-    id=String(id);const pending=read(DELETED,[]);const set=new Set(Array.isArray(pending)?pending.map(String):[]);set.add(id);write(DELETED,[...set]);
-    const currentUser=await user();if(!currentUser)return false;
-    const {error}=await window.supabaseClient.from('concursos').delete().eq('id',id).eq('user_id',currentUser.id);
-    if(error)throw error;
-    set.delete(id);write(DELETED,[...set]);return true;
+    id=String(id);
+    const pending=read(DELETED,[]);
+    const set=new Set(Array.isArray(pending)?pending.map(String):[]);
+    set.add(id);
+    write(DELETED,[...set]);
+
+    const currentUser=await user();
+    if(!currentUser)throw new Error('Nenhuma sessão autenticada no Supabase.');
+
+    // Confirma que o registro pertence ao usuário autenticado.
+    const {data:target,error:targetError}=await window.supabaseClient
+      .from('concursos')
+      .select('id')
+      .eq('id',id)
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+    if(targetError)throw targetError;
+    if(!target){
+      set.delete(id);write(DELETED,[...set]);
+      return true;
+    }
+
+    // Remove dependências conhecidas antes do concurso para evitar bloqueios de FK.
+    const {data:editais,error:editaisLookupError}=await window.supabaseClient
+      .from('editais')
+      .select('id,arquivo_path')
+      .eq('concurso_id',id)
+      .eq('user_id',currentUser.id);
+    if(editaisLookupError)throw editaisLookupError;
+
+    const editalIds=(editais||[]).map(item=>item.id);
+    if(editalIds.length){
+      const {error:analisesError}=await window.supabaseClient
+        .from('analises_edital')
+        .delete()
+        .in('edital_id',editalIds);
+      if(analisesError)throw analisesError;
+    }
+
+    for(const table of ['reviews','study_sessions']){
+      const {error}=await window.supabaseClient
+        .from(table)
+        .delete()
+        .eq('concurso_id',id)
+        .eq('user_id',currentUser.id);
+      // 42P01 = tabela inexistente; 42703 = coluna inexistente. Ignora apenas esses casos.
+      if(error && !['42P01','42703'].includes(String(error.code||'')))throw error;
+    }
+
+    if(editalIds.length){
+      const {error:editaisDeleteError}=await window.supabaseClient
+        .from('editais')
+        .delete()
+        .in('id',editalIds)
+        .eq('user_id',currentUser.id);
+      if(editaisDeleteError)throw editaisDeleteError;
+
+      const paths=(editais||[]).map(item=>item.arquivo_path).filter(Boolean);
+      if(paths.length){
+        const {error:storageError}=await window.supabaseClient.storage.from('editais').remove(paths);
+        if(storageError)console.warn('Registro excluído, mas alguns PDFs não puderam ser removidos:',storageError.message);
+      }
+    }
+
+    const {data:deletedRows,error:deleteError}=await window.supabaseClient
+      .from('concursos')
+      .delete()
+      .eq('id',id)
+      .eq('user_id',currentUser.id)
+      .select('id');
+    if(deleteError)throw deleteError;
+
+    // RLS pode retornar sucesso sem apagar linha. Reconfirma no banco.
+    const {data:stillThere,error:verifyError}=await window.supabaseClient
+      .from('concursos')
+      .select('id')
+      .eq('id',id)
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+    if(verifyError)throw verifyError;
+    if(stillThere)throw new Error('O Supabase não removeu o concurso. Revise a policy DELETE da tabela concursos.');
+
+    set.delete(id);
+    write(DELETED,[...set]);
+    return true;
   }
   window.aprovaCloudSync={sync,deleteContest};
   window.addEventListener('online',()=>sync());
