@@ -3664,4 +3664,251 @@ body.dark .final-session-summary,body.dark .final-topic-select{background:#101b3
 })();
 </script>
 
+
+<script id="aprovaWeeklyStudyHours">
+/* Cálculo semanal canônico: cada check da grade grava uma sessão no Supabase. */
+(() => {
+  'use strict';
+
+  const ACTIVE_KEY = 'aprovaActiveContestId';
+  const LOCAL_COMPLETED_KEY = 'aprovaPlanCompleted';
+  const DAYS = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+  let refreshTimer = 0;
+  let loading = false;
+
+  const readJSON = (key, fallback) => {
+    try {
+      const value = localStorage.getItem(key);
+      return value === null ? fallback : JSON.parse(value);
+    } catch (_) { return fallback; }
+  };
+  const writeJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const activeContestId = () => String(localStorage.getItem(ACTIVE_KEY) || '').trim();
+  const validUuid = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+  const client = () => window.supabaseClient || null;
+
+  function mondayOf(date = new Date()) {
+    const d = new Date(date);
+    const weekday = d.getDay();
+    const delta = weekday === 0 ? -6 : 1 - weekday;
+    d.setDate(d.getDate() + delta);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  function addDays(date, amount) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + amount);
+    return d;
+  }
+  function isoLocal(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  function dateForDayLabel(label, base = new Date()) {
+    const index = DAYS.indexOf(String(label || '').toUpperCase());
+    return addDays(mondayOf(base), Math.max(0, index));
+  }
+  function parseTimeToMinutes(value) {
+    const match = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
+    return match ? Number(match[1]) * 60 + Number(match[2]) : 0;
+  }
+  function endTime(start, duration) {
+    const total = parseTimeToMinutes(start) + Number(duration || 0);
+    return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+  }
+  function formatMinutes(total) {
+    const minutes = Math.max(0, Math.round(Number(total) || 0));
+    return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}min`;
+  }
+  function normalizeText(value) {
+    return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+  function sessionFromCheck(check) {
+    const shell = check.closest('.slot-shell');
+    const slot = shell?.querySelector('[data-cycle-session]');
+    if (!shell || !slot) return null;
+    const [day, start] = String(slot.dataset.cycleSession || '').split('|');
+    const subject = slot.querySelector('strong')?.textContent?.trim() || 'Disciplina';
+    const small = slot.querySelector('small')?.textContent || '';
+    const durationMatch = small.match(/·\s*(\d+)\s*min/i);
+    const duration = Number(durationMatch?.[1] || 0);
+    const date = dateForDayLabel(day);
+    const dateString = isoLocal(date);
+    let topics = [];
+    try { topics = JSON.parse(decodeURIComponent(slot.dataset.sessionTopics || '%5B%5D')); } catch (_) {}
+    const slotKey = `${dateString}|${start}|${normalizeText(subject)}`;
+    return {
+      shell, slot, day, start, subject, duration, topics, dateString,
+      finish: endTime(start, duration), slotKey,
+      localKey: shell.dataset.sessionKey || `${day}|${start}|${subject}`
+    };
+  }
+  function setCheckVisual(check, completed) {
+    const shell = check.closest('.slot-shell');
+    shell?.classList.toggle('is-completed', completed);
+    check.classList.toggle('checked', completed);
+    check.setAttribute('aria-pressed', String(completed));
+    check.title = completed ? 'Marcar como pendente' : 'Marcar como estudado';
+  }
+  function updateLocalCompletion(info, completed) {
+    const map = readJSON(LOCAL_COMPLETED_KEY, {});
+    if (completed) map[info.localKey] = true;
+    else delete map[info.localKey];
+    writeJSON(LOCAL_COMPLETED_KEY, map);
+    try { window.aprovaContestManager?.snapshot?.(); } catch (_) {}
+  }
+  async function currentUser() {
+    const sb = client();
+    if (!sb) return null;
+    const { data, error } = await sb.auth.getUser();
+    if (error) return null;
+    return data?.user || null;
+  }
+  async function persistSession(info, completed) {
+    const sb = client();
+    const contestId = activeContestId();
+    const user = await currentUser();
+    if (!sb || !user || !validUuid(contestId)) return false;
+    const payload = {
+      user_id: user.id,
+      concurso_id: contestId,
+      disciplina: info.subject,
+      topicos: Array.isArray(info.topics) ? info.topics : [],
+      data_sessao: info.dateString,
+      inicio: info.start,
+      fim: info.finish,
+      duration_minutes: info.duration,
+      completed,
+      slot_key: info.slotKey
+    };
+    const { error } = await sb.from('study_sessions').upsert(payload, {
+      onConflict: 'user_id,concurso_id,slot_key'
+    });
+    if (error) throw error;
+    return true;
+  }
+  function weeklyBounds(offsetWeeks = 0) {
+    const start = addDays(mondayOf(), offsetWeeks * 7);
+    const end = addDays(start, 7);
+    return { start: isoLocal(start), end: isoLocal(end) };
+  }
+  async function fetchSessions(start, end) {
+    const sb = client();
+    const contestId = activeContestId();
+    const user = await currentUser();
+    if (!sb || !user || !validUuid(contestId)) return [];
+    const { data, error } = await sb.from('study_sessions')
+      .select('data_sessao,inicio,duration_minutes,completed,slot_key,disciplina')
+      .eq('user_id', user.id)
+      .eq('concurso_id', contestId)
+      .gte('data_sessao', start)
+      .lt('data_sessao', end);
+    if (error) throw error;
+    return Array.isArray(data) ? data : [];
+  }
+  function updateDashboard(currentRows, previousRows) {
+    const completedCurrent = currentRows.filter(row => row.completed);
+    const currentMinutes = completedCurrent.reduce((sum, row) => sum + Number(row.duration_minutes || 0), 0);
+    const previousMinutes = previousRows.filter(row => row.completed).reduce((sum, row) => sum + Number(row.duration_minutes || 0), 0);
+    const hours = document.getElementById('weekHours');
+    if (hours) hours.textContent = formatMinutes(currentMinutes);
+
+    const trend = hours?.closest('article')?.querySelector('.trend');
+    if (trend) {
+      if (!currentMinutes && !previousMinutes) trend.textContent = 'Marque uma sessão concluída para iniciar o cálculo semanal.';
+      else {
+        const variation = previousMinutes > 0 ? Math.round(((currentMinutes - previousMinutes) / previousMinutes) * 100) : 100;
+        const sign = variation > 0 ? '+' : '';
+        trend.innerHTML = `<b>${sign}${variation}%</b> em relação à última semana`;
+      }
+    }
+
+    const byDate = new Map();
+    completedCurrent.forEach(row => byDate.set(row.data_sessao, (byDate.get(row.data_sessao) || 0) + Number(row.duration_minutes || 0)));
+    const start = mondayOf();
+    const daily = DAYS.map((_, i) => byDate.get(isoLocal(addDays(start, i))) || 0);
+    const max = Math.max(1, ...daily);
+    const chart = document.querySelector('.dash-bottom article:last-child .chart');
+    if (chart) chart.innerHTML = DAYS.map((day, i) => `<div class="day"><div class="chart-bar${i === ((new Date().getDay()+6)%7) ? ' now' : ''}" style="height:${daily[i] ? Math.max(8, Math.round((daily[i]/max)*100)) : 2}%" title="${formatMinutes(daily[i])}"></div>${day}</div>`).join('');
+    const weeklyLabel = chart?.closest('article')?.querySelector('.tiny-label');
+    if (weeklyLabel) weeklyLabel.textContent = formatMinutes(currentMinutes).toUpperCase();
+  }
+  function applyRemoteCompletion(rows) {
+    const completedKeys = new Set(rows.filter(row => row.completed).map(row => row.slot_key));
+    document.querySelectorAll('#plan .session-check').forEach(check => {
+      const info = sessionFromCheck(check);
+      if (!info) return;
+      const completed = completedKeys.has(info.slotKey);
+      setCheckVisual(check, completed);
+      updateLocalCompletion(info, completed);
+    });
+  }
+  async function refreshWeeklyHours() {
+    if (loading) return;
+    loading = true;
+    try {
+      const current = weeklyBounds(0);
+      const previous = weeklyBounds(-1);
+      const [currentRows, previousRows] = await Promise.all([
+        fetchSessions(current.start, current.end),
+        fetchSessions(previous.start, previous.end)
+      ]);
+      updateDashboard(currentRows, previousRows);
+      applyRemoteCompletion(currentRows);
+    } catch (error) {
+      console.warn('Não foi possível atualizar as horas semanais:', error?.message || error);
+    } finally { loading = false; }
+  }
+  function scheduleRefresh(delay = 120) {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(refreshWeeklyHours, delay);
+  }
+
+  document.addEventListener('click', async event => {
+    const check = event.target.closest('#plan .session-check');
+    if (!check) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    const info = sessionFromCheck(check);
+    if (!info) return;
+    const completed = check.getAttribute('aria-pressed') !== 'true';
+    setCheckVisual(check, completed);
+    updateLocalCompletion(info, completed);
+    check.disabled = true;
+    try {
+      const saved = await persistSession(info, completed);
+      if (!saved) throw new Error('Entre na sua conta e mantenha um concurso ativo para registrar as horas.');
+      await refreshWeeklyHours();
+      (window.toast || window.alert)(completed ? `Sessão concluída: +${info.duration} minutos nesta semana.` : 'Sessão removida do cálculo semanal.');
+    } catch (error) {
+      setCheckVisual(check, !completed);
+      updateLocalCompletion(info, !completed);
+      (window.toast || window.alert)(error?.message || 'Não foi possível registrar a sessão no Supabase.');
+    } finally { check.disabled = false; }
+  }, true);
+
+  const observer = new MutationObserver(mutations => {
+    if (mutations.some(m => [...m.addedNodes].some(node => node.nodeType === 1 && (node.matches?.('.canonical-planner,.session-check') || node.querySelector?.('.session-check'))))) scheduleRefresh(80);
+  });
+  const startObserver = () => {
+    const target = document.querySelector('#plan .planner-wrap') || document.body;
+    observer.observe(target, { childList:true, subtree:true });
+  };
+
+  window.addEventListener('aprova:plan-updated', () => scheduleRefresh(50));
+  window.addEventListener('aprova:active-contest-changed', () => scheduleRefresh(50));
+  window.addEventListener('storage', event => {
+    if ([ACTIVE_KEY, 'aprovaPlano'].includes(event.key)) scheduleRefresh(50);
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleRefresh(0); });
+  window.addEventListener('online', () => scheduleRefresh(0));
+  document.addEventListener('DOMContentLoaded', () => { startObserver(); scheduleRefresh(400); });
+  if (document.readyState !== 'loading') { startObserver(); scheduleRefresh(400); }
+  window.aprovaRefreshWeeklyHours = refreshWeeklyHours;
+})();
+</script>
+
 </body></html>
