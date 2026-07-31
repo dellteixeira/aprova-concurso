@@ -2588,4 +2588,140 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
   window.addEventListener('pageshow',initialize);
 })();
 </script>
+
+<script id="finalVerticalImportActivationFix">
+(() => {
+  'use strict';
+
+  const parse = (raw, fallback = null) => {
+    try { return raw ? JSON.parse(raw) : fallback; } catch { return fallback; }
+  };
+
+  function resolveActiveContest() {
+    const activeId = String(localStorage.getItem('aprovaActiveContestId') || '');
+    const registry = parse(localStorage.getItem('aprovaContestRegistryV2'), []);
+    if (activeId && Array.isArray(registry)) {
+      const found = registry.find(item => String(item?.id) === activeId);
+      if (found) return found;
+    }
+
+    try {
+      if (window.concursoEditavel && typeof window.concursoEditavel === 'object') {
+        return {
+          id: activeId || window.concursoEditavel.id || 'active',
+          titulo: window.concursoEditavel.nome || window.concursoEditavel.titulo || 'Concurso ativo',
+          cargo: window.concursoEditavel.cargo || ''
+        };
+      }
+    } catch (_) {}
+
+    const activeCard = document.querySelector('.canonical-contest-item.active, .canonical-contest-item [class*="pill"], [data-contest-active="true"]');
+    const card = activeCard?.closest('.canonical-contest-item, .catalog-item, article, li, div');
+    if (card) {
+      const title = card.querySelector('b,h3,strong')?.textContent?.trim() || 'Concurso ativo';
+      return { id: activeId || 'active-dom', titulo: title, cargo: '' };
+    }
+
+    const title = document.querySelector('#contest .contest-title h3')?.textContent?.trim();
+    if (title) return { id: activeId || 'active-view', titulo: title, cargo: '' };
+    return null;
+  }
+
+  function ensureButton() {
+    let button = document.getElementById('importVertical');
+    const actions = document.getElementById('contextActions') || document.querySelector('#contest .page-hero-actions');
+    const newContest = document.getElementById('newContest');
+
+    if (!button) {
+      button = document.createElement('button');
+      button.id = 'importVertical';
+      button.type = 'button';
+      button.className = 'btn';
+      button.textContent = '⇩ Importar verticalização';
+    }
+
+    button.type = 'button';
+    button.hidden = false;
+    button.disabled = false;
+    button.removeAttribute('disabled');
+    button.setAttribute('aria-disabled', 'false');
+    button.style.display = 'inline-flex';
+    button.style.alignItems = 'center';
+    button.style.justifyContent = 'center';
+    button.style.pointerEvents = 'auto';
+    button.style.opacity = '1';
+    button.style.cursor = 'pointer';
+
+    if (document.getElementById('contest')?.classList.contains('active') && actions && button.parentElement !== actions) {
+      if (newContest?.parentElement === actions) actions.insertBefore(button, newContest);
+      else actions.prepend(button);
+    }
+
+    button.onclick = event => {
+      event.preventDefault();
+      event.stopPropagation();
+      openImportModal();
+    };
+    return button;
+  }
+
+  function openImportModal() {
+    const contest = resolveActiveContest();
+    if (!contest) {
+      const message = 'Cadastre ou habilite um concurso antes de importar a verticalização.';
+      if (typeof window.toast === 'function') window.toast(message); else alert(message);
+      return;
+    }
+
+    const modal = document.getElementById('importVerticalModal');
+    if (!modal) {
+      const message = 'A janela de importação não foi encontrada. Atualize a página e tente novamente.';
+      if (typeof window.toast === 'function') window.toast(message); else alert(message);
+      return;
+    }
+
+    const note = modal.querySelector('.edit-note');
+    if (note) {
+      const name = [contest.titulo || contest.nome, contest.cargo].filter(Boolean).join(' · ');
+      note.textContent = `A importação será aplicada somente a “${name || 'Concurso ativo'}”. Você pode adicionar ou retificar matérias e tópicos deste concurso.`;
+    }
+
+    modal.classList.add('open');
+    modal.style.display = 'flex';
+    const field = document.getElementById('importVerticalJson');
+    setTimeout(() => field?.focus(), 0);
+  }
+
+  // Captura final para neutralizar handlers antigos que bloqueiem o clique.
+  document.addEventListener('click', event => {
+    if (!event.target.closest('#importVertical')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    openImportModal();
+  }, true);
+
+  const refresh = () => requestAnimationFrame(ensureButton);
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-view="contest"], [data-canonical-open], [data-contest-id], #newContest, #saveContest, .canonical-contest-item')) {
+      setTimeout(refresh, 0);
+      setTimeout(refresh, 150);
+    }
+  }, true);
+  document.addEventListener('aprova:render', refresh);
+  window.addEventListener('pageshow', refresh);
+  window.addEventListener('storage', refresh);
+
+  const observer = new MutationObserver(refresh);
+  const contestView = document.getElementById('contest');
+  const context = document.getElementById('contextActions');
+  if (contestView) observer.observe(contestView, {subtree:true, childList:true, attributes:true, attributeFilter:['class']});
+  if (context) observer.observe(context, {childList:true});
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refresh, {once:true});
+  else refresh();
+  setTimeout(refresh, 250);
+})();
+</script>
+
 </body></html>
