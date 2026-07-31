@@ -3774,6 +3774,7 @@ body.dark .final-session-summary,body.dark .final-topic-select{background:#101b3
     const payload = {
       user_id: user.id,
       concurso_id: contestId,
+      materia: info.subject,
       disciplina: info.subject,
       topicos: Array.isArray(info.topics) ? info.topics : [],
       data_sessao: info.dateString,
@@ -3800,7 +3801,7 @@ body.dark .final-session-summary,body.dark .final-topic-select{background:#101b3
     const user = await currentUser();
     if (!sb || !user || !validUuid(contestId)) return [];
     const { data, error } = await sb.from('study_sessions')
-      .select('data_sessao,inicio,duration_minutes,completed,slot_key,disciplina')
+      .select('data_sessao,inicio,duration_minutes,completed,slot_key,materia,disciplina')
       .eq('user_id', user.id)
       .eq('concurso_id', contestId)
       .gte('data_sessao', start)
