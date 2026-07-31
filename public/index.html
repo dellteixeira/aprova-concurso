@@ -2052,6 +2052,10 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
   </div>
 </div>
 
+<style id="loggedOutWorkspaceStyles">
+body.approva-logged-out .view:not(#settings)>*{display:none!important}
+body.approva-logged-out .view:not(#settings)::before{content:'Entre em sua conta para acessar seus concursos, planos, revisões e histórico.';display:block;padding:34px;border:1px dashed var(--line);border-radius:16px;background:var(--soft);color:var(--muted);font-weight:750;text-align:center}
+</style>
 <script id="authoritativeSupabaseAuthController">
 (() => {
   'use strict';
@@ -2067,282 +2071,125 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
 
   function cfg() {
     const value = window.APROVA_SUPABASE_CONFIG || {};
-    return {
-      url: String(value.url || '').trim().replace(/\/$/, ''),
-      key: String(value.publishableKey || '').trim()
-    };
+    return {url:String(value.url||'').trim().replace(/\/$/,''),key:String(value.publishableKey||'').trim()};
   }
 
   async function ensureClient() {
     if (window.supabaseClient) return window.supabaseClient;
-    const { url, key } = cfg();
-    if (!url.startsWith('https://') || key.length < 20 || !window.supabase?.createClient) return null;
-    window.supabaseClient = window.supabase.createClient(url, key, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        storageKey: 'aprova-auth-session'
-      },
-      global: { headers: { 'x-application-name': 'AprovaConcurso' } }
-    });
-    try { supabaseClient = window.supabaseClient; } catch (_) {}
+    const {url,key}=cfg();
+    if(!url.startsWith('https://')||key.length<20||!window.supabase?.createClient)return null;
+    window.supabaseClient=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'aprova-auth-session'},global:{headers:{'x-application-name':'AprovaConcurso'}}});
+    try{supabaseClient=window.supabaseClient}catch(_){ }
     return window.supabaseClient;
   }
 
-  function isMaster(user) { return normalize(user?.email) === MASTER_EMAIL; }
-  function nickname(user) {
-    return String(user?.user_metadata?.nickname || user?.user_metadata?.display_name || '').trim().slice(0, 30);
+  function isMaster(user){return normalize(user?.email)===MASTER_EMAIL}
+  function nickname(user){return String(user?.user_metadata?.nickname||user?.user_metadata?.display_name||'').trim().slice(0,30)}
+
+  function setGreeting(user){
+    const name=user?nickname(user):'';
+    try{currentNickname=name}catch(_){ }
+    if(name)localStorage.setItem('aprovaNickname',name);else localStorage.removeItem('aprovaNickname');
+    const heading=$('heading');
+    if(heading)heading.textContent=name?`Olá, ${name}. Vamos avançar? 👋`:'Olá. Vamos avançar? 👋';
   }
 
-  function setGreeting(user) {
-    const name = user ? nickname(user) : '';
-    currentNickname = name;
-    if (name) localStorage.setItem('aprovaNickname', name);
-    else localStorage.removeItem('aprovaNickname');
-    const heading = $('heading');
-    if (heading && document.getElementById('dashboard')?.classList.contains('active')) {
-      heading.textContent = name ? `Olá, ${name}. Vamos avançar? 👋` : 'Olá. Vamos avançar? 👋';
-    }
+  function setCredentialFields(unlocked){
+    const url=$('supabaseUrl'),key=$('supabaseKey'),save=$('connectSupabase'),icon=$('credentialLockIcon'),text=$('credentialLockText'),note=$('credentialLockNote');
+    [url,key].forEach(input=>{if(!input)return;input.readOnly=!unlocked;input.type=unlocked?'text':'password'});
+    if(save)save.disabled=!unlocked;
+    if(icon)icon.textContent=unlocked?'🔓':'🔒';
+    if(text)text.textContent=unlocked?'Bloquear':'Desbloquear';
+    if(note)note.textContent=unlocked?'Credenciais visíveis e editáveis até serem bloqueadas novamente.':'Project URL e Publishable Key estão protegidas contra visualização e edição.';
   }
 
-  function adminUnlocked() {
-    const at = Number(sessionStorage.getItem(ADMIN_UNLOCK_KEY) || 0);
-    return at > 0 && Date.now() - at < ADMIN_TTL;
+  function adminUnlocked(){const at=Number(sessionStorage.getItem(ADMIN_UNLOCK_KEY)||0);return at>0&&Date.now()-at<ADMIN_TTL}
+  function lockAdmin(message){
+    sessionStorage.removeItem(ADMIN_UNLOCK_KEY);clearTimeout(adminTimer);setCredentialFields(false);
+    const admin=$('masterSupabaseAdmin'),notice=$('masterOnlyNotice');if(admin)admin.hidden=true;
+    if(notice){notice.hidden=false;const strong=notice.querySelector('strong'),span=notice.querySelector('span');if(strong)strong.textContent='Área administrativa restrita';if(span)span.textContent=message||'Clique aqui e informe a senha da conta master para administrar a conexão do Supabase.'}
+  }
+  function unlockAdmin(){
+    sessionStorage.setItem(ADMIN_UNLOCK_KEY,String(Date.now()));const admin=$('masterSupabaseAdmin'),notice=$('masterOnlyNotice');if(admin)admin.hidden=false;if(notice)notice.hidden=true;setCredentialFields(true);clearTimeout(adminTimer);adminTimer=setTimeout(()=>lockAdmin('A autenticação administrativa expirou. Clique para desbloquear novamente.'),ADMIN_TTL)
   }
 
-  function lockAdmin(message) {
+  const PRESERVE_KEYS=new Set(['aprovaSupabaseUrl','aprovaSupabaseKey','aprovaCredentialLockSalt','aprovaCredentialLockHash','aprovaTheme']);
+  function clearUserLocalData(){
+    const remove=[];
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('aprova')&&!PRESERVE_KEYS.has(k))remove.push(k)}
+    remove.forEach(k=>localStorage.removeItem(k));
     sessionStorage.removeItem(ADMIN_UNLOCK_KEY);
-    clearTimeout(adminTimer);
-    const admin = $('masterSupabaseAdmin');
-    const notice = $('masterOnlyNotice');
-    if (admin) admin.hidden = true;
-    if (notice) {
-      notice.hidden = false;
-      notice.classList.remove('admin-ready');
-      const strong = notice.querySelector('strong');
-      const span = notice.querySelector('span');
-      if (strong) strong.textContent = 'Área administrativa restrita';
-      if (span) span.textContent = message || 'Clique aqui e informe a senha da conta master para administrar a conexão do Supabase.';
-    }
-    if (typeof setCredentialLockState === 'function') setCredentialLockState(false);
   }
-
-  function unlockAdmin() {
-    sessionStorage.setItem(ADMIN_UNLOCK_KEY, String(Date.now()));
-    const admin = $('masterSupabaseAdmin');
-    const notice = $('masterOnlyNotice');
-    if (admin) admin.hidden = false;
-    if (notice) notice.hidden = true;
-    if (typeof setCredentialLockState === 'function') setCredentialLockState(true);
-    clearTimeout(adminTimer);
-    adminTimer = setTimeout(() => lockAdmin('A autenticação administrativa expirou. Clique para desbloquear novamente.'), ADMIN_TTL);
-  }
-
-  function updateAccountUI(session) {
-    const user = session?.user || null;
-    const state = $('accountState');
-    const emailInput = $('authEmail');
-    const nicknameInput = $('authNickname');
-    const signIn = $('signIn');
-    const signOut = $('signOut');
-    if (user) {
-      if (state) state.textContent = `${user.email} · sessão restaurada automaticamente`;
-      if (emailInput) emailInput.value = user.email || '';
-      if (nicknameInput) nicknameInput.value = nickname(user);
-      if (signIn) signIn.disabled = true;
-      if (signOut) signOut.disabled = false;
-      setGreeting(user);
-      if (isMaster(user) && adminUnlocked()) unlockAdmin();
-      else if (isMaster(user)) lockAdmin('Clique aqui e informe novamente a senha da conta master para administrar a conexão do Supabase.');
-      else lockAdmin('Somente o usuário master autenticado pode acessar esta área.');
-    } else {
-      if (state) state.textContent = 'Nenhuma sessão ativa.';
-      if (nicknameInput) nicknameInput.value = '';
-      if (signIn) signIn.disabled = false;
-      if (signOut) signOut.disabled = true;
+  function setLoggedOutMode(value){
+    document.body.classList.toggle('approva-logged-out',Boolean(value));
+    if(value){
       setGreeting(null);
-      lockAdmin('Clique aqui e informe a senha da conta master para acessar a administração.');
+      ['weekHours','cardProgress','topicsDone','pendingReviews','contestProgress','mainProgress'].forEach(id=>{const el=$(id);if(el)el.textContent=id==='pendingReviews'?'0':id==='topicsDone'?'0 tópicos':id==='weekHours'?'0h 0min':'0%'});
+      const clock=$('clock');if(clock)clock.textContent='25:00';
     }
   }
 
-  function openMasterModal() {
-    const modal = $('masterReauthModal');
-    if (!modal) return notify('Janela de autenticação administrativa indisponível.');
-    const password = $('masterReauthPassword');
-    const status = $('masterReauthStatus');
-    if (password) password.value = '';
-    if (status) {
-      status.textContent = 'A senha será validada diretamente pelo Supabase.';
-      status.classList.remove('master-auth-error');
-    }
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    setTimeout(() => password?.focus(), 60);
-  }
-
-  function closeMasterModal() {
-    const modal = $('masterReauthModal');
-    if (modal) {
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden', 'true');
-    }
-    if ($('masterReauthPassword')) $('masterReauthPassword').value = '';
-  }
-
-  async function authenticateMaster() {
-    const client = await ensureClient();
-    const password = $('masterReauthPassword')?.value || '';
-    const status = $('masterReauthStatus');
-    const button = $('confirmMasterReauth');
-    if (!client) return notify('A conexão automática com o Supabase não foi inicializada.');
-    if (password.length < 6) {
-      if (status) { status.textContent = 'Digite a senha da conta master.'; status.classList.add('master-auth-error'); }
-      return;
-    }
-    if (button) button.disabled = true;
-    try {
-      const { data: current } = await client.auth.getSession();
-      const currentEmail = normalize(current?.session?.user?.email);
-      if (currentEmail && currentEmail !== MASTER_EMAIL) {
-        throw new Error('Há outra conta conectada. Clique em Sair antes de acessar a administração.');
-      }
-      const { data, error } = await client.auth.signInWithPassword({ email: MASTER_EMAIL, password });
-      if (error) throw error;
-      if (!isMaster(data?.user)) throw new Error('A conta autenticada não possui permissão master.');
-      unlockAdmin();
-      updateAccountUI(data.session);
-      closeMasterModal();
-      notify('Área administrativa desbloqueada por 15 minutos.');
-    } catch (error) {
-      if (status) { status.textContent = error.message || 'Falha na autenticação.'; status.classList.add('master-auth-error'); }
-    } finally {
-      if (button) button.disabled = false;
+  function updateAccountUI(session){
+    const user=session?.user||null,state=$('accountState'),emailInput=$('authEmail'),nicknameInput=$('authNickname'),signIn=$('signIn'),signOut=$('signOut');
+    if(user){
+      setLoggedOutMode(false);if(state)state.textContent=`${user.email} · sessão restaurada automaticamente`;if(emailInput)emailInput.value=user.email||'';if(nicknameInput)nicknameInput.value=nickname(user);if(signIn)signIn.disabled=true;if(signOut)signOut.disabled=false;setGreeting(user);
+      if(isMaster(user)&&adminUnlocked())unlockAdmin();else if(isMaster(user))lockAdmin('Clique aqui e informe a mesma senha usada no login da conta master.');else lockAdmin('Somente o usuário master autenticado pode acessar esta área.');
+    }else{
+      if(state)state.textContent='Nenhuma sessão ativa.';if(nicknameInput)nicknameInput.value='';if(signIn)signIn.disabled=false;if(signOut)signOut.disabled=true;setLoggedOutMode(true);lockAdmin('Entre com a conta master e clique aqui para acessar a administração.');
     }
   }
 
-  async function signIn() {
-    const client = await ensureClient();
-    const email = $('authEmail')?.value.trim() || '';
-    const password = $('authPassword')?.value || '';
-    if (!client) return notify('A conexão automática com o Supabase não foi inicializada.');
-    if (!/^\S+@\S+\.\S+$/.test(email) || password.length < 6) return notify('Informe e-mail e senha válidos.');
-    const button = $('signIn'); if (button) button.disabled = true;
-    try {
-      const { data, error } = await client.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      $('authPassword').value = '';
-      updateAccountUI(data.session);
-      setTimeout(() => window.aprovaCloudSync?.sync?.(), 0);
-      notify('Login realizado. A sessão será restaurada automaticamente neste navegador.');
-    } catch (error) { notify(error.message || 'Não foi possível entrar.'); }
-    finally { if (button) button.disabled = false; }
+  function openMasterModal(){
+    const modal=$('masterReauthModal');if(!modal)return notify('Janela de autenticação administrativa indisponível.');
+    const password=$('masterReauthPassword'),status=$('masterReauthStatus');if(password)password.value='';if(status){status.textContent='Use a mesma senha usada para entrar no aplicativo com a conta master.';status.classList.remove('master-auth-error')}
+    modal.classList.add('open');modal.setAttribute('aria-hidden','false');setTimeout(()=>password?.focus(),60)
+  }
+  function closeMasterModal(){const modal=$('masterReauthModal');if(modal){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}if($('masterReauthPassword'))$('masterReauthPassword').value=''}
+
+  async function authenticateMaster(){
+    const client=await ensureClient(),password=$('masterReauthPassword')?.value||'',status=$('masterReauthStatus'),button=$('confirmMasterReauth');
+    if(!client)return notify('A conexão automática com o Supabase não foi inicializada.');
+    if(password.length<6){if(status){status.textContent='Digite a senha da conta master.';status.classList.add('master-auth-error')}return}
+    if(button)button.disabled=true;
+    try{
+      const {data:current}=await client.auth.getSession();const currentUser=current?.session?.user||null;
+      if(!currentUser)throw new Error('Entre primeiro com a conta master no aplicativo.');
+      if(!isMaster(currentUser))throw new Error('A conta atual não possui permissão master.');
+      const {data,error}=await client.auth.signInWithPassword({email:MASTER_EMAIL,password});if(error)throw error;if(!isMaster(data?.user))throw new Error('A conta autenticada não possui permissão master.');
+      unlockAdmin();updateAccountUI(data.session);closeMasterModal();notify('Área administrativa desbloqueada por 15 minutos.');
+    }catch(error){if(status){status.textContent=error.message||'Falha na autenticação.';status.classList.add('master-auth-error')}}finally{if(button)button.disabled=false}
   }
 
-  async function signUp() {
-    const client = await ensureClient();
-    const name = $('authNickname')?.value.trim() || '';
-    const email = $('authEmail')?.value.trim() || '';
-    const password = $('authPassword')?.value || '';
-    if (!client) return notify('A conexão automática com o Supabase não foi inicializada.');
-    if (name.length < 2) return notify('Informe um nickname com pelo menos 2 caracteres.');
-    if (!/^\S+@\S+\.\S+$/.test(email)) return notify('Informe um e-mail válido.');
-    if (password.length < 6) return notify('A senha precisa ter pelo menos 6 caracteres.');
-    const { data: existing } = await client.auth.getSession();
-    if (existing?.session) return notify('Saia da conta atual antes de criar uma nova conta.');
-    const button = $('signUp'); if (button) button.disabled = true;
-    try {
-      const redirect = location.protocol === 'file:' ? undefined : `${location.origin}${location.pathname}`;
-      const { data, error } = await client.auth.signUp({
-        email, password,
-        options: { data: { nickname: name }, ...(redirect ? { emailRedirectTo: redirect } : {}) }
-      });
-      if (error) throw error;
-      $('authPassword').value = '';
-      if (data?.session) {
-        updateAccountUI(data.session);
-        notify('Conta criada e sessão iniciada.');
-      } else notify('Conta criada. Confirme o e-mail e depois entre.');
-    } catch (error) { notify(error.message || 'Não foi possível criar a conta.'); }
-    finally { if (button) button.disabled = false; }
+  async function signIn(){
+    const client=await ensureClient(),email=$('authEmail')?.value.trim()||'',password=$('authPassword')?.value||'';if(!client)return notify('A conexão automática com o Supabase não foi inicializada.');if(!/^\S+@\S+\.\S+$/.test(email)||password.length<6)return notify('Informe e-mail e senha válidos.');
+    const button=$('signIn');if(button)button.disabled=true;try{const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;if($('authPassword'))$('authPassword').value='';updateAccountUI(data.session);setTimeout(()=>window.aprovaCloudSync?.sync?.(),0);notify('Login realizado. A sessão será restaurada automaticamente neste navegador.')}catch(error){notify(error.message||'Não foi possível entrar.')}finally{if(button)button.disabled=false}
   }
 
-  async function signOut() {
-    const client = await ensureClient();
-    if (!client) return notify('A conexão automática com o Supabase não foi inicializada.');
-    const button = $('signOut'); if (button) button.disabled = true;
-    try {
-      const { error } = await client.auth.signOut({ scope: 'local' });
-      if (error) throw error;
-      sessionStorage.removeItem(ADMIN_UNLOCK_KEY);
-      $('authPassword').value = '';
-      updateAccountUI(null);
-      notify('Sessão encerrada.');
-    } catch (error) { notify(error.message || 'Não foi possível sair.'); }
-    finally { if (button) button.disabled = false; }
+  async function signUp(){
+    const client=await ensureClient(),name=$('authNickname')?.value.trim()||'',email=$('authEmail')?.value.trim()||'',password=$('authPassword')?.value||'';if(!client)return notify('A conexão automática com o Supabase não foi inicializada.');if(name.length<2)return notify('Informe um nickname com pelo menos 2 caracteres.');if(!/^\S+@\S+\.\S+$/.test(email))return notify('Informe um e-mail válido.');if(password.length<6)return notify('A senha precisa ter pelo menos 6 caracteres.');
+    const {data:existing}=await client.auth.getSession();if(existing?.session)return notify('Saia da conta atual antes de criar uma nova conta.');const button=$('signUp');if(button)button.disabled=true;
+    try{const redirect=location.protocol==='file:'?undefined:`${location.origin}${location.pathname}`;const {data,error}=await client.auth.signUp({email,password,options:{data:{nickname:name},...(redirect?{emailRedirectTo:redirect}:{})}});if(error)throw error;if($('authPassword'))$('authPassword').value='';if(data?.session){updateAccountUI(data.session);notify('Conta criada e sessão iniciada.')}else notify('Conta criada. Confirme o e-mail e depois entre.')}catch(error){notify(error.message||'Não foi possível criar a conta.')}finally{if(button)button.disabled=false}
   }
 
-  function replaceHandler(id, fn) {
-    const old = $(id); if (!old) return null;
-    const fresh = old.cloneNode(true);
-    old.replaceWith(fresh);
-    fresh.type = 'button';
-    fresh.onclick = event => { event.preventDefault(); event.stopPropagation(); fn(event); };
-    return fresh;
+  async function signOut(){
+    const client=await ensureClient();if(!client)return notify('A conexão automática com o Supabase não foi inicializada.');const button=$('signOut');if(button)button.disabled=true;
+    try{const {error}=await client.auth.signOut({scope:'local'});if(error)throw error;clearUserLocalData();if($('authPassword'))$('authPassword').value='';updateAccountUI(null);notify('Sessão encerrada e áreas locais limpas.');setTimeout(()=>location.reload(),250)}catch(error){notify(error.message||'Não foi possível sair.')}finally{if(button)button.disabled=false}
   }
 
-  async function initialize() {
-    const client = await ensureClient();
-    const status = $('connectionStatus');
-    if (status) {
-      status.textContent = client ? 'CONECTADO' : 'NÃO CONECTADO';
-      status.style.background = client ? '#e8faf3' : '#fff4df';
-      status.style.color = client ? '#167e61' : '#b67300';
-    }
+  function replaceHandler(id,fn){const old=$(id);if(!old)return null;const fresh=old.cloneNode(true);old.replaceWith(fresh);fresh.type='button';fresh.onclick=event=>{event.preventDefault();event.stopImmediatePropagation();fn(event)};return fresh}
 
-    replaceHandler('signIn', signIn);
-    replaceHandler('signUp', signUp);
-    replaceHandler('signOut', signOut);
-    replaceHandler('toggleCredentialLock', openMasterModal);
-    replaceHandler('confirmMasterReauth', authenticateMaster);
-    replaceHandler('cancelMasterReauth', closeMasterModal);
-
-    const notice = $('masterOnlyNotice');
-    if (notice) {
-      const fresh = notice.cloneNode(true);
-      notice.replaceWith(fresh);
-      fresh.hidden = false;
-      fresh.setAttribute('role', 'button');
-      fresh.setAttribute('tabindex', '0');
-      fresh.onclick = openMasterModal;
-      fresh.onkeydown = event => {
-        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openMasterModal(); }
-      };
-    }
-    $('masterReauthPassword')?.addEventListener('keydown', event => {
-      if (event.key === 'Enter') { event.preventDefault(); authenticateMaster(); }
-    });
-
-    if (!client) {
-      updateAccountUI(null);
-      const state = $('accountState'); if (state) state.textContent = 'Conexão automática indisponível. Verifique a configuração fixa do Supabase.';
-      return;
-    }
-    const { data, error } = await client.auth.getSession();
-    if (error) notify(error.message);
-    updateAccountUI(data?.session || null);
-    if (authSubscription?.unsubscribe) authSubscription.unsubscribe();
-    const listener = client.auth.onAuthStateChange((_event, session) => {
-      updateAccountUI(session);
-      if (session?.user) setTimeout(() => window.aprovaCloudSync?.sync?.(), 0);
-    });
-    authSubscription = listener?.data?.subscription || null;
+  async function initialize(){
+    const client=await ensureClient(),status=$('connectionStatus');if(status){status.textContent=client?'CONECTADO':'NÃO CONECTADO';status.style.background=client?'#e8faf3':'#fff4df';status.style.color=client?'#167e61':'#b67300'}
+    replaceHandler('signIn',signIn);replaceHandler('signUp',signUp);replaceHandler('signOut',signOut);replaceHandler('toggleCredentialLock',openMasterModal);replaceHandler('confirmMasterReauth',authenticateMaster);replaceHandler('cancelMasterReauth',closeMasterModal);
+    const notice=$('masterOnlyNotice');if(notice){const fresh=notice.cloneNode(true);notice.replaceWith(fresh);fresh.hidden=false;fresh.setAttribute('role','button');fresh.setAttribute('tabindex','0');fresh.onclick=openMasterModal;fresh.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openMasterModal()}}}
+    $('masterReauthPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();authenticateMaster()}});
+    if(!client){updateAccountUI(null);const state=$('accountState');if(state)state.textContent='Conexão automática indisponível. Verifique a configuração fixa do Supabase.';return}
+    const {data,error}=await client.auth.getSession();if(error)notify(error.message);updateAccountUI(data?.session||null);
+    if(authSubscription?.unsubscribe)authSubscription.unsubscribe();const listener=client.auth.onAuthStateChange((_event,session)=>{updateAccountUI(session);if(session?.user)setTimeout(()=>window.aprovaCloudSync?.sync?.(),0)});authSubscription=listener?.data?.subscription||null;
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true });
-  else initialize();
-  window.addEventListener('pageshow', initialize);
-  window.addEventListener('online', initialize);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize,{once:true});else initialize();
+  window.addEventListener('pageshow',initialize);window.addEventListener('online',initialize);
 })();
 </script>
 
