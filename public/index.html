@@ -1842,14 +1842,37 @@ renderPlanoEstavel();
     return b;
   }
   function button(...selectors){for(const s of selectors){const e=$(s);if(e)return e}return null}
+  // Preserva os controles quando o cabeçalho muda de guia. A versão anterior
+  // usava replaceChildren() diretamente e removia definitivamente os botões,
+  // fazendo "Importar verticalização" desaparecer ao voltar para Meu concurso.
+  let actionParking=$('#contextActionParking');
+  if(!actionParking){
+    actionParking=document.createElement('div');
+    actionParking.id='contextActionParking';
+    actionParking.hidden=true;
+    document.body.appendChild(actionParking);
+  }
   function moveButtons(view){
-    context.replaceChildren();
+    // Estaciona os botões atuais sem destruí-los.
+    [...context.children].forEach(control=>actionParking.appendChild(control));
+
+    // O gestor canônico pode precisar recriar o botão de importação.
+    try{window.aprovaContestManager?.render?.()}catch{}
+
     let items=[];
     if(view==='contest')items=[button('#importVertical'),button('#editContest'),button('#newContest')];
     if(view==='plan')items=[button('#editPlanV3','#editPlanV2','#editPlan'),button('#regenPlan')];
     if(view==='reviews')items=[revisionAddButton(),button('#completeAll')];
-    items.filter(Boolean).forEach(b=>context.appendChild(b));
-    context.hidden=!items.some(Boolean);
+
+    const valid=items.filter(Boolean);
+    valid.forEach(control=>{
+      control.hidden=false;
+      control.disabled=false;
+      control.removeAttribute('disabled');
+      control.setAttribute('aria-disabled','false');
+      context.appendChild(control);
+    });
+    context.hidden=valid.length===0;
   }
   function ensureSubtitle(){
     let p=$('#viewSubtitle');
@@ -2322,6 +2345,121 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize,{once:true});else initialize();
   window.addEventListener('pageshow',initialize);window.addEventListener('online',initialize);
+})();
+</script>
+
+
+<script id="final-import-verticalization-guard">
+(() => {
+  'use strict';
+  const ACTIVE='aprovaActiveContestId';
+  const REGISTRY='aprovaContestRegistryV2';
+  const STATE_PREFIX='aprovaContestState:';
+  const VERTICAL='aprovaVerticalizacao';
+
+  const parse=(raw,fallback)=>{try{return raw?JSON.parse(raw):fallback}catch{return fallback}};
+  const activeContest=()=>{
+    const id=String(localStorage.getItem(ACTIVE)||'');
+    const list=parse(localStorage.getItem(REGISTRY),[]);
+    return Array.isArray(list)?list.find(item=>String(item.id)===id)||null:null;
+  };
+
+  function restoreActiveVerticalization(){
+    const contest=activeContest();
+    if(!contest)return false;
+    const state=parse(localStorage.getItem(STATE_PREFIX+contest.id),{})||{};
+    if(!localStorage.getItem(VERTICAL) && state[VERTICAL]){
+      localStorage.setItem(VERTICAL,typeof state[VERTICAL]==='string'?state[VERTICAL]:JSON.stringify(state[VERTICAL]));
+    }
+    const value=parse(localStorage.getItem(VERTICAL),null);
+    if(value){
+      try{verticalizacaoImportada=value}catch{}
+      window.verticalizacaoImportada=value;
+    }
+    return true;
+  }
+
+  function ensurePersistentImportButton(){
+    let button=document.getElementById('importVertical');
+    const newContest=document.getElementById('newContest');
+    const context=document.getElementById('contextActions');
+    const contestVisible=document.getElementById('contest')?.classList.contains('active');
+
+    if(!button){
+      button=document.createElement('button');
+      button.id='importVertical';
+      button.type='button';
+      button.className='btn';
+      button.textContent='⇩ Importar verticalização';
+    }
+
+    button.hidden=false;
+    button.disabled=false;
+    button.style.display='inline-flex';
+    button.style.alignItems='center';
+    button.style.justifyContent='center';
+    button.removeAttribute('disabled');
+    button.setAttribute('aria-disabled','false');
+
+    const contest=activeContest();
+    button.title=contest
+      ? `Importar ou retificar a verticalização de ${contest.titulo} · ${contest.cargo}`
+      : 'Cadastre ou habilite um concurso para importar a verticalização';
+
+    if(contestVisible && context){
+      context.hidden=false;
+      if(button.parentElement!==context){
+        if(newContest?.parentElement===context)context.insertBefore(button,newContest);
+        else context.prepend(button);
+      }
+    }else if(!button.isConnected && newContest){
+      newContest.before(button);
+    }
+    return button;
+  }
+
+  function openForActiveContest(){
+    const contest=activeContest();
+    if(!contest){
+      (window.toast||window.alert)('Cadastre ou habilite um concurso antes de importar a verticalização.');
+      return;
+    }
+    restoreActiveVerticalization();
+    const note=document.querySelector('#importVerticalModal .edit-note');
+    if(note)note.textContent=`A importação será aplicada somente a “${contest.titulo} · ${contest.cargo}”. Você pode adicionar ou retificar matérias e tópicos deste concurso.`;
+    const modal=document.getElementById('importVerticalModal');
+    if(modal)modal.classList.add('open');
+  }
+
+  // Captura prioritária: funciona mesmo que algum handler legado seja removido ou sobrescrito.
+  document.addEventListener('click',event=>{
+    const control=event.target.closest('#importVertical');
+    if(!control)return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openForActiveContest();
+  },true);
+
+  // Reinstala o botão ao trocar de guia, habilitar concurso ou renderizar listas.
+  document.addEventListener('click',event=>{
+    if(event.target.closest('[data-view="contest"],[data-canonical-open],#newContest,#saveContest')){
+      setTimeout(()=>{restoreActiveVerticalization();ensurePersistentImportButton()},0);
+      setTimeout(ensurePersistentImportButton,180);
+    }
+  },true);
+  document.addEventListener('aprova:render',()=>setTimeout(ensurePersistentImportButton,0));
+  window.addEventListener('pageshow',()=>setTimeout(ensurePersistentImportButton,0));
+  window.addEventListener('storage',()=>setTimeout(ensurePersistentImportButton,0));
+
+  const contest=document.getElementById('contest');
+  if(contest)new MutationObserver(()=>ensurePersistentImportButton()).observe(contest,{attributes:true,attributeFilter:['class']});
+  const context=document.getElementById('contextActions');
+  if(context)new MutationObserver(()=>ensurePersistentImportButton()).observe(context,{childList:true});
+
+  restoreActiveVerticalization();
+  ensurePersistentImportButton();
+  setTimeout(ensurePersistentImportButton,120);
+  setTimeout(ensurePersistentImportButton,500);
 })();
 </script>
 
