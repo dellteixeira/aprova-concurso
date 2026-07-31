@@ -1686,4 +1686,94 @@ renderPlanoEstavel();
   setTimeout(()=>{syncHeader();openVerticalized()},350);
 })();
 </script>
+
+
+<!-- FIX 2026-07-31: persistência visual do edital verticalizado -->
+<script id="fix-persistent-verticalization">
+(() => {
+  'use strict';
+  const ACTIVE_KEY='aprovaActiveContestId';
+  const STATE_PREFIX='aprovaContestState:';
+  const VERTICAL_KEY='aprovaVerticalizacao';
+
+  const parse=(value,fallback=null)=>{try{return value?JSON.parse(value):fallback}catch{return fallback}};
+
+  function recoverVerticalization(){
+    const activeId=String(localStorage.getItem(ACTIVE_KEY)||'');
+    let raw=localStorage.getItem(VERTICAL_KEY);
+
+    // Caso outra rotina tenha limpado as chaves ativas, recupera a cópia individual do concurso.
+    if(!raw && activeId){
+      const state=parse(localStorage.getItem(STATE_PREFIX+activeId),{});
+      if(state && state[VERTICAL_KEY]){
+        raw=typeof state[VERTICAL_KEY]==='string' ? state[VERTICAL_KEY] : JSON.stringify(state[VERTICAL_KEY]);
+        localStorage.setItem(VERTICAL_KEY,raw);
+      }
+    }
+
+    const saved=parse(raw,null);
+    if(!saved || !Array.isArray(saved.disciplinas) || !saved.disciplinas.length) return false;
+
+    // Atualiza tanto a variável global legada quanto a propriedade de window usada pelos hotfixes.
+    try{ verticalizacaoImportada=saved; }catch{}
+    window.verticalizacaoImportada=saved;
+
+    try{
+      if(typeof renderTopicosImportados==='function') renderTopicosImportados();
+      else if(typeof window.renderTopicosImportados==='function') window.renderTopicosImportados();
+    }catch(error){ console.warn('Falha ao restaurar a verticalização:',error); }
+
+    const topics=document.getElementById('topics');
+    if(topics){
+      topics.hidden=false;
+      topics.style.display='block';
+      topics.querySelectorAll('details').forEach(detail=>detail.open=true);
+    }
+    return true;
+  }
+
+  function persistVerticalization(){
+    const activeId=String(localStorage.getItem(ACTIVE_KEY)||'');
+    const raw=localStorage.getItem(VERTICAL_KEY);
+    if(!activeId || !raw) return;
+    const state=parse(localStorage.getItem(STATE_PREFIX+activeId),{}) || {};
+    state[VERTICAL_KEY]=raw;
+    localStorage.setItem(STATE_PREFIX+activeId,JSON.stringify(state));
+  }
+
+  function isContestVisible(){return document.getElementById('contest')?.classList.contains('active')}
+  function refreshContestVerticalization(){
+    if(!isContestVisible()) return;
+    requestAnimationFrame(()=>{
+      recoverVerticalization();
+      setTimeout(recoverVerticalization,60);
+    });
+  }
+
+  // Reabre a verticalização sempre que o usuário retorna à guia Meu concurso.
+  document.addEventListener('click',event=>{
+    const nav=event.target.closest('[data-view="contest"]');
+    if(nav) setTimeout(refreshContestVerticalization,0);
+  },true);
+
+  // Garante que a importação seja imediatamente copiada para o estado individual do concurso.
+  document.addEventListener('click',event=>{
+    if(event.target.closest('#confirmImportVertical')){
+      setTimeout(()=>{persistVerticalization();refreshContestVerticalization()},120);
+      setTimeout(()=>{persistVerticalization();refreshContestVerticalization()},400);
+    }
+  },true);
+
+  // Detecta mudanças de tela feitas por scripts, sem depender apenas do clique no menu.
+  const contest=document.getElementById('contest');
+  if(contest){
+    new MutationObserver(()=>refreshContestVerticalization()).observe(contest,{attributes:true,attributeFilter:['class']});
+  }
+
+  window.addEventListener('pageshow',()=>setTimeout(refreshContestVerticalization,0));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshContestVerticalization()});
+  setTimeout(()=>{persistVerticalization();refreshContestVerticalization()},0);
+})();
+</script>
+
 </body></html>
