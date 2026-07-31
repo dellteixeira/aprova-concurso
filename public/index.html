@@ -3394,4 +3394,95 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
 })();
 </script>
 
+
+<style id="finalSessionTopicSelectorStyles">
+#finalSessionTopicModal .modal-box{width:min(760px,100%)}
+.final-session-summary{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin:0 0 14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+.final-session-summary b{display:block;font-size:14px}.final-session-summary span{display:block;margin-top:3px;color:var(--muted);font-size:11px}
+.final-topic-select-list{display:grid;gap:8px;max-height:52vh;overflow:auto;padding-right:4px}
+.final-topic-select{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:start;padding:11px;border:1px solid var(--line);border-radius:11px;cursor:pointer;background:var(--bg)}
+.final-topic-select:hover{border-color:#8da2ff}.final-topic-select input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--blue)}
+.final-topic-select b{font-size:12px;line-height:1.4}.final-topic-select small{color:var(--muted);font-size:10px;white-space:nowrap}
+.final-topic-toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.final-topic-toolbar p{margin:0;color:var(--muted);font-size:11px}.final-topic-toolbar .btn{min-height:34px}
+body.dark .final-session-summary,body.dark .final-topic-select{background:#101b30;border-color:#2a3958}
+.canonical-planner [data-cycle-session]{cursor:pointer!important;pointer-events:auto!important}
+</style>
+<script id="finalSessionTopicSelectorV1">
+(() => {
+  'use strict';
+  const ACTIVE='aprovaActiveContestId', PREFIX='aprovaContestState:', VERTICAL='aprovaVerticalizacao';
+  const parse=(raw,fallback=null)=>{try{return raw==null?fallback:JSON.parse(raw)}catch{return fallback}};
+  const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const notify=message=>typeof window.toast==='function'?window.toast(message):alert(message);
+  const activeId=()=>String(localStorage.getItem(ACTIVE)||'');
+  const state=()=>parse(localStorage.getItem(PREFIX+activeId()),{})||{};
+  const unpack=value=>typeof value==='string'?parse(value,null):(value&&typeof value==='object'?value:null);
+  function getVertical(){
+    const st=state();
+    const local=unpack(st[VERTICAL]);
+    if(local?.disciplinas?.length)return local;
+    const global=unpack(localStorage.getItem(VERTICAL));
+    return global?.disciplinas?.length?global:null;
+  }
+  function persistVertical(vertical){
+    const id=activeId();
+    if(!id)return;
+    localStorage.setItem(VERTICAL,JSON.stringify(vertical));
+    const st=state();st[VERTICAL]=JSON.stringify(vertical);localStorage.setItem(PREFIX+id,JSON.stringify(st));
+    try{window.aprovaContestManager?.snapshot?.(id)}catch(_){ }
+    try{window.aprovaCloudSync?.save?.()}catch(_){ }
+    document.dispatchEvent(new CustomEvent('aprova:render'));
+  }
+  function normalizeSubject(name){return String(name||'').replace(/^Revisão\s*[·:-]\s*/i,'').trim().toLocaleLowerCase('pt-BR')}
+  function findDiscipline(subject,vertical){
+    const key=normalizeSubject(subject);
+    return vertical.disciplinas.find(d=>normalizeSubject(d.nome)===key)
+      || vertical.disciplinas.find(d=>key.includes(normalizeSubject(d.nome))||normalizeSubject(d.nome).includes(key));
+  }
+  function ensureModal(){
+    let modal=document.getElementById('finalSessionTopicModal');
+    if(modal)return modal;
+    modal=document.createElement('div');modal.id='finalSessionTopicModal';modal.className='modal';modal.innerHTML='<div class="modal-box"></div>';
+    document.body.appendChild(modal);return modal;
+  }
+  function sessionFromButton(button){
+    const [day,time]=String(button.dataset.cycleSession||'').split('|');
+    const subject=button.querySelector('strong')?.textContent?.trim()||button.textContent.trim();
+    return {day,time,subject};
+  }
+  function openSelector(button){
+    const vertical=getVertical();
+    if(!vertical){notify('Importe a verticalização antes de selecionar os tópicos da sessão.');return}
+    const session=sessionFromButton(button),discipline=findDiscipline(session.subject,vertical);
+    if(!discipline){notify(`Não encontrei “${session.subject}” no edital verticalizado.`);return}
+    if(!Array.isArray(discipline.topicos))discipline.topicos=[];
+    const modal=ensureModal(),box=modal.querySelector('.modal-box');
+    const completed=discipline.topicos.filter(t=>t.concluido).length;
+    box.innerHTML=`<h2>Selecionar tópicos da sessão</h2><p>Marque os conteúdos estudados em ${esc(session.day)} · ${esc(session.time)}. As alterações também serão refletidas em Meu concurso e no progresso.</p>
+      <div class="final-session-summary"><div><b>${esc(discipline.nome)}</b><span>${discipline.topicos.length} tópicos · ${completed} concluídos</span></div><span class="priority-chip">${esc(String(discipline.prioridade||'media').toUpperCase())}</span></div>
+      <div class="final-topic-toolbar"><p>Você pode selecionar um ou vários tópicos.</p><button class="btn" type="button" data-final-session-toggle>Marcar/desmarcar todos</button></div>
+      <div class="final-topic-select-list">${discipline.topicos.length?discipline.topicos.map((topic,index)=>`<label class="final-topic-select"><input type="checkbox" data-final-session-topic="${index}" ${topic.concluido?'checked':''}><b>${esc(topic.nome)}</b><small>${topic.concluido?'Estudado':'Pendente'}</small></label>`).join(''):'<div class="empty">Nenhum tópico cadastrado nesta disciplina.</div>'}</div>
+      <div class="modal-actions"><button class="btn" type="button" data-final-session-close>Cancelar</button><button class="btn primary" type="button" data-final-session-save>Salvar tópicos</button></div>`;
+    modal.dataset.subject=discipline.nome;modal.classList.add('open');
+    modal.querySelector('[data-final-session-close]').onclick=()=>modal.classList.remove('open');
+    modal.querySelector('[data-final-session-toggle]').onclick=()=>{const boxes=[...modal.querySelectorAll('[data-final-session-topic]')],all=boxes.length&&boxes.every(x=>x.checked);boxes.forEach(x=>x.checked=!all)};
+    modal.querySelector('[data-final-session-save]').onclick=()=>{
+      const current=getVertical(),target=findDiscipline(modal.dataset.subject,current);
+      if(!target){notify('A disciplina não está mais disponível.');return}
+      modal.querySelectorAll('[data-final-session-topic]').forEach(input=>{const topic=target.topicos[Number(input.dataset.finalSessionTopic)];if(topic)topic.concluido=input.checked});
+      persistVertical(current);modal.classList.remove('open');notify('Tópicos da sessão atualizados.');
+    };
+  }
+  document.addEventListener('click',event=>{
+    const button=event.target.closest('#plan [data-cycle-session]');
+    if(!button||event.target.closest('[data-complete-session]'))return;
+    event.preventDefault();event.stopImmediatePropagation();
+    document.getElementById('sessionTopicsTooltip')?.classList.remove('show');
+    openSelector(button);
+  },true);
+  window.aprovaSessionTopicSelector={open:openSelector};
+})();
+</script>
+
 </body></html>
