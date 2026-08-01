@@ -4628,3 +4628,209 @@ new MutationObserver(applyPerformanceLayout).observe(document.getElementById('pr
   }
 }
 </style>
+<style id="dominated-topics-panel-style">
+#progress .performance-topics{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+#progress .performance-topics .dominated-topics-summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:12px 0 10px;
+  padding-top:10px;
+  border-top:1px solid var(--line);
+  font-size:11px;
+  color:var(--muted);
+}
+#progress .performance-topics .dominated-topics-summary b{color:var(--ink)}
+#progress .performance-topics .dominated-topics-list{
+  display:grid;
+  gap:7px;
+  max-height:510px;
+  overflow:auto;
+  padding-right:5px;
+  scrollbar-width:thin;
+}
+#progress .performance-topics .dominated-discipline{
+  margin:7px 0 1px;
+  padding:5px 2px 2px;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.55px;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+#progress .performance-topics .dominated-topic-row{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  min-height:43px;
+  padding:8px 9px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:color-mix(in srgb,var(--navy) 3%,transparent);
+  transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+#progress .performance-topics .dominated-topic-row:hover{
+  border-color:#8196c4;
+  transform:translateY(-1px);
+}
+#progress .performance-topics .dominated-topic-row.is-studied{
+  border-color:#ef8490;
+  background:#fff0f2;
+}
+#progress .performance-topics .dominated-topic-name{
+  min-width:0;
+  font-size:11px;
+  font-weight:750;
+  line-height:1.35;
+  color:var(--ink);
+}
+#progress .performance-topics .dominated-topic-row.is-studied .dominated-topic-name{
+  color:#bb2f43;
+}
+#progress .performance-topics .dominated-topic-state{
+  display:block;
+  margin-top:2px;
+  font-size:9px;
+  color:var(--muted);
+  font-weight:700;
+}
+#progress .performance-topics .dominated-topic-row.is-studied .dominated-topic-state{
+  color:#d13f52;
+}
+#progress .performance-topics .dominated-topic-toggle{
+  opacity:0;
+  pointer-events:none;
+  transform:translateX(4px);
+  border:1px solid #bdc8dc;
+  border-radius:8px;
+  background:#fff;
+  color:#30415f;
+  padding:6px 8px;
+  font-size:9px;
+  font-weight:850;
+  cursor:pointer;
+  transition:.16s ease;
+  white-space:nowrap;
+}
+#progress .performance-topics .dominated-topic-row:hover .dominated-topic-toggle,
+#progress .performance-topics .dominated-topic-toggle:focus-visible{
+  opacity:1;
+  pointer-events:auto;
+  transform:none;
+}
+#progress .performance-topics .dominated-topic-row.is-studied .dominated-topic-toggle{
+  border-color:#ef9ca6;
+  color:#b92d41;
+  background:#fff8f9;
+}
+body.dark #progress .performance-topics .dominated-topic-row{background:#101b31;border-color:#30415f}
+body.dark #progress .performance-topics .dominated-topic-row.is-studied{background:#411b25;border-color:#bf4a5c}
+body.dark #progress .performance-topics .dominated-topic-name{color:#edf3ff}
+body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominated-topic-name{color:#ff9dab}
+body.dark #progress .performance-topics .dominated-topic-toggle{background:#172540;color:#dce5f6;border-color:#50617f}
+body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominated-topic-toggle{background:#531f2b;color:#ffc0c8;border-color:#cc5b6d}
+@media(max-width:700px){
+  #progress .performance-topics .dominated-topics-list{max-height:390px}
+  #progress .performance-topics .dominated-topic-toggle{opacity:1;pointer-events:auto;transform:none}
+}
+</style>
+<script id="dominated-topics-panel-sync">
+(()=>{
+  const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const getVerticalization=()=>window.verticalizacaoImportada&&Array.isArray(window.verticalizacaoImportada.disciplinas)?window.verticalizacaoImportada:null;
+
+  function findTopicsCard(){
+    return document.querySelector('#progress .performance-topics') || [...document.querySelectorAll('#progress .card')].find(card=>/TÓPICOS\s+DOMINADOS/i.test(card.textContent||''));
+  }
+
+  function getStats(){
+    const vertical=getVerticalization();
+    const disciplines=vertical?.disciplinas||[];
+    const topics=disciplines.flatMap((discipline,disciplineIndex)=>(discipline.topicos||[]).map((topic,topicIndex)=>({discipline,disciplineIndex,topic,topicIndex})));
+    const done=topics.filter(item=>Boolean(item.topic?.concluido)).length;
+    return {vertical,disciplines,topics,done,total:topics.length};
+  }
+
+  function render(){
+    const card=findTopicsCard();
+    if(!card)return;
+    card.classList.add('performance-topics');
+    const data=getStats();
+    const strong=card.querySelector('.metric strong');
+    const trend=card.querySelector('.trend');
+    if(strong)strong.textContent=String(data.done);
+    if(trend)trend.textContent=`de ${data.total} tópicos no edital`;
+
+    let panel=card.querySelector('.dominated-topics-panel');
+    if(!panel){
+      panel=document.createElement('div');
+      panel.className='dominated-topics-panel';
+      card.appendChild(panel);
+    }
+
+    if(!data.total){
+      panel.innerHTML='<div class="dominated-topics-summary"><span>Nenhum edital verticalizado.</span></div>';
+      return;
+    }
+
+    panel.innerHTML=`<div class="dominated-topics-summary"><span><b>${data.done}</b> estudados</span><span>${data.total-data.done} pendentes</span></div><div class="dominated-topics-list">${data.disciplines.map((discipline,disciplineIndex)=>{
+      const topicRows=(discipline.topicos||[]).map((topic,topicIndex)=>{
+        const studied=Boolean(topic?.concluido);
+        return `<div class="dominated-topic-row${studied?' is-studied':''}" data-dominated-discipline="${disciplineIndex}" data-dominated-topic="${topicIndex}"><div class="dominated-topic-copy"><div class="dominated-topic-name">${escapeHtml(topic?.nome||topic||'Tópico')}</div><span class="dominated-topic-state">${studied?'Estudado':'Pendente'}</span></div><button type="button" class="dominated-topic-toggle" aria-label="${studied?'Desmarcar':'Marcar'} ${escapeHtml(topic?.nome||topic||'tópico')}">${studied?'Desmarcar':'Marcar'}</button></div>`;
+      }).join('');
+      return `<div class="dominated-discipline">${escapeHtml(discipline.nome||'Disciplina')}</div>${topicRows}`;
+    }).join('')}</div>`;
+  }
+
+  async function persistAndPropagate(){
+    try{localStorage.setItem('aprovaVerticalizacao',JSON.stringify(window.verticalizacaoImportada));}catch{}
+    try{window.salvarVerticalizacao?.();}catch{}
+    try{window.renderTopicosImportados?.();}catch(error){console.warn('Falha ao atualizar Meu concurso:',error)}
+    try{window.atualizarResumoImportado?.();}catch{}
+    try{await window.aprovaSupabaseAuto?.save?.();}catch(error){console.warn('Falha ao sincronizar tópico com Supabase:',error)}
+    window.dispatchEvent(new CustomEvent('aprova:topics-changed',{detail:{source:'performance-topics'}}));
+    document.dispatchEvent(new CustomEvent('aprova:render'));
+  }
+
+  document.addEventListener('click',event=>{
+    const button=event.target.closest('.dominated-topic-toggle');
+    if(button){
+      event.preventDefault();
+      const row=button.closest('[data-dominated-discipline][data-dominated-topic]');
+      const vertical=getVerticalization();
+      const discipline=vertical?.disciplinas?.[Number(row?.dataset.dominatedDiscipline)];
+      const topic=discipline?.topicos?.[Number(row?.dataset.dominatedTopic)];
+      if(!topic)return;
+      topic.concluido=!Boolean(topic.concluido);
+      render();
+      persistAndPropagate();
+      window.toast?.(topic.concluido?'Tópico marcado como estudado.':'Tópico marcado como pendente.');
+      return;
+    }
+
+    if(event.target.closest('.topic-check,[data-topic-discipline],.check')){
+      setTimeout(render,60);
+    }
+    const nav=event.target.closest('[data-view],.nav button');
+    if(nav)setTimeout(render,80);
+  },true);
+
+  window.addEventListener('aprova:topics-changed',render);
+  window.addEventListener('aprova:plan-updated',render);
+  window.addEventListener('storage',event=>{if(/aprovaVerticalizacao|aprovaContestState/.test(event.key||''))render()});
+  document.addEventListener('aprova:render',render);
+
+  const progress=document.getElementById('progress');
+  if(progress)new MutationObserver(()=>requestAnimationFrame(render)).observe(progress,{childList:true,subtree:true});
+
+  window.renderDominatedTopicsPanel=render;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
+})();
+</script>
