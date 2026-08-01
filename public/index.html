@@ -4318,6 +4318,15 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
 #questionAccuracyCard{position:relative;overflow:visible}
 #questionAccuracyCard .question-card-actions{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
 #questionAccuracyCard .question-card-actions .btn{min-height:34px;padding:7px 11px;font-size:12px}
+#questionAccuracyCard .question-card-inline{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:grid;gap:7px}
+#questionAccuracyCard .question-card-inline-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted);font-weight:800}
+#questionAccuracyCard .question-card-inline-list{display:grid;gap:6px}
+#questionAccuracyCard .question-card-inline-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center;padding:7px 8px;border:1px solid var(--line);border-radius:9px;background:var(--bg)}
+#questionAccuracyCard .question-card-inline-row b{display:block;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#questionAccuracyCard .question-card-inline-row small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+#questionAccuracyCard .question-card-inline-score{font-size:11px;font-weight:900;color:var(--blue);white-space:nowrap}
+#questionAccuracyCard .question-card-inline-actions{display:flex;gap:5px;grid-column:1/-1;justify-content:flex-end}
+#questionAccuracyCard .question-card-inline-actions .btn{min-height:28px!important;padding:4px 7px!important;font-size:10px!important}
 #questionDetailsModal .modal-box{max-width:980px;width:min(94vw,980px);max-height:88vh;overflow:auto}
 .question-modal-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
 .question-modal-summary>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
@@ -4332,7 +4341,8 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
 <script id="finalDeadlineQuestionDetailsModule">
 (() => {
   'use strict';
-  const REGISTRY='aprovaContestRegistryV2', ACTIVE='aprovaActiveContestId', TABLE='question_sessions';
+  const REGISTRY='aprovaContestRegistryV2', ACTIVE='aprovaActiveContestId', TABLE='question_sessions', CACHE_PREFIX='aprovaQuestionRowsCacheV1:';
+  let memoryRows=new Map(), inflight=null, lastCacheKey='';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   const read=(k,f)=>{try{const v=localStorage.getItem(k);return v===null?f:JSON.parse(v)}catch{return f}};
   const notify=m=>typeof window.toast==='function'?window.toast(m):alert(m);
@@ -4360,13 +4370,23 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
     desc.textContent=days===0?'A prova é hoje. Priorize revisão leve e confiança.':`Faltam ${text} para a prova. O plano distribui conteúdo e revisões conforme o prazo real.`;
     side.textContent=days===0?'A prova é hoje. Confie na preparação.':`Faltam ${text} para sua prova. Continue consistente.`;
   }
-  async function currentUser(){const c=client();if(!c)return null;const {data,error}=await c.auth.getUser();return error?null:data?.user||null}
+  async function currentUser(){const c=client();if(!c)return null;try{const {data:{session}}=await c.auth.getSession();if(session?.user)return session.user}catch(_){}const {data,error}=await c.auth.getUser();return error?null:data?.user||null}
   const monthStart=(offset=0)=>{const d=new Date();d.setMonth(d.getMonth()+offset,1);d.setHours(0,0,0,0);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
   const pct=(h,t)=>t>0?Math.round(h/t*100):0;
-  async function rows(){
+  function cacheKey(userId,cid){return `${CACHE_PREFIX}${userId}:${cid}:${monthStart(0)}`}
+  function readCached(key){
+    if(memoryRows.has(key))return memoryRows.get(key);
+    try{const parsed=JSON.parse(localStorage.getItem(key)||'null');if(parsed&&Array.isArray(parsed.rows)){memoryRows.set(key,parsed.rows);return parsed.rows}}catch(_){}
+    return null;
+  }
+  function writeCached(key,data){memoryRows.set(key,data);try{localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),rows:data}))}catch(_){}}
+  async function rows(force=false){
     const c=client(),u=await currentUser(),cid=activeId();if(!c||!u||!cid)return [];
-    const {data,error}=await c.from(TABLE).select('id,materia,topico,total_questoes,acertos,data_sessao,fonte,duration_minutes').eq('user_id',u.id).eq('concurso_id',cid).gte('data_sessao',monthStart(0)).lt('data_sessao',monthStart(1)).order('data_sessao',{ascending:false}).order('created_at',{ascending:false});
-    if(error)throw error;return data||[];
+    const key=cacheKey(u.id,cid);lastCacheKey=key;
+    if(!force){const cached=readCached(key);if(cached)return cached}
+    if(inflight)return inflight;
+    inflight=(async()=>{const {data,error}=await c.from(TABLE).select('id,materia,topico,total_questoes,acertos,data_sessao,fonte,duration_minutes,created_at').eq('user_id',u.id).eq('concurso_id',cid).gte('data_sessao',monthStart(0)).lt('data_sessao',monthStart(1)).order('data_sessao',{ascending:false}).order('created_at',{ascending:false});if(error)throw error;const result=data||[];writeCached(key,result);return result})().finally(()=>{inflight=null});
+    return inflight;
   }
   function ensureModal(){
     if(document.getElementById('questionDetailsModal'))return;
@@ -4375,30 +4395,47 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
   function ensureButton(){
     const card=document.getElementById('questionAccuracyCard')||document.querySelectorAll('#progress .grid.stats > article')[2];if(!card)return;
     card.id='questionAccuracyCard';
-    let actions=card.querySelector('.question-card-actions');if(!actions){actions=document.createElement('div');actions.className='question-card-actions';actions.innerHTML='<button class="btn" type="button" id="openQuestionDetails">Ver detalhes</button>';card.appendChild(actions)}
+    let inline=card.querySelector('.question-card-inline');if(!inline){inline=document.createElement('div');inline.className='question-card-inline';inline.innerHTML='<div class="question-card-inline-title"><span>REGISTROS RECENTES</span><span id="questionInlineCount">0</span></div><div class="question-card-inline-list" id="questionInlineList"><small class="muted">Nenhum registro neste mês.</small></div>';card.appendChild(inline)}
+    let actions=card.querySelector('.question-card-actions');if(!actions){actions=document.createElement('div');actions.className='question-card-actions';actions.innerHTML='<button class="btn" type="button" id="openQuestionDetails">Ver todos os detalhes</button>';card.appendChild(actions)}
+  }
+  function renderInline(data){
+    ensureButton();const list=document.getElementById('questionInlineList'),count=document.getElementById('questionInlineCount');if(!list)return;
+    if(count)count.textContent=`${data.length} registro${data.length===1?'':'s'}`;
+    const recent=data.slice(0,10);
+    list.innerHTML=recent.length?recent.map(r=>{const p=pct(Number(r.acertos||0),Number(r.total_questoes||0));const date=r.data_sessao?new Date(r.data_sessao+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'';return `<div class="question-card-inline-row"><div><b>${esc(r.materia||'Sem matéria')}</b><small>${esc(r.topico||date||'Registro geral')}</small></div><span class="question-card-inline-score">${Number(r.acertos||0)}/${Number(r.total_questoes||0)} · ${p}%</span><div class="question-card-inline-actions"><button class="btn" type="button" data-edit-question="${esc(r.id)}">Alterar</button><button class="btn danger" type="button" data-delete-question="${esc(r.id)}">Excluir</button></div></div>`}).join(''):'<small class="muted">Nenhum registro neste mês.</small>';
   }
   function renderDetails(data){
+    renderInline(data);
     const content=document.getElementById('questionDetailsContent');if(!content)return;
     const total=data.reduce((s,r)=>s+Number(r.total_questoes||0),0),hits=data.reduce((s,r)=>s+Number(r.acertos||0),0),percent=pct(hits,total);
     const by=new Map();data.forEach(r=>{const k=r.materia||'Sem matéria',x=by.get(k)||{total:0,hits:0,count:0};x.total+=Number(r.total_questoes||0);x.hits+=Number(r.acertos||0);x.count++;by.set(k,x)});
     const subjects=[...by.entries()].sort((a,b)=>pct(a[1].hits,a[1].total)-pct(b[1].hits,b[1].total));
     content.innerHTML=`<div class="question-modal-summary"><div><small>PERCENTUAL</small><strong>${total?percent+'%':'—'}</strong></div><div><small>ACERTOS</small><strong>${hits}</strong></div><div><small>QUESTÕES</small><strong>${total}</strong></div></div><div class="section-title"><h3>Desempenho por matéria</h3><span class="tiny-label">MÊS ATUAL</span></div><div class="question-modal-subjects">${subjects.length?subjects.map(([name,x])=>{const p=pct(x.hits,x.total);return `<div class="question-subject-row"><div class="question-subject-head"><b>${esc(name)}</b><strong>${p}%</strong></div><small>${x.hits} acertos em ${x.total} questões · ${x.count} registro${x.count===1?'':'s'}</small><div class="track"><div class="fill${p<60?' amber':p>=80?' green':''}" style="width:${p}%"></div></div></div>`}).join(''):'<div class="question-empty">Nenhum resultado por matéria.</div>'}</div><div class="section-title"><h3>Detalhes dos registros</h3><span class="tiny-label">ALTERAR OU EXCLUIR</span></div><div class="question-modal-records">${data.length?data.map(r=>{const p=pct(Number(r.acertos||0),Number(r.total_questoes||0));const date=r.data_sessao?new Date(r.data_sessao+'T12:00:00').toLocaleDateString('pt-BR'):'Sem data';return `<div class="question-modal-record"><div class="main"><b>${esc(r.materia||'Sem matéria')}</b><small>${esc(r.topico||r.fonte||'Registro geral')}</small></div><span class="meta">${esc(date)}${r.duration_minutes?` · ${Number(r.duration_minutes)} min`:''}</span><span class="score">${Number(r.acertos||0)}/${Number(r.total_questoes||0)} · ${p}%</span><button class="btn" type="button" data-edit-question="${esc(r.id)}">Alterar</button><button class="btn danger" type="button" data-delete-question="${esc(r.id)}">Excluir</button></div>`}).join(''):'<div class="question-empty">Nenhum registro de questões neste mês.</div>'}</div>`;
   }
-  async function openDetails(){ensureModal();document.getElementById('questionDetailsModal').classList.add('open');const content=document.getElementById('questionDetailsContent');if(content)content.innerHTML='<div class="question-empty">Carregando registros…</div>';try{renderDetails(await rows())}catch(error){if(content)content.innerHTML=`<div class="question-empty">Não foi possível carregar: ${esc(error.message||error)}</div>`}}
+  async function openDetails(){
+    ensureModal();document.getElementById('questionDetailsModal').classList.add('open');
+    const content=document.getElementById('questionDetailsContent');
+    const cached=lastCacheKey?readCached(lastCacheKey):null;
+    if(cached){renderDetails(cached)}else if(content){content.innerHTML='<div class="question-empty">Buscando registros…</div>'}
+    try{const fresh=await rows(true);renderDetails(fresh)}catch(error){if(!cached&&content)content.innerHTML=`<div class="question-empty">Não foi possível carregar: ${esc(error.message||error)}</div>`}
+  }
   async function deleteQuestion(id){
     if(!confirm('Excluir definitivamente este registro de questões?'))return;
     const c=client(),u=await currentUser(),cid=activeId();if(!c||!u||!cid)return notify('Entre na conta e selecione um concurso.');
     const {error}=await c.from(TABLE).delete().eq('id',id).eq('user_id',u.id).eq('concurso_id',cid);if(error)return notify('Não foi possível excluir: '+error.message);
-    await window.aprovaQuestions?.refresh?.();renderDetails(await rows());notify('Registro de questões excluído.');
+    const key=cacheKey(u.id,cid),cached=(readCached(key)||[]).filter(r=>String(r.id)!==String(id));writeCached(key,cached);renderDetails(cached);
+    window.aprovaQuestions?.refresh?.();rows(true).then(renderDetails).catch(()=>{});notify('Registro de questões excluído.');
   }
-  function refreshAll(){updateDeadline();ensureButton();const old=document.getElementById('questionPerformanceCard');if(old)old.style.display='none'}
+  function refreshAll(){updateDeadline();ensureButton();const old=document.getElementById('questionPerformanceCard');if(old)old.style.display='none';
+    rows(false).then(data=>{renderInline(data);rows(true).then(renderInline).catch(()=>{})}).catch(()=>{})
+  }
   document.addEventListener('click',event=>{
     if(event.target.closest('#openQuestionDetails')){event.preventDefault();openDetails();return}
     if(event.target.closest('[data-close-question-details]')){document.getElementById('questionDetailsModal')?.classList.remove('open');return}
     const del=event.target.closest('[data-delete-question]');if(del){event.preventDefault();event.stopImmediatePropagation();deleteQuestion(del.dataset.deleteQuestion);return}
   },true);
   document.addEventListener('aprova:render',refreshAll);
-  document.addEventListener('submit',event=>{if(event.target.id==='canonicalContestEditForm')setTimeout(refreshAll,180);if(event.target.id==='questionEditForm')setTimeout(async()=>{try{if(document.getElementById('questionDetailsModal')?.classList.contains('open'))renderDetails(await rows())}catch(_){}},450)},true);
+  document.addEventListener('submit',event=>{if(event.target.id==='canonicalContestEditForm')setTimeout(refreshAll,180);if(event.target.id==='questionEditForm')setTimeout(async()=>{try{memoryRows.clear();const data=await rows(true);renderInline(data);if(document.getElementById('questionDetailsModal')?.classList.contains('open'))renderDetails(data)}catch(_){}},180)},true);
   window.addEventListener('storage',refreshAll);
   window.addEventListener('pageshow',refreshAll);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{ensureModal();refreshAll()},{once:true});else{ensureModal();refreshAll()}
