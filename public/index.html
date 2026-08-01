@@ -4756,6 +4756,25 @@ body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominat
 (()=>{
   const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
   const getVerticalization=()=>window.verticalizacaoImportada&&Array.isArray(window.verticalizacaoImportada.disciplinas)?window.verticalizacaoImportada:null;
+  let preservedScrollTop=null;
+  let preservedWindowY=null;
+  let preserveScrollUntil=0;
+
+  function preserveCurrentPosition(list){
+    preservedScrollTop=Number(list?.scrollTop||0);
+    preservedWindowY=window.scrollY;
+    preserveScrollUntil=Date.now()+1600;
+  }
+
+  function restorePreservedPosition(list){
+    if(!list)return;
+    const shouldPreserve=preservedScrollTop!==null&&Date.now()<=preserveScrollUntil;
+    const target=shouldPreserve?preservedScrollTop:Number(list.scrollTop||0);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      list.scrollTop=Math.max(0,Math.min(target,list.scrollHeight-list.clientHeight));
+      if(shouldPreserve&&preservedWindowY!==null)window.scrollTo({top:preservedWindowY,left:window.scrollX,behavior:'auto'});
+    }));
+  }
 
   function findTopicsCard(){
     return document.querySelector('#progress .performance-topics') || [...document.querySelectorAll('#progress .card')].find(card=>/TÓPICOS\s+DOMINADOS/i.test(card.textContent||''));
@@ -4786,7 +4805,7 @@ body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominat
       card.appendChild(panel);
     }
     const previousList=panel.querySelector('.dominated-topics-list');
-    const previousScrollTop=previousList?.scrollTop||0;
+    const previousScrollTop=(preservedScrollTop!==null&&Date.now()<=preserveScrollUntil)?preservedScrollTop:(previousList?.scrollTop||0);
 
     if(!data.total){
       panel.innerHTML='<div class="dominated-topics-summary"><span>Nenhum edital verticalizado.</span></div>';
@@ -4801,7 +4820,10 @@ body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominat
       return `<div class="dominated-discipline">${escapeHtml(discipline.nome||'Disciplina')}</div>${topicRows}`;
     }).join('')}</div>`;
     const currentList=panel.querySelector('.dominated-topics-list');
-    if(currentList)requestAnimationFrame(()=>{currentList.scrollTop=Math.min(previousScrollTop,currentList.scrollHeight-currentList.clientHeight)});
+    if(currentList){
+      if(preservedScrollTop===null||Date.now()>preserveScrollUntil)preservedScrollTop=previousScrollTop;
+      restorePreservedPosition(currentList);
+    }
   }
 
   async function persistAndPropagate(){
@@ -4823,6 +4845,7 @@ body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominat
       const discipline=vertical?.disciplinas?.[Number(row?.dataset.dominatedDiscipline)];
       const topic=discipline?.topicos?.[Number(row?.dataset.dominatedTopic)];
       if(!topic)return;
+      preserveCurrentPosition(button.closest('.dominated-topics-list'));
       topic.concluido=!Boolean(topic.concluido);
       render();
       persistAndPropagate();
