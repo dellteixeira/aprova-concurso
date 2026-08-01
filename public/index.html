@@ -4650,10 +4650,21 @@ new MutationObserver(applyPerformanceLayout).observe(document.getElementById('pr
   display:grid;
   gap:7px;
   max-height:510px;
-  overflow:auto;
-  padding-right:5px;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:8px;
   scrollbar-width:thin;
+  scrollbar-gutter:stable;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  -webkit-overflow-scrolling:touch;
+  pointer-events:auto;
 }
+#progress .performance-topics .dominated-topics-list::-webkit-scrollbar{width:10px}
+#progress .performance-topics .dominated-topics-list::-webkit-scrollbar-track{background:color-mix(in srgb,var(--line) 55%,transparent);border-radius:999px}
+#progress .performance-topics .dominated-topics-list::-webkit-scrollbar-thumb{background:#74829a;border:2px solid transparent;background-clip:padding-box;border-radius:999px}
+#progress .performance-topics .dominated-topics-list::-webkit-scrollbar-thumb:hover{background:#94a2ba;border:2px solid transparent;background-clip:padding-box}
 #progress .performance-topics .dominated-discipline{
   margin:7px 0 1px;
   padding:5px 2px 2px;
@@ -4774,6 +4785,8 @@ body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominat
       panel.className='dominated-topics-panel';
       card.appendChild(panel);
     }
+    const previousList=panel.querySelector('.dominated-topics-list');
+    const previousScrollTop=previousList?.scrollTop||0;
 
     if(!data.total){
       panel.innerHTML='<div class="dominated-topics-summary"><span>Nenhum edital verticalizado.</span></div>';
@@ -4787,6 +4800,8 @@ body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominat
       }).join('');
       return `<div class="dominated-discipline">${escapeHtml(discipline.nome||'Disciplina')}</div>${topicRows}`;
     }).join('')}</div>`;
+    const currentList=panel.querySelector('.dominated-topics-list');
+    if(currentList)requestAnimationFrame(()=>{currentList.scrollTop=Math.min(previousScrollTop,currentList.scrollHeight-currentList.clientHeight)});
   }
 
   async function persistAndPropagate(){
@@ -4828,7 +4843,27 @@ body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominat
   document.addEventListener('aprova:render',render);
 
   const progress=document.getElementById('progress');
-  if(progress)new MutationObserver(()=>requestAnimationFrame(render)).observe(progress,{childList:true,subtree:true});
+  if(progress){
+    // Observa somente a ativação/visibilidade da guia, sem reconstruir o painel
+    // durante a própria rolagem ou alterações internas da lista.
+    new MutationObserver(mutations=>{
+      if(mutations.some(m=>m.type==='attributes'&&(m.attributeName==='class'||m.attributeName==='hidden'))){
+        requestAnimationFrame(render);
+      }
+    }).observe(progress,{attributes:true,attributeFilter:['class','hidden']});
+  }
+
+  document.addEventListener('wheel',event=>{
+    const list=event.target.closest?.('.dominated-topics-list');
+    if(!list)return;
+    const canScroll=list.scrollHeight>list.clientHeight;
+    if(!canScroll)return;
+    const atTop=list.scrollTop<=0;
+    const atBottom=Math.ceil(list.scrollTop+list.clientHeight)>=list.scrollHeight;
+    if((event.deltaY<0&&!atTop)||(event.deltaY>0&&!atBottom)){
+      event.stopPropagation();
+    }
+  },{passive:true,capture:true});
 
   window.renderDominatedTopicsPanel=render;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
