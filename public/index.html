@@ -4311,4 +4311,99 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
 })();
 </script>
 
+
+
+<style id="finalDeadlineQuestionDetailsStyles">
+#questionPerformanceCard{display:none!important}
+#questionAccuracyCard{position:relative;overflow:visible}
+#questionAccuracyCard .question-card-actions{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+#questionAccuracyCard .question-card-actions .btn{min-height:34px;padding:7px 11px;font-size:12px}
+#questionDetailsModal .modal-box{max-width:980px;width:min(94vw,980px);max-height:88vh;overflow:auto}
+.question-modal-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.question-modal-summary>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.question-modal-summary small{display:block;color:var(--muted);font-weight:800;letter-spacing:.04em}.question-modal-summary strong{display:block;margin-top:5px;font-size:20px}
+.question-modal-subjects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+.question-modal-records{display:grid;gap:9px}
+.question-modal-record{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.8fr) auto auto auto;gap:10px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.question-modal-record .main{display:grid;gap:3px}.question-modal-record .main b{font-size:13px}.question-modal-record .main small,.question-modal-record .meta{color:var(--muted);font-size:11px}.question-modal-record .score{font-weight:900;color:var(--blue);white-space:nowrap}
+.question-modal-record .btn{min-height:34px;padding:7px 10px}
+@media(max-width:760px){.question-modal-summary,.question-modal-subjects{grid-template-columns:1fr}.question-modal-record{grid-template-columns:1fr auto}.question-modal-record .meta{grid-column:1}.question-modal-record .score{grid-column:2;grid-row:1}.question-modal-record .btn{grid-row:auto}}
+</style>
+<script id="finalDeadlineQuestionDetailsModule">
+(() => {
+  'use strict';
+  const REGISTRY='aprovaContestRegistryV2', ACTIVE='aprovaActiveContestId', TABLE='question_sessions';
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  const read=(k,f)=>{try{const v=localStorage.getItem(k);return v===null?f:JSON.parse(v)}catch{return f}};
+  const notify=m=>typeof window.toast==='function'?window.toast(m):alert(m);
+  const client=()=>window.supabaseClient||null;
+  const activeId=()=>String(localStorage.getItem(ACTIVE)||'').trim();
+  const registry=()=>{const v=read(REGISTRY,[]);return Array.isArray(v)?v:[]};
+  const activeContest=()=>registry().find(c=>String(c.id)===activeId())||null;
+  const localDate=value=>{
+    if(!value)return null;
+    const m=String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(!m)return null;
+    return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),0,0,0,0);
+  };
+  function daysUntil(value){const target=localDate(value);if(!target)return null;const today=new Date();today.setHours(0,0,0,0);return Math.round((target-today)/86400000)}
+  function updateDeadline(){
+    const contest=activeContest();
+    const days=contest?daysUntil(contest.data_prova):null;
+    const main=document.getElementById('daysLeft'), desc=document.getElementById('deadlineDescription'), side=document.getElementById('sideDeadline');
+    if(!main||!desc||!side)return;
+    if(!contest){main.textContent='Sem concurso';desc.textContent='Cadastre e habilite um concurso para acompanhar o prazo.';side.textContent='Entre para acessar seu planejamento.';return}
+    if(days===null){main.textContent='Sem data';desc.textContent='Edite o concurso e informe a data da prova.';side.textContent='Defina a data da prova para acompanhar seu planejamento.';return}
+    if(days<0){main.textContent='Prova realizada';desc.textContent='A data da prova já passou. Atualize o concurso para continuar planejando.';side.textContent='A data da prova já passou. Atualize seu concurso.';return}
+    const text=`${days} ${days===1?'dia':'dias'}`;
+    main.textContent=text;
+    desc.textContent=days===0?'A prova é hoje. Priorize revisão leve e confiança.':`Faltam ${text} para a prova. O plano distribui conteúdo e revisões conforme o prazo real.`;
+    side.textContent=days===0?'A prova é hoje. Confie na preparação.':`Faltam ${text} para sua prova. Continue consistente.`;
+  }
+  async function currentUser(){const c=client();if(!c)return null;const {data,error}=await c.auth.getUser();return error?null:data?.user||null}
+  const monthStart=(offset=0)=>{const d=new Date();d.setMonth(d.getMonth()+offset,1);d.setHours(0,0,0,0);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+  const pct=(h,t)=>t>0?Math.round(h/t*100):0;
+  async function rows(){
+    const c=client(),u=await currentUser(),cid=activeId();if(!c||!u||!cid)return [];
+    const {data,error}=await c.from(TABLE).select('id,materia,topico,total_questoes,acertos,data_sessao,fonte,duration_minutes').eq('user_id',u.id).eq('concurso_id',cid).gte('data_sessao',monthStart(0)).lt('data_sessao',monthStart(1)).order('data_sessao',{ascending:false}).order('created_at',{ascending:false});
+    if(error)throw error;return data||[];
+  }
+  function ensureModal(){
+    if(document.getElementById('questionDetailsModal'))return;
+    document.body.insertAdjacentHTML('beforeend',`<div class="modal" id="questionDetailsModal"><div class="modal-box"><div class="section-title"><div><h2 style="margin:0">Acertos em questões</h2><p class="muted" style="margin:5px 0 0">Detalhes do concurso ativo e registros do mês atual.</p></div><button class="btn" type="button" data-close-question-details>Fechar</button></div><div id="questionDetailsContent"><div class="question-empty">Carregando registros…</div></div></div></div>`);
+  }
+  function ensureButton(){
+    const card=document.getElementById('questionAccuracyCard')||document.querySelectorAll('#progress .grid.stats > article')[2];if(!card)return;
+    card.id='questionAccuracyCard';
+    let actions=card.querySelector('.question-card-actions');if(!actions){actions=document.createElement('div');actions.className='question-card-actions';actions.innerHTML='<button class="btn" type="button" id="openQuestionDetails">Ver detalhes</button>';card.appendChild(actions)}
+  }
+  function renderDetails(data){
+    const content=document.getElementById('questionDetailsContent');if(!content)return;
+    const total=data.reduce((s,r)=>s+Number(r.total_questoes||0),0),hits=data.reduce((s,r)=>s+Number(r.acertos||0),0),percent=pct(hits,total);
+    const by=new Map();data.forEach(r=>{const k=r.materia||'Sem matéria',x=by.get(k)||{total:0,hits:0,count:0};x.total+=Number(r.total_questoes||0);x.hits+=Number(r.acertos||0);x.count++;by.set(k,x)});
+    const subjects=[...by.entries()].sort((a,b)=>pct(a[1].hits,a[1].total)-pct(b[1].hits,b[1].total));
+    content.innerHTML=`<div class="question-modal-summary"><div><small>PERCENTUAL</small><strong>${total?percent+'%':'—'}</strong></div><div><small>ACERTOS</small><strong>${hits}</strong></div><div><small>QUESTÕES</small><strong>${total}</strong></div></div><div class="section-title"><h3>Desempenho por matéria</h3><span class="tiny-label">MÊS ATUAL</span></div><div class="question-modal-subjects">${subjects.length?subjects.map(([name,x])=>{const p=pct(x.hits,x.total);return `<div class="question-subject-row"><div class="question-subject-head"><b>${esc(name)}</b><strong>${p}%</strong></div><small>${x.hits} acertos em ${x.total} questões · ${x.count} registro${x.count===1?'':'s'}</small><div class="track"><div class="fill${p<60?' amber':p>=80?' green':''}" style="width:${p}%"></div></div></div>`}).join(''):'<div class="question-empty">Nenhum resultado por matéria.</div>'}</div><div class="section-title"><h3>Detalhes dos registros</h3><span class="tiny-label">ALTERAR OU EXCLUIR</span></div><div class="question-modal-records">${data.length?data.map(r=>{const p=pct(Number(r.acertos||0),Number(r.total_questoes||0));const date=r.data_sessao?new Date(r.data_sessao+'T12:00:00').toLocaleDateString('pt-BR'):'Sem data';return `<div class="question-modal-record"><div class="main"><b>${esc(r.materia||'Sem matéria')}</b><small>${esc(r.topico||r.fonte||'Registro geral')}</small></div><span class="meta">${esc(date)}${r.duration_minutes?` · ${Number(r.duration_minutes)} min`:''}</span><span class="score">${Number(r.acertos||0)}/${Number(r.total_questoes||0)} · ${p}%</span><button class="btn" type="button" data-edit-question="${esc(r.id)}">Alterar</button><button class="btn danger" type="button" data-delete-question="${esc(r.id)}">Excluir</button></div>`}).join(''):'<div class="question-empty">Nenhum registro de questões neste mês.</div>'}</div>`;
+  }
+  async function openDetails(){ensureModal();document.getElementById('questionDetailsModal').classList.add('open');const content=document.getElementById('questionDetailsContent');if(content)content.innerHTML='<div class="question-empty">Carregando registros…</div>';try{renderDetails(await rows())}catch(error){if(content)content.innerHTML=`<div class="question-empty">Não foi possível carregar: ${esc(error.message||error)}</div>`}}
+  async function deleteQuestion(id){
+    if(!confirm('Excluir definitivamente este registro de questões?'))return;
+    const c=client(),u=await currentUser(),cid=activeId();if(!c||!u||!cid)return notify('Entre na conta e selecione um concurso.');
+    const {error}=await c.from(TABLE).delete().eq('id',id).eq('user_id',u.id).eq('concurso_id',cid);if(error)return notify('Não foi possível excluir: '+error.message);
+    await window.aprovaQuestions?.refresh?.();renderDetails(await rows());notify('Registro de questões excluído.');
+  }
+  function refreshAll(){updateDeadline();ensureButton();const old=document.getElementById('questionPerformanceCard');if(old)old.style.display='none'}
+  document.addEventListener('click',event=>{
+    if(event.target.closest('#openQuestionDetails')){event.preventDefault();openDetails();return}
+    if(event.target.closest('[data-close-question-details]')){document.getElementById('questionDetailsModal')?.classList.remove('open');return}
+    const del=event.target.closest('[data-delete-question]');if(del){event.preventDefault();event.stopImmediatePropagation();deleteQuestion(del.dataset.deleteQuestion);return}
+  },true);
+  document.addEventListener('aprova:render',refreshAll);
+  document.addEventListener('submit',event=>{if(event.target.id==='canonicalContestEditForm')setTimeout(refreshAll,180);if(event.target.id==='questionEditForm')setTimeout(async()=>{try{if(document.getElementById('questionDetailsModal')?.classList.contains('open'))renderDetails(await rows())}catch(_){}},450)},true);
+  window.addEventListener('storage',refreshAll);
+  window.addEventListener('pageshow',refreshAll);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{ensureModal();refreshAll()},{once:true});else{ensureModal();refreshAll()}
+  window.aprovaQuestionDetails={open:openDetails,refresh:refreshAll};
+})();
+</script>
+
 </body></html>
