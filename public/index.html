@@ -4083,4 +4083,169 @@ body.dark .final-session-summary,body.dark .final-topic-select{background:#101b3
   window.aprovaPlanCustomization = { refresh, open: openEditor };
 })();
 </script>
+
+<style id="questionPerformanceStyles">
+.question-type-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:5px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.question-type-toggle button{border:0;border-radius:9px;padding:10px 12px;background:transparent;color:var(--muted);font-weight:800;cursor:pointer}
+.question-type-toggle button.active{background:var(--blue);color:#fff;box-shadow:0 5px 14px #4165f533}
+.question-fields{display:none;grid-column:1/-1;grid-template-columns:1fr 1fr;gap:11px}
+.question-fields.show{display:grid}.question-fields .full{grid-column:1/-1}
+.question-performance-card{margin-top:18px}.question-performance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.question-subject-row{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg)}
+.question-subject-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.question-subject-head b{font-size:13px}.question-subject-head strong{font-size:14px;color:var(--blue)}
+.question-subject-row small{display:block;color:var(--muted);margin-top:4px}.question-subject-row .track{margin-top:9px}
+.question-empty{color:var(--muted);font-size:12px;padding:18px;text-align:center;border:1px dashed var(--line);border-radius:12px;grid-column:1/-1}
+body.dark .question-type-toggle,body.dark .question-subject-row{background:#101b30;border-color:#2a3958}
+@media(max-width:700px){.question-performance-grid,.question-fields{grid-template-columns:1fr}}
+</style>
+<script id="questionPerformanceModule">
+(() => {
+  'use strict';
+  const TABLE='question_sessions';
+  const ACTIVE='aprovaActiveContestId';
+  let mode='study';
+  let refreshTimer=0;
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  const notify=m=>typeof window.toast==='function'?window.toast(m):alert(m);
+  const sb=()=>window.supabaseClient||null;
+  const contestId=()=>String(localStorage.getItem(ACTIVE)||'').trim();
+  const validUuid=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));
+  const isoLocal=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const monthStart=(offset=0)=>{const d=new Date();d.setMonth(d.getMonth()+offset,1);d.setHours(0,0,0,0);return isoLocal(d)};
+  const percentage=(hits,total)=>total>0?Math.round((hits/total)*100):null;
+
+  async function user(){
+    const client=sb(); if(!client)return null;
+    const {data,error}=await client.auth.getUser();
+    return error?null:(data?.user||null);
+  }
+  function activeVertical(){
+    const id=contestId();
+    const parse=x=>{try{return typeof x==='string'?JSON.parse(x):x}catch{return null}};
+    const state=parse(localStorage.getItem('aprovaContestState:'+id))||{};
+    return parse(state.aprovaVerticalizacao)||parse(localStorage.getItem('aprovaVerticalizacao'))||null;
+  }
+  function subjects(){
+    const vertical=activeVertical();
+    const names=(vertical?.disciplinas||[]).map(d=>String(d.nome||'').trim()).filter(Boolean);
+    return [...new Set(names)];
+  }
+  function topicsFor(subject){
+    const vertical=activeVertical();
+    const key=String(subject||'').toLocaleLowerCase('pt-BR');
+    const d=(vertical?.disciplinas||[]).find(x=>String(x.nome||'').toLocaleLowerCase('pt-BR')===key);
+    return (d?.topicos||[]).map(t=>String(t.nome||t||'').trim()).filter(Boolean);
+  }
+  function ensureCardIds(){
+    const cards=document.querySelectorAll('#progress .grid.stats > article');
+    const card=cards[2]; if(!card)return;
+    card.id='questionAccuracyCard';
+    const strong=card.querySelector('strong'); if(strong)strong.id='questionAccuracy';
+    const trend=card.querySelector('.trend'); if(trend)trend.id='questionAccuracyTrend';
+  }
+  function ensureBreakdown(){
+    const progress=document.getElementById('progress'); if(!progress)return null;
+    let card=document.getElementById('questionPerformanceCard');
+    if(card)return card;
+    card=document.createElement('article');
+    card.className='card question-performance-card'; card.id='questionPerformanceCard';
+    card.innerHTML='<div class="section-title"><h3>Desempenho em questões por matéria</h3><span class="tiny-label">CONCURSO ATIVO</span></div><div class="question-performance-grid" id="questionPerformanceGrid"><div class="question-empty">Registre uma sessão de questões para começar a análise.</div></div>';
+    progress.appendChild(card); return card;
+  }
+  function ensureForm(){
+    const form=document.getElementById('logForm'); if(!form)return;
+    if(!document.getElementById('logTypeToggle')){
+      const wrap=document.createElement('div');wrap.className='field full';wrap.innerHTML='<label>Tipo de registro</label><div class="question-type-toggle" id="logTypeToggle"><button type="button" data-log-mode="study" class="active">Estudo teórico</button><button type="button" data-log-mode="questions">Questões</button></div>';
+      form.prepend(wrap);
+    }
+    if(!document.getElementById('questionFields')){
+      const box=document.createElement('div');box.id='questionFields';box.className='question-fields';
+      box.innerHTML='<div class="field"><label>Total de questões</label><input id="logQuestionTotal" type="number" min="1" value="20"></div><div class="field"><label>Acertos</label><input id="logQuestionHits" type="number" min="0" value="0"></div><div class="field full"><label>Tópico (opcional)</label><select id="logQuestionTopic"><option value="">Selecione um tópico</option></select></div><div class="field"><label>Data</label><input id="logQuestionDate" type="date"></div><div class="field"><label>Banca/prova (opcional)</label><input id="logQuestionSource" placeholder="Ex.: FCC · TJ-CE 2024"></div>';
+      form.appendChild(box);
+    }
+    const select=document.getElementById('logSubject');
+    const names=subjects();
+    if(select&&names.length){const current=select.value;select.innerHTML=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');if(names.includes(current))select.value=current}
+    const date=document.getElementById('logQuestionDate');if(date&&!date.value)date.value=isoLocal(new Date());
+    updateTopicSelect(); setMode(mode);
+  }
+  function updateTopicSelect(){
+    const subject=document.getElementById('logSubject')?.value||'';
+    const select=document.getElementById('logQuestionTopic');if(!select)return;
+    const items=topicsFor(subject);select.innerHTML='<option value="">Selecione um tópico</option>'+items.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  }
+  function setMode(next){
+    mode=next==='questions'?'questions':'study';
+    document.querySelectorAll('[data-log-mode]').forEach(b=>b.classList.toggle('active',b.dataset.logMode===mode));
+    document.getElementById('questionFields')?.classList.toggle('show',mode==='questions');
+    const detail=document.getElementById('logDetail')?.closest('.field');if(detail){detail.querySelector('label').textContent=mode==='questions'?'Observações':'O que você estudou?';document.getElementById('logDetail').placeholder=mode==='questions'?'Ex.: caderno de erros, nível de dificuldade...':'Ex.: Art. 5º — Direitos fundamentais'}
+  }
+  function addLocalLog(entry){
+    const logs=(()=>{try{return JSON.parse(localStorage.getItem('aprovaLogs')||'[]')}catch{return[]}})();
+    logs.unshift(entry);localStorage.setItem('aprovaLogs',JSON.stringify(logs));
+    if(window.app)window.app.logs=logs;
+    try{window.renderLogs?.()}catch(_){ }
+  }
+  async function saveQuestion(){
+    const client=sb(),u=await user(),cid=contestId();
+    if(!client||!u)return notify('Entre na sua conta para registrar questões.');
+    if(!validUuid(cid))return notify('Selecione um concurso ativo.');
+    const subject=String(document.getElementById('logSubject')?.value||'').trim();
+    const topic=String(document.getElementById('logQuestionTopic')?.value||'').trim()||null;
+    const total=Number(document.getElementById('logQuestionTotal')?.value||0);
+    const hits=Number(document.getElementById('logQuestionHits')?.value||0);
+    const date=String(document.getElementById('logQuestionDate')?.value||isoLocal(new Date()));
+    const source=String(document.getElementById('logQuestionSource')?.value||'').trim()||null;
+    const notes=String(document.getElementById('logDetail')?.value||'').trim()||null;
+    const minutes=Math.max(0,Number(document.getElementById('logMinutes')?.value||0));
+    if(!subject)return notify('Escolha a matéria.');
+    if(!Number.isInteger(total)||total<1)return notify('Informe o total de questões.');
+    if(!Number.isInteger(hits)||hits<0||hits>total)return notify('Os acertos devem estar entre 0 e o total de questões.');
+    const payload={user_id:u.id,concurso_id:cid,materia:subject,topico:topic,total_questoes:total,acertos:hits,data_sessao:date,fonte:source,observacoes:notes,duration_minutes:minutes};
+    const {error}=await client.from(TABLE).insert(payload);
+    if(error)throw error;
+    addLocalLog({type:'questions',subject,mins:minutes,detail:`${hits}/${total} acertos${topic?' · '+topic:''}`,date:new Date(date+'T12:00:00').toLocaleDateString('pt-BR'),timestamp:new Date().toISOString()});
+    document.getElementById('logModal')?.classList.remove('open');
+    await refresh();
+    notify(`Questões registradas: ${percentage(hits,total)}% de acertos.`);
+  }
+  async function fetchRows(start,end){
+    const client=sb(),u=await user(),cid=contestId();
+    if(!client||!u||!validUuid(cid))return [];
+    const {data,error}=await client.from(TABLE).select('id,materia,topico,total_questoes,acertos,erros,data_sessao,fonte,observacoes,duration_minutes,created_at').eq('user_id',u.id).eq('concurso_id',cid).gte('data_sessao',start).lt('data_sessao',end).order('data_sessao',{ascending:false});
+    if(error)throw error;return data||[];
+  }
+  function aggregate(rows){return rows.reduce((a,r)=>{a.total+=Number(r.total_questoes||0);a.hits+=Number(r.acertos||0);const k=String(r.materia||'Sem matéria');const x=a.by.get(k)||{total:0,hits:0,sessions:0};x.total+=Number(r.total_questoes||0);x.hits+=Number(r.acertos||0);x.sessions++;a.by.set(k,x);return a},{total:0,hits:0,by:new Map()})}
+  function render(current,previous){
+    ensureCardIds();ensureBreakdown();
+    const now=aggregate(current),prev=aggregate(previous),nowPct=percentage(now.hits,now.total),prevPct=percentage(prev.hits,prev.total);
+    const value=document.getElementById('questionAccuracy');if(value)value.textContent=nowPct==null?'—':nowPct+'%';
+    const trend=document.getElementById('questionAccuracyTrend');
+    if(trend){if(nowPct==null)trend.textContent='Aguardando registro de questões.';else{const delta=prevPct==null?null:nowPct-prevPct;trend.innerHTML=`<b>${delta==null?'Primeiro mês':(delta>0?'+':'')+delta+' p.p.'}</b> · ${now.hits} de ${now.total} questões`}}
+    const grid=document.getElementById('questionPerformanceGrid');if(!grid)return;
+    const items=[...now.by.entries()].sort((a,b)=>percentage(a[1].hits,a[1].total)-percentage(b[1].hits,b[1].total));
+    grid.innerHTML=items.length?items.map(([name,x])=>{const pct=percentage(x.hits,x.total)||0;return `<div class="question-subject-row"><div class="question-subject-head"><b>${esc(name)}</b><strong>${pct}%</strong></div><small>${x.hits} acertos em ${x.total} questões · ${x.sessions} registro${x.sessions===1?'':'s'}</small><div class="track"><div class="fill${pct<60?' amber':pct>=80?' green':''}" style="width:${pct}%"></div></div></div>`}).join(''):'<div class="question-empty">Registre uma sessão de questões para começar a análise.</div>';
+  }
+  async function refresh(){
+    try{const [current,previous]=await Promise.all([fetchRows(monthStart(0),monthStart(1)),fetchRows(monthStart(-1),monthStart(0))]);render(current,previous)}catch(error){console.warn('Falha ao carregar desempenho em questões:',error);const trend=document.getElementById('questionAccuracyTrend');if(trend)trend.textContent='Não foi possível carregar os registros de questões.'}
+  }
+  function schedule(){clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,80)}
+
+  document.addEventListener('click',event=>{
+    const modeButton=event.target.closest('[data-log-mode]');if(modeButton){event.preventDefault();setMode(modeButton.dataset.logMode);return}
+    if(event.target.closest('#newLog,#newLog2'))setTimeout(()=>{ensureForm();schedule()},0);
+    if(event.target.closest('#saveLog')&&mode==='questions'){
+      event.preventDefault();event.stopImmediatePropagation();
+      saveQuestion().catch(error=>{console.error(error);notify('Não foi possível registrar as questões: '+(error.message||error))});
+    }
+    if(event.target.closest('[data-view="progress"],[data-canonical-open]'))schedule();
+  },true);
+  document.addEventListener('change',event=>{if(event.target.id==='logSubject')updateTopicSelect()},true);
+  document.addEventListener('aprova:render',schedule);
+  window.addEventListener('pageshow',schedule);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{ensureCardIds();ensureBreakdown();ensureForm();schedule()},{once:true});else{ensureCardIds();ensureBreakdown();ensureForm();schedule()}
+  window.aprovaQuestions={refresh,saveQuestion};
+})();
+</script>
+
 </body></html>
