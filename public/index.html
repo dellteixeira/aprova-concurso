@@ -1655,7 +1655,7 @@ renderPlanoEstavel();
   }
   function rows(){
     const list=registry(),active=activeId();if(!list.length)return '<p class="empty">Nenhum concurso cadastrado.</p>';
-    return list.map(c=>{const on=String(c.id)===active;const date=c.data_prova?new Date(`${c.data_prova}T12:00:00`).toLocaleDateString('pt-BR'):'Sem data';return `<div class="canonical-contest-row${on?' is-active':''}"><span class="canonical-contest-icon">⚖</span><span class="canonical-contest-copy"><b>${esc(c.titulo)} · ${esc(c.cargo)}</b><small>${esc(c.banca||'Banca não informada')} · Prova em ${esc(date)}</small></span><span class="canonical-contest-actions">${on?'<em>ATIVO</em>':`<button class="btn primary" type="button" data-canonical-open="${esc(c.id)}">Habilitar para estudar</button>`}<button class="btn danger canonical-delete" type="button" data-canonical-delete="${esc(c.id)}" aria-label="Excluir ${esc(c.titulo)}">Excluir</button></span></div>`}).join('');
+    return list.map(c=>{const on=String(c.id)===active;const date=c.data_prova?new Date(`${c.data_prova}T12:00:00`).toLocaleDateString('pt-BR'):'Sem data';return `<div class="canonical-contest-row${on?' is-active':''}"><span class="canonical-contest-icon">⚖</span><span class="canonical-contest-copy"><b>${esc(c.titulo)} · ${esc(c.cargo)}</b><small>${esc(c.banca||'Banca não informada')} · Prova em ${esc(date)}</small></span><span class="canonical-contest-actions">${on?'<em>ATIVO</em>':`<button class="btn primary" type="button" data-canonical-open="${esc(c.id)}">Habilitar para estudar</button>`}<button class="btn canonical-edit" type="button" data-canonical-edit="${esc(c.id)}" aria-label="Editar ${esc(c.titulo)}">Editar</button><button class="btn danger canonical-delete" type="button" data-canonical-delete="${esc(c.id)}" aria-label="Excluir ${esc(c.titulo)}">Excluir</button></span></div>`}).join('');
   }
   function renderContestPage(){const card=ensureCatalog();if(card)card.innerHTML=`<div class="section-title"><div><h3>Concursos cadastrados</h3><p class="muted">Cada concurso mantém matérias, horários, plano, revisões e histórico próprios.</p></div><span class="pill">${registry().length} CADASTRADO${registry().length===1?'':'S'}</span></div><div class="canonical-contest-list">${rows()}</div>`;}
   function removeDashboardPreparation(){
@@ -4095,8 +4095,9 @@ body.dark .final-session-summary,body.dark .final-topic-select{background:#101b3
 .question-subject-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.question-subject-head b{font-size:13px}.question-subject-head strong{font-size:14px;color:var(--blue)}
 .question-subject-row small{display:block;color:var(--muted);margin-top:4px}.question-subject-row .track{margin-top:9px}
 .question-empty{color:var(--muted);font-size:12px;padding:18px;text-align:center;border:1px dashed var(--line);border-radius:12px;grid-column:1/-1}
-body.dark .question-type-toggle,body.dark .question-subject-row{background:#101b30;border-color:#2a3958}
-@media(max-width:700px){.question-performance-grid,.question-fields{grid-template-columns:1fr}}
+.question-records{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}.question-records-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.question-records-head h4{margin:0}.question-record-list{display:grid;gap:9px}.question-record-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}.question-record-main{display:grid;gap:3px}.question-record-main b{font-size:13px}.question-record-main small,.question-record-meta{color:var(--muted);font-size:11px}.question-record-score{font-weight:900;color:var(--blue);white-space:nowrap}.question-record-edit{min-height:34px;padding:7px 11px}.canonical-contest-actions .canonical-edit{min-height:36px;padding:0 11px}
+body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .question-record-row{background:#101b30;border-color:#2a3958}
+@media(max-width:700px){.question-performance-grid,.question-fields{grid-template-columns:1fr}.question-record-row{grid-template-columns:1fr auto}.question-record-meta{grid-column:1/2}.question-record-edit{grid-column:2/3;grid-row:1/3}}
 </style>
 <script id="questionPerformanceModule">
 (() => {
@@ -4149,7 +4150,7 @@ body.dark .question-type-toggle,body.dark .question-subject-row{background:#101b
     if(card)return card;
     card=document.createElement('article');
     card.className='card question-performance-card'; card.id='questionPerformanceCard';
-    card.innerHTML='<div class="section-title"><h3>Desempenho em questões por matéria</h3><span class="tiny-label">CONCURSO ATIVO</span></div><div class="question-performance-grid" id="questionPerformanceGrid"><div class="question-empty">Registre uma sessão de questões para começar a análise.</div></div>';
+    card.innerHTML='<div class="section-title"><h3>Desempenho em questões por matéria</h3><span class="tiny-label">CONCURSO ATIVO</span></div><div class="question-performance-grid" id="questionPerformanceGrid"><div class="question-empty">Registre uma sessão de questões para começar a análise.</div></div><section class="question-records"><div class="question-records-head"><h4>Detalhes dos registros</h4><span class="tiny-label">MÊS ATUAL</span></div><div class="question-record-list" id="questionRecordList"><div class="question-empty">Nenhum registro de questões neste mês.</div></div></section>';
     progress.appendChild(card); return card;
   }
   function ensureForm(){
@@ -4225,6 +4226,8 @@ body.dark .question-type-toggle,body.dark .question-subject-row{background:#101b
     const grid=document.getElementById('questionPerformanceGrid');if(!grid)return;
     const items=[...now.by.entries()].sort((a,b)=>percentage(a[1].hits,a[1].total)-percentage(b[1].hits,b[1].total));
     grid.innerHTML=items.length?items.map(([name,x])=>{const pct=percentage(x.hits,x.total)||0;return `<div class="question-subject-row"><div class="question-subject-head"><b>${esc(name)}</b><strong>${pct}%</strong></div><small>${x.hits} acertos em ${x.total} questões · ${x.sessions} registro${x.sessions===1?'':'s'}</small><div class="track"><div class="fill${pct<60?' amber':pct>=80?' green':''}" style="width:${pct}%"></div></div></div>`}).join(''):'<div class="question-empty">Registre uma sessão de questões para começar a análise.</div>';
+    const detail=document.getElementById('questionRecordList');
+    if(detail){detail.innerHTML=current.length?current.map(r=>{const pct=percentage(Number(r.acertos||0),Number(r.total_questoes||0))||0;const date=r.data_sessao?new Date(r.data_sessao+'T12:00:00').toLocaleDateString('pt-BR'):'Sem data';return `<div class="question-record-row"><div class="question-record-main"><b>${esc(r.materia||'Sem matéria')}</b><small>${esc(r.topico||r.fonte||'Registro geral')}</small></div><span class="question-record-meta">${esc(date)}${r.duration_minutes?` · ${Number(r.duration_minutes)} min`:''}</span><span class="question-record-score">${Number(r.acertos||0)}/${Number(r.total_questoes||0)} · ${pct}%</span><button class="btn question-record-edit" type="button" data-edit-question="${esc(r.id)}">Alterar</button></div>`}).join(''):'<div class="question-empty">Nenhum registro de questões neste mês.</div>'}
   }
   async function refresh(){
     try{const [current,previous]=await Promise.all([fetchRows(monthStart(0),monthStart(1)),fetchRows(monthStart(-1),monthStart(0))]);render(current,previous)}catch(error){console.warn('Falha ao carregar desempenho em questões:',error);const trend=document.getElementById('questionAccuracyTrend');if(trend)trend.textContent='Não foi possível carregar os registros de questões.'}
@@ -4245,6 +4248,66 @@ body.dark .question-type-toggle,body.dark .question-subject-row{background:#101b
   window.addEventListener('pageshow',schedule);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{ensureCardIds();ensureBreakdown();ensureForm();schedule()},{once:true});else{ensureCardIds();ensureBreakdown();ensureForm();schedule()}
   window.aprovaQuestions={refresh,saveQuestion};
+})();
+</script>
+
+
+<style id="contestAndQuestionEditStyles">
+#canonicalContestEditModal .modal-box,#questionEditModal .modal-box{max-width:720px}.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.edit-grid .full{grid-column:1/-1}@media(max-width:680px){.edit-grid{grid-template-columns:1fr}.edit-grid .full{grid-column:auto}}
+</style>
+<script id="contestAndQuestionEditModule">
+(() => {
+  'use strict';
+  const REGISTRY='aprovaContestRegistryV2', ACTIVE='aprovaActiveContestId', STATE_PREFIX='aprovaContestState:';
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  const notify=m=>typeof window.toast==='function'?window.toast(m):alert(m);
+  const read=(k,f)=>{try{const v=localStorage.getItem(k);return v===null?f:JSON.parse(v)}catch{return f}};
+  const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  const registry=()=>{const v=read(REGISTRY,[]);return Array.isArray(v)?v:[]};
+  const client=()=>window.supabaseClient||null;
+  async function currentUser(){const c=client();if(!c)return null;const {data,error}=await c.auth.getUser();return error?null:data?.user||null}
+  function ensureContestModal(){
+    if(document.getElementById('canonicalContestEditModal'))return;
+    document.body.insertAdjacentHTML('beforeend',`<div class="modal" id="canonicalContestEditModal"><div class="modal-box"><h2>Editar concurso</h2><p class="muted">As alterações serão aplicadas ao concurso escolhido e sincronizadas com o Supabase.</p><form id="canonicalContestEditForm" class="edit-grid"><input type="hidden" id="canonicalEditId"><div class="field full"><label>Nome do concurso</label><input id="canonicalEditTitle" required></div><div class="field"><label>Órgão</label><input id="canonicalEditOrg"></div><div class="field"><label>Cargo</label><input id="canonicalEditRole" required></div><div class="field"><label>Banca</label><input id="canonicalEditBoard"></div><div class="field"><label>Data da prova</label><input id="canonicalEditDate" type="date"></div></form><div class="modal-actions"><button class="btn" type="button" data-close-canonical-edit>Cancelar</button><button class="btn primary" type="submit" form="canonicalContestEditForm">Salvar alterações</button></div></div></div>`);
+  }
+  function openContestEditor(id){
+    ensureContestModal();const c=registry().find(x=>String(x.id)===String(id));if(!c)return notify('Concurso não encontrado.');
+    document.getElementById('canonicalEditId').value=c.id;document.getElementById('canonicalEditTitle').value=c.titulo||'';document.getElementById('canonicalEditOrg').value=c.orgao||'';document.getElementById('canonicalEditRole').value=c.cargo||'';document.getElementById('canonicalEditBoard').value=c.banca||'';document.getElementById('canonicalEditDate').value=c.data_prova||'';document.getElementById('canonicalContestEditModal').classList.add('open');
+  }
+  async function saveContestEdit(event){
+    event.preventDefault();const id=document.getElementById('canonicalEditId').value;const list=registry();const idx=list.findIndex(x=>String(x.id)===String(id));if(idx<0)return notify('Concurso não encontrado.');
+    const updated={...list[idx],titulo:document.getElementById('canonicalEditTitle').value.trim(),orgao:document.getElementById('canonicalEditOrg').value.trim(),cargo:document.getElementById('canonicalEditRole').value.trim(),banca:document.getElementById('canonicalEditBoard').value.trim(),data_prova:document.getElementById('canonicalEditDate').value,updated_at:new Date().toISOString()};
+    if(!updated.titulo||!updated.cargo)return notify('Informe o nome do concurso e o cargo.');
+    const c=client(),u=await currentUser();
+    if(c&&u){const {error}=await c.from('concursos').update({titulo:updated.titulo,orgao:updated.orgao,cargo:updated.cargo,banca:updated.banca,data_prova:updated.data_prova||null}).eq('id',id).eq('user_id',u.id);if(error)return notify('Não foi possível atualizar no Supabase: '+error.message)}
+    list[idx]=updated;write(REGISTRY,list);
+    const state=read(STATE_PREFIX+id,{});state.aprovaConcurso=JSON.stringify({nome:updated.titulo,orgao:updated.orgao,cargo:updated.cargo,banca:updated.banca,prova:updated.data_prova,materias:'',topicos:0});write(STATE_PREFIX+id,state);
+    if(String(localStorage.getItem(ACTIVE)||'')===String(id))localStorage.setItem('aprovaConcurso',state.aprovaConcurso);
+    document.getElementById('canonicalContestEditModal').classList.remove('open');window.aprovaContestManager?.render?.();document.dispatchEvent(new CustomEvent('aprova:render'));notify('Concurso atualizado.');
+  }
+
+  function ensureQuestionModal(){
+    if(document.getElementById('questionEditModal'))return;
+    document.body.insertAdjacentHTML('beforeend',`<div class="modal" id="questionEditModal"><div class="modal-box"><h2>Alterar registro de questões</h2><form id="questionEditForm" class="edit-grid"><input type="hidden" id="questionEditId"><div class="field"><label>Matéria</label><select id="questionEditSubject" required></select></div><div class="field"><label>Tópico</label><select id="questionEditTopic"><option value="">Sem tópico específico</option></select></div><div class="field"><label>Total de questões</label><input id="questionEditTotal" type="number" min="1" required></div><div class="field"><label>Acertos</label><input id="questionEditHits" type="number" min="0" required></div><div class="field"><label>Data</label><input id="questionEditDate" type="date" required></div><div class="field"><label>Tempo (minutos)</label><input id="questionEditMinutes" type="number" min="0"></div><div class="field full"><label>Banca/prova</label><input id="questionEditSource"></div><div class="field full"><label>Observações</label><textarea id="questionEditNotes" rows="3"></textarea></div></form><div class="modal-actions"><button class="btn" type="button" data-close-question-edit>Cancelar</button><button class="btn primary" type="submit" form="questionEditForm">Salvar alteração</button></div></div></div>`);
+  }
+  function vertical(){try{return JSON.parse(localStorage.getItem('aprovaVerticalizacao')||'null')}catch{return null}}
+  function fillQuestionSubjects(selected=''){const s=document.getElementById('questionEditSubject');if(!s)return;const names=(vertical()?.disciplinas||[]).map(d=>String(d.nome||'').trim()).filter(Boolean);s.innerHTML=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');if(selected&&!names.includes(selected))s.insertAdjacentHTML('beforeend',`<option value="${esc(selected)}">${esc(selected)}</option>`);s.value=selected||names[0]||'';fillQuestionTopics('',document.getElementById('questionEditTopic')?.dataset.selected||'')}
+  function fillQuestionTopics(_unused='',selected=''){const subject=document.getElementById('questionEditSubject')?.value||'';const t=document.getElementById('questionEditTopic');if(!t)return;const d=(vertical()?.disciplinas||[]).find(x=>String(x.nome||'').toLocaleLowerCase('pt-BR')===subject.toLocaleLowerCase('pt-BR'));const topics=(d?.topicos||[]).map(x=>String(x.nome||x||'').trim()).filter(Boolean);t.innerHTML='<option value="">Sem tópico específico</option>'+topics.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if(selected&&!topics.includes(selected))t.insertAdjacentHTML('beforeend',`<option value="${esc(selected)}">${esc(selected)}</option>`);t.value=selected||''}
+  async function openQuestionEditor(id){
+    ensureQuestionModal();const c=client(),u=await currentUser(),cid=String(localStorage.getItem(ACTIVE)||'');if(!c||!u)return notify('Entre na conta para alterar o registro.');
+    const {data,error}=await c.from('question_sessions').select('*').eq('id',id).eq('user_id',u.id).eq('concurso_id',cid).single();if(error||!data)return notify('Não foi possível carregar o registro.');
+    document.getElementById('questionEditId').value=data.id;document.getElementById('questionEditTopic').dataset.selected=data.topico||'';fillQuestionSubjects(data.materia||'');fillQuestionTopics('',data.topico||'');document.getElementById('questionEditTotal').value=data.total_questoes||0;document.getElementById('questionEditHits').value=data.acertos||0;document.getElementById('questionEditDate').value=data.data_sessao||'';document.getElementById('questionEditMinutes').value=data.duration_minutes||0;document.getElementById('questionEditSource').value=data.fonte||'';document.getElementById('questionEditNotes').value=data.observacoes||'';document.getElementById('questionEditModal').classList.add('open');
+  }
+  async function saveQuestionEdit(event){
+    event.preventDefault();const c=client(),u=await currentUser(),cid=String(localStorage.getItem(ACTIVE)||'');if(!c||!u)return notify('Entre na conta para alterar o registro.');const id=document.getElementById('questionEditId').value,total=Number(document.getElementById('questionEditTotal').value),hits=Number(document.getElementById('questionEditHits').value);if(!Number.isInteger(total)||total<1||!Number.isInteger(hits)||hits<0||hits>total)return notify('Revise o total de questões e os acertos.');
+    const payload={materia:document.getElementById('questionEditSubject').value,topico:document.getElementById('questionEditTopic').value||null,total_questoes:total,acertos:hits,data_sessao:document.getElementById('questionEditDate').value,duration_minutes:Math.max(0,Number(document.getElementById('questionEditMinutes').value||0)),fonte:document.getElementById('questionEditSource').value.trim()||null,observacoes:document.getElementById('questionEditNotes').value.trim()||null,updated_at:new Date().toISOString()};
+    const {error}=await c.from('question_sessions').update(payload).eq('id',id).eq('user_id',u.id).eq('concurso_id',cid);if(error)return notify('Não foi possível alterar o registro: '+error.message);document.getElementById('questionEditModal').classList.remove('open');await window.aprovaQuestions?.refresh?.();notify('Registro de questões atualizado.');
+  }
+
+  document.addEventListener('click',e=>{const edit=e.target.closest('[data-canonical-edit]');if(edit){e.preventDefault();e.stopImmediatePropagation();openContestEditor(edit.dataset.canonicalEdit);return}const q=e.target.closest('[data-edit-question]');if(q){e.preventDefault();openQuestionEditor(q.dataset.editQuestion);return}if(e.target.closest('[data-close-canonical-edit]'))document.getElementById('canonicalContestEditModal')?.classList.remove('open');if(e.target.closest('[data-close-question-edit]'))document.getElementById('questionEditModal')?.classList.remove('open')},true);
+  document.addEventListener('change',e=>{if(e.target.id==='questionEditSubject')fillQuestionTopics()},true);
+  document.addEventListener('submit',e=>{if(e.target.id==='canonicalContestEditForm'){e.stopImmediatePropagation();saveContestEdit(e)}if(e.target.id==='questionEditForm'){e.stopImmediatePropagation();saveQuestionEdit(e)}},true);
+  ensureContestModal();ensureQuestionModal();
 })();
 </script>
 
