@@ -56,6 +56,14 @@ body.auth-pending .side-progress,body.auth-logged-out .side-progress{visibility:
 body.auth-pending [data-requires-auth],body.auth-logged-out [data-requires-auth]{pointer-events:none!important;opacity:.55!important}
 body.dark .auth-empty-screen{background:#111c31;border-color:#2a3958}
 </style>
+
+<style id="questionModalStackFix">
+#questionDetailsModal{z-index:50!important}
+#questionEditModal{z-index:60!important}
+#questionEditModal .modal-box{position:relative;z-index:61}
+#questionDetailsModal .modal-box{position:relative;z-index:51}
+body.question-edit-open #questionDetailsModal .modal-box{filter:brightness(.72)}
+</style>
 </head><body class="auth-pending">
 <div class="app"><aside><div class="brand"><span class="mark">✦</span> Aprova</div><p class="nav-label">MENU PRINCIPAL</p><div class="nav">
 <button class="active" data-view="dashboard"><i class="ico">⌂</i><span>Visão geral</span></button><button data-view="contest"><i class="ico">◫</i><span>Meu concurso</span></button><button data-view="plan"><i class="ico">▤</i><span>Plano de estudos</span></button><button data-view="reviews"><i class="ico">◷</i><span>Revisões</span></button><button data-view="progress"><i class="ico">◉</i><span>Progresso</span></button></div><p class="nav-label">ORGANIZAÇÃO</p><div class="nav"><button data-view="history"><i class="ico">▦</i><span>Histórico</span></button><button data-view="settings"><i class="ico">⚙</i><span>Configurações</span></button></div><div class="side-progress"><b>Seu plano está evoluindo</b><p id="sideDeadline">Faltam 72 dias para sua prova. Continue consistente.</p><button data-view="plan">Ver planejamento</button></div></aside>
@@ -4296,12 +4304,12 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
   async function openQuestionEditor(id){
     ensureQuestionModal();const c=client(),u=await currentUser(),cid=String(localStorage.getItem(ACTIVE)||'');if(!c||!u)return notify('Entre na conta para alterar o registro.');
     const {data,error}=await c.from('question_sessions').select('*').eq('id',id).eq('user_id',u.id).eq('concurso_id',cid).single();if(error||!data)return notify('Não foi possível carregar o registro.');
-    document.getElementById('questionEditId').value=data.id;document.getElementById('questionEditTopic').dataset.selected=data.topico||'';fillQuestionSubjects(data.materia||'');fillQuestionTopics('',data.topico||'');document.getElementById('questionEditTotal').value=data.total_questoes||0;document.getElementById('questionEditHits').value=data.acertos||0;document.getElementById('questionEditDate').value=data.data_sessao||'';document.getElementById('questionEditMinutes').value=data.duration_minutes||0;document.getElementById('questionEditSource').value=data.fonte||'';document.getElementById('questionEditNotes').value=data.observacoes||'';document.getElementById('questionEditModal').classList.add('open');
+    document.getElementById('questionEditId').value=data.id;document.getElementById('questionEditTopic').dataset.selected=data.topico||'';fillQuestionSubjects(data.materia||'');fillQuestionTopics('',data.topico||'');document.getElementById('questionEditTotal').value=data.total_questoes||0;document.getElementById('questionEditHits').value=data.acertos||0;document.getElementById('questionEditDate').value=data.data_sessao||'';document.getElementById('questionEditMinutes').value=data.duration_minutes||0;document.getElementById('questionEditSource').value=data.fonte||'';document.getElementById('questionEditNotes').value=data.observacoes||'';document.body.classList.add('question-edit-open');document.getElementById('questionEditModal').classList.add('open');
   }
   async function saveQuestionEdit(event){
     event.preventDefault();const c=client(),u=await currentUser(),cid=String(localStorage.getItem(ACTIVE)||'');if(!c||!u)return notify('Entre na conta para alterar o registro.');const id=document.getElementById('questionEditId').value,total=Number(document.getElementById('questionEditTotal').value),hits=Number(document.getElementById('questionEditHits').value);if(!Number.isInteger(total)||total<1||!Number.isInteger(hits)||hits<0||hits>total)return notify('Revise o total de questões e os acertos.');
     const payload={materia:document.getElementById('questionEditSubject').value,topico:document.getElementById('questionEditTopic').value||null,total_questoes:total,acertos:hits,data_sessao:document.getElementById('questionEditDate').value,duration_minutes:Math.max(0,Number(document.getElementById('questionEditMinutes').value||0)),fonte:document.getElementById('questionEditSource').value.trim()||null,observacoes:document.getElementById('questionEditNotes').value.trim()||null,updated_at:new Date().toISOString()};
-    const {error}=await c.from('question_sessions').update(payload).eq('id',id).eq('user_id',u.id).eq('concurso_id',cid);if(error)return notify('Não foi possível alterar o registro: '+error.message);document.getElementById('questionEditModal').classList.remove('open');await window.aprovaQuestions?.refresh?.();notify('Registro de questões atualizado.');
+    const {error}=await c.from('question_sessions').update(payload).eq('id',id).eq('user_id',u.id).eq('concurso_id',cid);if(error)return notify('Não foi possível alterar o registro: '+error.message);document.getElementById('questionEditModal').classList.remove('open');document.body.classList.remove('question-edit-open');await window.aprovaQuestions?.refresh?.();notify('Registro de questões atualizado.');
   }
 
   document.addEventListener('click',e=>{const edit=e.target.closest('[data-canonical-edit]');if(edit){e.preventDefault();e.stopImmediatePropagation();openContestEditor(edit.dataset.canonicalEdit);return}const q=e.target.closest('[data-edit-question]');if(q){e.preventDefault();openQuestionEditor(q.dataset.editQuestion);return}if(e.target.closest('[data-close-canonical-edit]'))document.getElementById('canonicalContestEditModal')?.classList.remove('open');if(e.target.closest('[data-close-question-edit]'))document.getElementById('questionEditModal')?.classList.remove('open')},true);
@@ -4579,77 +4587,404 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
 })();
 </script>
 
-<style id="performance-layout-canonical">
-/* Layout único da área Seu desempenho. */
+<style id="adaptiveQuestionModalAndFocusMode">
+/* Janela de edição de questões: sempre integral e responsiva. */
+#questionEditModal{
+  padding:clamp(10px,2.5vw,28px)!important;
+  overflow:hidden!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#questionEditModal .modal-box{
+  width:min(860px,calc(100vw - 2 * clamp(10px,2.5vw,28px)))!important;
+  max-width:860px!important;
+  max-height:calc(100dvh - 2 * clamp(10px,2.5vw,28px))!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  margin:0!important;
+}
+#questionEditModal .edit-grid{
+  width:100%;
+  min-width:0;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+#questionEditModal .field,
+#questionEditModal .field input,
+#questionEditModal .field select,
+#questionEditModal .field textarea{
+  min-width:0!important;
+  width:100%!important;
+  max-width:100%!important;
+}
+#questionEditModal .modal-actions{
+  position:sticky;
+  bottom:-1px;
+  z-index:2;
+  padding-top:14px;
+  background:inherit;
+}
+@media(max-width:680px){
+  #questionEditModal{padding:8px!important;align-items:flex-start!important}
+  #questionEditModal .modal-box{
+    width:calc(100vw - 16px)!important;
+    max-height:calc(100dvh - 16px)!important;
+    border-radius:14px!important;
+    padding:18px!important;
+  }
+  #questionEditModal .edit-grid{grid-template-columns:1fr!important}
+  #questionEditModal .edit-grid .full{grid-column:auto!important}
+  #questionEditModal .modal-actions{display:grid!important;grid-template-columns:1fr 1fr}
+  #questionEditModal .modal-actions .btn{width:100%}
+}
+
+/* Modo Pomodoro sem distrações. */
+#pomodoroFocusMode{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:none;
+  place-items:center;
+  background:
+    radial-gradient(circle at 50% 30%,rgba(103,132,255,.22),transparent 42%),
+    #08101f;
+  color:#f5f7ff;
+  padding:24px;
+}
+#pomodoroFocusMode.open{display:grid}
+#pomodoroFocusMode .focus-shell{
+  width:min(760px,100%);
+  min-height:min(640px,calc(100dvh - 48px));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  border:1px solid rgba(151,174,255,.28);
+  border-radius:32px;
+  background:rgba(18,29,56,.74);
+  box-shadow:0 30px 100px rgba(0,0,0,.45);
+  backdrop-filter:blur(18px);
+  padding:clamp(26px,5vw,58px);
+  position:relative;
+}
+#pomodoroFocusMode .focus-exit{
+  position:absolute;
+  top:20px;
+  right:20px;
+  min-height:42px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:12px;
+  background:rgba(255,255,255,.07);
+  color:white;
+  padding:0 15px;
+  font-weight:800;
+  cursor:pointer;
+}
+#pomodoroFocusMode .focus-kicker{
+  font-size:12px;
+  letter-spacing:1.5px;
+  font-weight:900;
+  color:#aebcff;
+  margin-bottom:18px;
+}
+#pomodoroFocusMode .focus-clock{
+  font-size:clamp(78px,16vw,170px);
+  line-height:.95;
+  font-weight:900;
+  letter-spacing:-6px;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 0 42px rgba(105,135,255,.25);
+}
+#pomodoroFocusMode .focus-status{
+  margin-top:20px;
+  color:#b8c5e2;
+  font-size:16px;
+}
+#pomodoroFocusMode .focus-actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:12px;
+  margin-top:34px;
+}
+#pomodoroFocusMode .focus-actions button{
+  min-height:52px;
+  border-radius:14px;
+  padding:0 24px;
+  border:1px solid rgba(255,255,255,.15);
+  background:#23355e;
+  color:white;
+  font-size:15px;
+  font-weight:850;
+  cursor:pointer;
+}
+#pomodoroFocusMode .focus-actions button.primary{background:#607cff;border-color:transparent}
+#pomodoroFocusMode.completed .focus-shell{box-shadow:0 0 0 2px rgba(36,210,157,.35),0 30px 100px rgba(0,0,0,.45)}
+#pomodoroFocusMode.completed .focus-clock{color:#78e8c3}
+@media(max-width:680px){
+  #pomodoroFocusMode{padding:10px}
+  #pomodoroFocusMode .focus-shell{min-height:calc(100dvh - 20px);border-radius:22px}
+  #pomodoroFocusMode .focus-clock{letter-spacing:-3px}
+  #pomodoroFocusMode .focus-exit{top:12px;right:12px}
+}
+</style>
+<script id="adaptiveQuestionModalAndFocusModeScript">
+(()=>{
+  'use strict';
+  const $=id=>document.getElementById(id);
+  let alarmPlayed=false;
+  let audioContext=null;
+
+  function ensureFocusOverlay(){
+    if($('pomodoroFocusMode')) return $('pomodoroFocusMode');
+    document.body.insertAdjacentHTML('beforeend',`
+      <section id="pomodoroFocusMode" aria-hidden="true" aria-label="Modo foco Pomodoro">
+        <div class="focus-shell">
+          <button class="focus-exit" id="focusExit" type="button">Sair do modo foco</button>
+          <div class="focus-kicker">POMODORO · MODO SEM DISTRAÇÕES</div>
+          <div class="focus-clock" id="focusClock">25:00</div>
+          <div class="focus-status" id="focusStatus">Pronto para começar</div>
+          <div class="focus-actions">
+            <button class="primary" id="focusStart" type="button">Iniciar foco</button>
+            <button id="focusReset" type="button">Reiniciar</button>
+          </div>
+        </div>
+      </section>`);
+    $('focusExit').addEventListener('click',exitFocusMode);
+    $('focusStart').addEventListener('click',()=>$('startTimer')?.click());
+    $('focusReset').addEventListener('click',()=>{
+      alarmPlayed=false;
+      $('pomodoroFocusMode')?.classList.remove('completed');
+      $('resetTimer')?.click();
+    });
+    return $('pomodoroFocusMode');
+  }
+
+  function syncFocusOverlay(){
+    const overlay=ensureFocusOverlay();
+    const clockText=$('clock')?.textContent?.trim()||'00:00';
+    const startText=$('startTimer')?.textContent?.trim()||'Iniciar foco';
+    $('focusClock').textContent=clockText;
+    $('focusStart').textContent=startText;
+    let status='Pronto para começar';
+    if(/pausar/i.test(startText)) status='Sessão em andamento';
+    else if(/conclu/i.test(startText)) status='Ciclo concluído';
+    else if(clockText!=='00:00') status='Foco preparado';
+    $('focusStatus').textContent=status;
+    const completed=clockText==='00:00'||/conclu/i.test(startText);
+    overlay.classList.toggle('completed',completed);
+    if(completed && !alarmPlayed){
+      alarmPlayed=true;
+      playPomodoroAlarm();
+    }
+    if(!completed && clockText!=='00:00') alarmPlayed=false;
+  }
+
+  function playPomodoroAlarm(){
+    try{
+      const Ctx=window.AudioContext||window.webkitAudioContext;
+      if(!Ctx) return;
+      audioContext=audioContext||new Ctx();
+      if(audioContext.state==='suspended') audioContext.resume();
+      const now=audioContext.currentTime;
+      [0,.32,.64,1.05].forEach((offset,index)=>{
+        const osc=audioContext.createOscillator();
+        const gain=audioContext.createGain();
+        osc.type=index===3?'sine':'triangle';
+        osc.frequency.setValueAtTime(index===3?880:660,now+offset);
+        gain.gain.setValueAtTime(0.0001,now+offset);
+        gain.gain.exponentialRampToValueAtTime(.24,now+offset+.025);
+        gain.gain.exponentialRampToValueAtTime(.0001,now+offset+.24);
+        osc.connect(gain).connect(audioContext.destination);
+        osc.start(now+offset);
+        osc.stop(now+offset+.26);
+      });
+      if(navigator.vibrate) navigator.vibrate([180,90,180,90,320]);
+    }catch(error){console.warn('Não foi possível tocar o alarme do Pomodoro:',error)}
+  }
+
+  async function enterFocusMode(){
+    const overlay=ensureFocusOverlay();
+    syncFocusOverlay();
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    try{
+      if(!document.fullscreenElement && document.documentElement.requestFullscreen){
+        await document.documentElement.requestFullscreen({navigationUI:'hide'});
+      }
+    }catch(_error){/* O overlay continua preenchendo a janela mesmo sem Fullscreen API. */}
+  }
+
+  async function exitFocusMode(){
+    const overlay=$('pomodoroFocusMode');
+    overlay?.classList.remove('open');
+    overlay?.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+    try{if(document.fullscreenElement) await document.exitFullscreen()}catch(_error){}
+  }
+
+  function install(){
+    ensureFocusOverlay();
+    const clock=$('clock');
+    const start=$('startTimer');
+    if(clock){new MutationObserver(syncFocusOverlay).observe(clock,{childList:true,characterData:true,subtree:true})}
+    if(start){
+      new MutationObserver(syncFocusOverlay).observe(start,{childList:true,characterData:true,subtree:true});
+      start.addEventListener('click',()=>{
+        // O clique original inicia/pausa o temporizador; o modo foco abre no mesmo gesto do usuário.
+        enterFocusMode();
+        setTimeout(syncFocusOverlay,0);
+      },true);
+    }
+    document.addEventListener('keydown',event=>{
+      if(event.key==='Escape' && $('pomodoroFocusMode')?.classList.contains('open')) exitFocusMode();
+    });
+    syncFocusOverlay();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
+</script>
+
+
+<style id="mergedPerformanceAndEvolutionStyles">
 #progress .grid.stats.performance-layout,
 #progress .grid.stats{
   display:grid!important;
-  grid-template-columns:minmax(300px,.82fr) minmax(560px,1.75fr)!important;
-  grid-template-rows:auto auto!important;
+  grid-template-columns:minmax(280px,.72fr) minmax(0,1.9fr)!important;
   gap:18px!important;
   align-items:stretch!important;
 }
-#progress .performance-hours{
-  grid-column:1!important;
-  grid-row:1!important;
-  min-width:0!important;
+#progress .performance-hours{grid-column:1!important;min-width:0}
+#progress .performance-topics{grid-column:2!important;min-width:0;display:flex;flex-direction:column}
+#progress .performance-topics>.metric{flex:0 0 auto}
+#progress .performance-topics>.trend{flex:0 0 auto}
+#progress .performance-topics .question-merged-panel{
+  margin:16px 0 14px;
+  padding:15px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:color-mix(in srgb,var(--soft) 72%,transparent);
+  order:2;
 }
-#progress .performance-topics{
-  grid-column:2!important;
-  grid-row:1!important;
-  min-width:0!important;
-}
-#progress .performance-questions{
-  grid-column:1 / -1!important;
-  grid-row:2!important;
-  min-width:0!important;
-  width:100%!important;
-}
-#progress .performance-topics .dominated-topics-list{
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  column-gap:12px;
-  align-content:start;
-  max-height:520px;
-}
-#progress .performance-topics .dominated-discipline{grid-column:1 / -1}
-#progress .performance-questions .question-card-inline-list{
+#progress .performance-topics .question-merged-panel>.metric{align-items:flex-start}
+#progress .performance-topics .question-merged-panel>.metric strong{font-size:26px}
+#progress .performance-topics .question-merged-panel>.trend{margin-top:8px}
+#progress .performance-topics .question-card-inline-list{
   display:grid!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:10px!important;
+  gap:9px!important;
 }
-@media(max-width:1100px){
-  #progress .grid.stats.performance-layout,#progress .grid.stats{
-    grid-template-columns:minmax(260px,.8fr) minmax(420px,1.35fr)!important;
-  }
+#progress .performance-topics .dominated-topics-panel{order:3}
+#progress .performance-topics .dominated-topics-list{max-height:500px}
+.performance-evolution-controls{display:flex;gap:6px;align-items:center}
+.performance-evolution-controls button{
+  min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;
+  background:transparent;color:var(--muted);font:800 10px inherit;cursor:pointer
 }
-@media(max-width:820px){
+.performance-evolution-controls button.active{background:var(--blue);border-color:var(--blue);color:#fff}
+#performanceEvolutionChart{height:175px;position:relative}
+#performanceEvolutionChart .day{min-width:0}
+#performanceEvolutionChart .chart-bar{min-height:3px}
+.performance-evolution-empty{display:grid;place-items:center;height:150px;color:var(--muted);font-size:12px;text-align:center}
+body.dark #progress .performance-topics .question-merged-panel{background:#101b31;border-color:#2a3958}
+@media(max-width:980px){
   #progress .grid.stats.performance-layout,#progress .grid.stats{grid-template-columns:1fr!important}
-  #progress .performance-hours,#progress .performance-topics,#progress .performance-questions{grid-column:1!important;grid-row:auto!important}
-  #progress .performance-topics .dominated-topics-list,#progress .performance-questions .question-card-inline-list{grid-template-columns:1fr!important}
+  #progress .performance-hours,#progress .performance-topics{grid-column:1!important}
+}
+@media(max-width:720px){
+  #progress .performance-topics .question-card-inline-list{grid-template-columns:1fr!important}
+  .performance-evolution-controls{width:100%;justify-content:flex-start;margin-top:8px}
 }
 </style>
-<script id="performance-layout-canonical-controller">
+<script id="mergedPerformanceAndEvolutionModule">
 (()=>{
-  function apply(){
+  'use strict';
+  const ACTIVE='aprovaActiveContestId';
+  const MODE_KEY='aprovaPerformanceEvolutionMode';
+  let evolutionMode=localStorage.getItem(MODE_KEY)==='daily'?'daily':'weekly';
+  let refreshToken=0;
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  const validUuid=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));
+  const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+  const monday=(d=new Date())=>{const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-(x.getDay()===0?6:x.getDay()-1));return x};
+  const fmt=min=>`${Math.floor(min/60)}h ${String(min%60).padStart(2,'0')}min`;
+
+  function mergeQuestionCard(){
     const grid=document.querySelector('#progress .grid.stats');
     if(!grid)return;
     grid.classList.add('performance-layout');
-    [...grid.querySelectorAll(':scope > article')].forEach(card=>{
-      const label=(card.querySelector('small')?.textContent||'').toLocaleUpperCase('pt-BR');
-      card.classList.toggle('performance-hours',label.includes('HORAS REGISTRADAS'));
-      card.classList.toggle('performance-topics',label.includes('TÓPICOS DOMINADOS'));
-      card.classList.toggle('performance-questions',label.includes('ACERTOS EM QUESTÕES'));
-      if(label.includes('SESSÕES CONCLUÍDAS'))card.remove();
-    });
+    const direct=[...grid.querySelectorAll(':scope > article')];
+    const hours=direct.find(c=>/HORAS\s+REGISTRADAS/i.test(c.textContent||''));
+    const topics=direct.find(c=>/TÓPICOS\s+DOMINADOS/i.test(c.textContent||''));
+    const questions=direct.find(c=>/ACERTOS\s+EM\s+QUESTÕES/i.test(c.textContent||''));
+    if(hours)hours.classList.add('performance-hours');
+    if(topics)topics.classList.add('performance-topics');
+    if(questions&&topics){
+      questions.classList.remove('card','performance-questions');
+      questions.classList.add('question-merged-panel');
+      topics.insertBefore(questions,topics.querySelector('.dominated-topics-panel')||null);
+    }
+    direct.filter(c=>/SESSÕES\s+CONCLUÍDAS/i.test(c.textContent||'')).forEach(c=>c.remove());
   }
+
+  function evolutionCard(){return document.querySelector('#progress .grid.two-col > article:last-child')}
+  function ensureEvolutionUI(){
+    const card=evolutionCard();if(!card)return null;
+    let title=card.querySelector('.section-title');
+    if(!title){title=document.createElement('div');title.className='section-title';card.prepend(title)}
+    title.innerHTML=`<h3>Evolução ${evolutionMode==='daily'?'diária':'semanal'}</h3><div class="performance-evolution-controls"><button type="button" data-evolution-mode="daily" class="${evolutionMode==='daily'?'active':''}">Diária</button><button type="button" data-evolution-mode="weekly" class="${evolutionMode==='weekly'?'active':''}">Semanal</button></div>`;
+    let chart=card.querySelector('#performanceEvolutionChart');
+    if(!chart){chart=document.createElement('div');chart.id='performanceEvolutionChart';chart.className='chart';card.appendChild(chart)}
+    return chart;
+  }
+  async function currentUser(){
+    const sb=window.supabaseClient;if(!sb)return null;
+    try{const {data:{session}}=await sb.auth.getSession();if(session?.user)return session.user}catch(_){ }
+    try{const {data}=await sb.auth.getUser();return data?.user||null}catch{return null}
+  }
+  async function fetchEvolutionRows(){
+    const sb=window.supabaseClient,cid=String(localStorage.getItem(ACTIVE)||''),u=await currentUser();
+    if(!sb||!u||!validUuid(cid))return [];
+    const start=evolutionMode==='daily'?monday():addDays(monday(),-28);
+    const end=addDays(monday(),7);
+    const {data,error}=await sb.from('study_sessions').select('data_sessao,duration_minutes,completed').eq('user_id',u.id).eq('concurso_id',cid).eq('completed',true).gte('data_sessao',iso(start)).lt('data_sessao',iso(end));
+    if(error)throw error;return data||[];
+  }
+  function renderEvolution(rows){
+    const chart=ensureEvolutionUI();if(!chart)return;
+    if(evolutionMode==='daily'){
+      const start=monday(),labels=['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+      const values=labels.map((_,i)=>rows.filter(r=>r.data_sessao===iso(addDays(start,i))).reduce((s,r)=>s+Number(r.duration_minutes||0),0));
+      const max=Math.max(1,...values);
+      chart.innerHTML=labels.map((label,i)=>`<div class="day"><div class="chart-bar${i===((new Date().getDay()+6)%7)?' now':''}" style="height:${values[i]?Math.max(8,Math.round(values[i]/max*100)):2}%" title="${esc(fmt(values[i]))}"></div>${label}</div>`).join('');
+    }else{
+      const current=monday();
+      const weeks=[-4,-3,-2,-1,0].map(offset=>{const start=addDays(current,offset*7),end=addDays(start,7);return rows.filter(r=>r.data_sessao>=iso(start)&&r.data_sessao<iso(end)).reduce((s,r)=>s+Number(r.duration_minutes||0),0)});
+      const max=Math.max(1,...weeks);
+      chart.innerHTML=weeks.map((value,i)=>`<div class="day"><div class="chart-bar${i===4?' now':''}" style="height:${value?Math.max(8,Math.round(value/max*100)):2}%" title="${esc(fmt(value))}"></div>S${i+1}</div>`).join('');
+    }
+  }
+  async function refreshEvolution(){
+    const token=++refreshToken;const chart=ensureEvolutionUI();if(chart)chart.innerHTML='<div class="performance-evolution-empty">Carregando evolução…</div>';
+    try{const rows=await fetchEvolutionRows();if(token===refreshToken)renderEvolution(rows)}catch(err){if(token===refreshToken&&chart)chart.innerHTML=`<div class="performance-evolution-empty">Não foi possível carregar a evolução.<br>${esc(err?.message||'')}</div>`}
+  }
+  function apply(){mergeQuestionCard();ensureEvolutionUI();refreshEvolution()}
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-evolution-mode]');if(!b)return;e.preventDefault();evolutionMode=b.dataset.evolutionMode==='daily'?'daily':'weekly';localStorage.setItem(MODE_KEY,evolutionMode);refreshEvolution()},true);
   document.addEventListener('DOMContentLoaded',apply,{once:true});
-  document.addEventListener('aprova:render',apply);
+  document.addEventListener('aprova:render',()=>{mergeQuestionCard();refreshEvolution()});
+  document.addEventListener('aprova:study-sessions-updated',refreshEvolution);
   window.addEventListener('pageshow',apply);
+  window.addEventListener('storage',e=>{if(e.key===ACTIVE)apply()});
   const progress=document.getElementById('progress');
-  if(progress)new MutationObserver(apply).observe(progress,{childList:true,subtree:true});
-  window.applyPerformanceLayout=apply;
+  if(progress)new MutationObserver(()=>requestAnimationFrame(mergeQuestionCard)).observe(progress,{childList:true,subtree:true});
+  window.aprovaRefreshEvolution=refreshEvolution;
 })();
 </script>
+
 </body></html>
 
 
