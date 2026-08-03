@@ -102,10 +102,35 @@ document.getElementById('heading').textContent=dashboardGreeting();
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===id&&x.tagName==='BUTTON'));document.getElementById('heading').textContent=id==='dashboard'?dashboardGreeting():(headings[id]||dashboardGreeting());window.scrollTo({top:0,behavior:'smooth'})}
 document.addEventListener('click',e=>{const v=e.target.closest('[data-view]');if(v)showView(v.dataset.view);if(e.target.matches('[data-close]'))e.target.closest('.modal').classList.remove('open')});
+const POMODORO_STATE_KEY='aprovaPomodoroState';
 const initialPomodoroMinutes=Math.max(5,Math.min(240,Number(localStorage.getItem('aprovaPomo'))||25));
-let seconds=initialPomodoroMinutes*60,running=false,timer,pomodoroAudioContext=null;
+let seconds=initialPomodoroMinutes*60,running=false,timer=null,pomodoroAudioContext=null,pomodoroFinishedNotified=false;
 const clock=document.getElementById('clock');
-function paint(){clock.textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')}
+function paint(){if(clock)clock.textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')}
+function readPomodoroState(){
+  try{const state=JSON.parse(localStorage.getItem(POMODORO_STATE_KEY)||'null');return state&&typeof state==='object'?state:null}catch{return null}
+}
+function savePomodoroState(){
+  const state={remaining:Math.max(0,Math.round(seconds)),running:Boolean(running),endsAt:running?Date.now()+Math.max(0,seconds)*1000:null,configuredMinutes:Math.max(5,Math.min(240,Number(localStorage.getItem('aprovaPomo'))||initialPomodoroMinutes)),updatedAt:Date.now()};
+  localStorage.setItem(POMODORO_STATE_KEY,JSON.stringify(state));
+}
+function clearPomodoroInterval(){if(timer){clearInterval(timer);timer=null}}
+function updatePomodoroButton(){const button=document.getElementById('startTimer');if(button)button.textContent=seconds<=0?'Concluído ✓':running?'Pausar':'Iniciar'}
+function syncPomodoroFromClock({notify=true}={}){
+  const state=readPomodoroState();
+  if(!state)return false;
+  if(state.running&&Number.isFinite(Number(state.endsAt))){
+    seconds=Math.max(0,Math.ceil((Number(state.endsAt)-Date.now())/1000));
+    running=seconds>0;
+  }else{
+    seconds=Math.max(0,Math.round(Number(state.remaining)||0));
+    running=false;
+  }
+  paint();updatePomodoroButton();
+  if(seconds===0&&state.running){finishPomodoro({notify:notify&&!pomodoroFinishedNotified});return true}
+  if(running)startPomodoroInterval();
+  return true;
+}
 function preparePomodoroAudio(){
   try{
     const AudioContextClass=window.AudioContext||window.webkitAudioContext;
@@ -134,30 +159,38 @@ function playPomodoroAlarm(){
     if(navigator.vibrate)navigator.vibrate([180,90,180,90,320]);
   }catch(error){console.warn('Não foi possível tocar o sinal sonoro do Pomodoro:',error)}
 }
-function finishPomodoro(){
-  clearInterval(timer);running=false;seconds=0;paint();
-  document.getElementById('startTimer').textContent='Concluído ✓';
-  playPomodoroAlarm();
-  toast('Pomodoro concluído. Hora de fazer uma pausa!');
+function finishPomodoro({notify=true}={}){
+  clearPomodoroInterval();running=false;seconds=0;paint();updatePomodoroButton();savePomodoroState();
+  if(notify){pomodoroFinishedNotified=true;playPomodoroAlarm();toast('Pomodoro concluído. Hora de fazer uma pausa!')}
+}
+function startPomodoroInterval(){
+  clearPomodoroInterval();
+  if(!running||seconds<=0)return;
+  timer=setInterval(()=>{
+    const state=readPomodoroState();
+    if(!state?.running){running=false;clearPomodoroInterval();syncPomodoroFromClock({notify:false});return}
+    seconds=Math.max(0,Math.ceil((Number(state.endsAt)-Date.now())/1000));
+    paint();
+    if(seconds===0)finishPomodoro();
+  },250);
+}
+function resetPomodoroToConfigured({persist=true}={}){
+  clearPomodoroInterval();running=false;pomodoroFinishedNotified=false;
+  seconds=Math.max(5,Math.min(240,Number(localStorage.getItem('aprovaPomo'))||25))*60;
+  paint();updatePomodoroButton();if(persist)savePomodoroState();
 }
 document.getElementById('startTimer').onclick=()=>{
-  preparePomodoroAudio();
-  if(seconds<=0){seconds=+(localStorage.getItem('aprovaPomo')||25)*60;paint()}
+  preparePomodoroAudio();pomodoroFinishedNotified=false;
+  if(seconds<=0)resetPomodoroToConfigured({persist:false});
   running=!running;
-  const button=document.getElementById('startTimer');
-  button.textContent=running?'Pausar':'Iniciar';
-  if(running){
-    timer=setInterval(()=>{
-      seconds=Math.max(0,seconds-1);paint();
-      if(seconds===0)finishPomodoro();
-    },1000);
-  }else clearInterval(timer);
+  if(running){savePomodoroState();startPomodoroInterval()}else{clearPomodoroInterval();savePomodoroState()}
+  updatePomodoroButton();
 };
-document.getElementById('resetTimer').onclick=()=>{
-  clearInterval(timer);running=false;
-  seconds=+(localStorage.getItem('aprovaPomo')||25)*60;paint();
-  document.getElementById('startTimer').textContent='Iniciar';
-};
+document.getElementById('resetTimer').onclick=()=>resetPomodoroToConfigured({persist:true});
+if(!syncPomodoroFromClock({notify:false})){paint();updatePomodoroButton();savePomodoroState()}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncPomodoroFromClock({notify:true})});
+window.addEventListener('pageshow',()=>syncPomodoroFromClock({notify:true}));
+window.addEventListener('storage',event=>{if(event.key===POMODORO_STATE_KEY)syncPomodoroFromClock({notify:false})});
 document.getElementById('fileInput').onchange=async e=>{const file=e.target.files[0];if(file)await enviarEdital(file)};
 document.querySelectorAll('.check').forEach(c=>c.onclick=()=>{if(!c.classList.contains('done')){c.classList.add('done');c.textContent='✓';app.done++;localStorage.setItem('aprovaDone',app.done);updateProgress();toast('Tópico marcado como estudado.')}});document.getElementById('expandTopics').onclick=()=>{document.querySelectorAll('.check:not(.done)').forEach(c=>{c.classList.add('done');c.textContent='✓';app.done++});localStorage.setItem('aprovaDone',app.done);updateProgress();toast('Tópicos concluídos.')} ;function updateProgress(){const p=Math.min(100,Math.round(app.done/44*100));['mainProgress','cardProgress','contestProgress'].forEach(id=>{const elemento=document.getElementById(id);if(elemento)elemento.textContent=p+'%'});const topicos=document.getElementById('topicsDone');if(topicos)topicos.textContent=app.done+' tópicos'}updateProgress();
 function availability(){const days=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];document.getElementById('availability').innerHTML=days.map((d,i)=>`<div class="switch-row">${d}<span class="switch ${app.available[i]?'on':''}" data-day="${i}"></span></div>`).join('');document.querySelectorAll('[data-day]').forEach(s=>s.onclick=()=>{const i=+s.dataset.day;app.available[i]=!app.available[i];s.classList.toggle('on',app.available[i])})}availability();document.getElementById('saveAvailability').onclick=()=>{localStorage.setItem('aprovaAvailable',JSON.stringify(app.available));toast('Disponibilidade salva. Plano atualizado.')} ;document.getElementById('regenPlan').onclick=()=>toast('Plano recalculado com base na sua disponibilidade.');
@@ -2316,7 +2349,7 @@ body.dark .master-auth-error{background:#321c28;border-color:#74404f;color:#ffb6
     if(value){
       setGreeting();
       ['weekHours','cardProgress','topicsDone','pendingReviews','contestProgress','mainProgress'].forEach(id=>{const el=$(id);if(el)el.textContent=id==='pendingReviews'?'0':id==='topicsDone'?'0 tópicos':id==='weekHours'?'0h 0min':'0%'});
-      const clock=$('clock');if(clock)clock.textContent='25:00';
+      if(typeof syncPomodoroFromClock==='function')syncPomodoroFromClock({notify:false});
     }
   }
 
@@ -4524,7 +4557,7 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
     const custom=$('customPomoMinutes');
     return clampMinutes(select?.value==='personalizado'?custom?.value:select?.value);
   }
-  function applyMinutes(value,{persist=true,resetTimer=true}={}){
+  function applyMinutes(value,{persist=true,resetTimer=false}={}){
     const minutes=clampMinutes(value);
     if(persist)localStorage.setItem(LOCAL_POMO,String(minutes));
     const select=$('pomodoroPref'),wrap=$('customPomoWrap'),custom=$('customPomoMinutes');
@@ -4559,14 +4592,15 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
     if(!session?.user)return;
     applyingRemote=true;
     try{
-      if(metadata.pomodoro_minutes!=null)applyMinutes(metadata.pomodoro_minutes,{persist:true,resetTimer:true});
+      if(metadata.pomodoro_minutes!=null)applyMinutes(metadata.pomodoro_minutes,{persist:true,resetTimer:false});
       if(metadata.review_cycle)applyReviewCycle(metadata.review_cycle,{persist:true});
     }finally{applyingRemote=false}
   }
   async function savePreferences(){
     const minutes=selectedMinutes();
     const review=applyReviewCycle($('reviewCyclePref')?.value||DEFAULT_REVIEW,{persist:true});
-    applyMinutes(minutes,{persist:true,resetTimer:true});
+    applyMinutes(minutes,{persist:true,resetTimer:false});
+    if(typeof resetPomodoroToConfigured==='function')resetPomodoroToConfigured({persist:true});
     const client=window.supabaseClient;
     if(client){
       try{
@@ -4584,7 +4618,7 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
     (window.toast||console.info)(`Preferências salvas: Pomodoro de ${minutes} minutos.`);
   }
   function install(){
-    applyMinutes(localStorage.getItem(LOCAL_POMO)||DEFAULT_POMO,{persist:false,resetTimer:true});
+    applyMinutes(localStorage.getItem(LOCAL_POMO)||DEFAULT_POMO,{persist:false,resetTimer:false});
     applyReviewCycle(localStorage.getItem(LOCAL_REVIEW)||DEFAULT_REVIEW,{persist:false});
     const old=$('savePrefs');
     if(old){
@@ -4597,13 +4631,13 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
     client?.auth?.onAuthStateChange?.((event,session)=>{
       if(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'||event==='USER_UPDATED'){
         const meta=session?.user?.user_metadata||{};
-        if(meta.pomodoro_minutes!=null)applyMinutes(meta.pomodoro_minutes,{persist:true,resetTimer:true});
+        if(meta.pomodoro_minutes!=null)applyMinutes(meta.pomodoro_minutes,{persist:true,resetTimer:false});
         if(meta.review_cycle)applyReviewCycle(meta.review_cycle,{persist:true});
       }
     });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
-  window.addEventListener('pageshow',()=>applyMinutes(localStorage.getItem(LOCAL_POMO)||DEFAULT_POMO,{persist:false,resetTimer:true}));
+  window.addEventListener('pageshow',()=>{if(typeof syncPomodoroFromClock==='function')syncPomodoroFromClock({notify:true})});
 })();
 </script>
 
