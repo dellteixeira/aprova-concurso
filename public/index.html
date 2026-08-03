@@ -121,14 +121,35 @@ function savePomodoroState(){
   const state={remaining:Math.max(0,Math.round(seconds)),running:Boolean(running),endsAt,configuredMinutes:getConfiguredPomodoroMinutes(),updatedAt:Date.now()};
   localStorage.setItem(POMODORO_STATE_KEY,JSON.stringify(state));
 }
-function updatePomodoroConfiguredMinutes(minutes){
+function isPomodoroIdleAtFullDuration(state){
+  const configured=Math.max(5,Math.min(240,Number(state?.configuredMinutes)||initialPomodoroMinutes||25));
+  const expected=configured*60;
+  const remaining=Number.isFinite(Number(state?.remaining))?Math.round(Number(state.remaining)):Math.round(seconds);
+  return !running && !state?.running && remaining>0 && Math.abs(remaining-expected)<=2;
+}
+function updatePomodoroConfiguredMinutes(minutes,{persist=true,applyToIdleFull=true}={}){
   const value=Math.max(5,Math.min(240,Number(minutes)||initialPomodoroMinutes||25));
-  localStorage.setItem('aprovaPomo',String(value));
   const state=readPomodoroState();
+  const shouldApplyToClock=applyToIdleFull&&(!state||isPomodoroIdleAtFullDuration(state));
+  if(persist)localStorage.setItem('aprovaPomo',String(value));
   if(state){
     state.configuredMinutes=value;
+    if(shouldApplyToClock){
+      state.remaining=value*60;
+      state.running=false;
+      state.endsAt=null;
+    }
     state.updatedAt=Date.now();
     localStorage.setItem(POMODORO_STATE_KEY,JSON.stringify(state));
+  }
+  if(shouldApplyToClock){
+    clearPomodoroInterval();
+    running=false;
+    seconds=value*60;
+    pomodoroFinishedNotified=false;
+    paint();
+    updatePomodoroButton();
+    savePomodoroState();
   }
   return value;
 }
@@ -334,7 +355,7 @@ const seletorPomodoro=document.getElementById('pomodoroPref');
 seletorPomodoro.insertAdjacentHTML('beforeend','<option value="personalizado">Personalizar duração…</option>');
 seletorPomodoro.closest('.field').insertAdjacentHTML('beforeend','<div class="field" id="customPomoWrap" style="display:none;margin-top:10px"><label>Minutos de foco personalizados</label><input id="customPomoMinutes" type="number" min="5" max="240" step="5" value="25"></div>');
 const inputPomoPersonalizado=document.getElementById('customPomoMinutes');
-function configurarPomodoroSalvo(){const salvo=Math.max(5,Math.min(240,Number(localStorage.getItem('aprovaPomo'))||25));const opcoes=[25,40,50];if(opcoes.includes(salvo)){seletorPomodoro.value=String(salvo);document.getElementById('customPomoWrap').style.display='none'}else{seletorPomodoro.value='personalizado';inputPomoPersonalizado.value=salvo;document.getElementById('customPomoWrap').style.display='grid'}if(typeof syncPomodoroFromClock==='function')syncPomodoroFromClock({notify:false});else{paint();updatePomodoroButton()}}
+function configurarPomodoroSalvo(){const salvo=Math.max(5,Math.min(240,Number(localStorage.getItem('aprovaPomo'))||25));const opcoes=[25,40,50];if(opcoes.includes(salvo)){seletorPomodoro.value=String(salvo);document.getElementById('customPomoWrap').style.display='none'}else{seletorPomodoro.value='personalizado';inputPomoPersonalizado.value=salvo;document.getElementById('customPomoWrap').style.display='grid'}if(typeof updatePomodoroConfiguredMinutes==='function')updatePomodoroConfiguredMinutes(salvo,{persist:false,applyToIdleFull:true});if(typeof syncPomodoroFromClock==='function')syncPomodoroFromClock({notify:false});else{paint();updatePomodoroButton()}}
 seletorPomodoro.onchange=()=>{document.getElementById('customPomoWrap').style.display=seletorPomodoro.value==='personalizado'?'grid':'none'};
 document.getElementById('savePrefs').onclick=()=>{const minutos=seletorPomodoro.value==='personalizado'?Number(inputPomoPersonalizado.value):Number(seletorPomodoro.value);if(!Number.isInteger(minutos)||minutos<5||minutos>240){toast('Escolha entre 5 e 240 minutos.');return}if(typeof updatePomodoroConfiguredMinutes==='function')updatePomodoroConfiguredMinutes(minutos);else localStorage.setItem('aprovaPomo',String(minutos));if(typeof syncPomodoroFromClock==='function')syncPomodoroFromClock({notify:false});toast(`Preferências salvas: ${minutos} minutos de foco. A sessão atual foi preservada.`)};
 configurarPomodoroSalvo();
@@ -4582,10 +4603,8 @@ body.dark .question-type-toggle,body.dark .question-subject-row,body.dark .quest
   }
   function applyMinutes(value,{persist=true,resetTimer=false}={}){
     const minutes=clampMinutes(value);
-    if(persist){
-      if(typeof window.updatePomodoroConfiguredMinutes==='function')window.updatePomodoroConfiguredMinutes(minutes);
-      else localStorage.setItem(LOCAL_POMO,String(minutes));
-    }
+    if(typeof window.updatePomodoroConfiguredMinutes==='function')window.updatePomodoroConfiguredMinutes(minutes,{persist,applyToIdleFull:true});
+    else if(persist)localStorage.setItem(LOCAL_POMO,String(minutes));
     const select=$('pomodoroPref'),wrap=$('customPomoWrap'),custom=$('customPomoMinutes');
     if(select){
       if(['25','40','50'].includes(String(minutes))){select.value=String(minutes);if(wrap)wrap.style.display='none'}
