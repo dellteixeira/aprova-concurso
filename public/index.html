@@ -4722,10 +4722,18 @@ body.dark #progress .performance-topics .performance-questions-embedded{backgrou
   background:transparent;color:var(--muted);font:800 10px inherit;cursor:pointer
 }
 .performance-evolution-controls button.active{background:var(--blue);border-color:var(--blue);color:#fff}
-#performanceEvolutionChart{height:175px;position:relative}
-#performanceEvolutionChart .day{min-width:0}
-#performanceEvolutionChart .chart-bar{min-height:3px}
-.performance-evolution-empty{display:grid;place-items:center;height:150px;color:var(--muted);font-size:12px;text-align:center}
+#performanceEvolutionChart{height:230px;position:relative;display:flex;align-items:stretch;gap:14px;padding:18px 8px 0;border-bottom:1px solid var(--line)}
+#performanceEvolutionChart .evolution-column{min-width:0;flex:1;display:grid;grid-template-rows:22px 1fr 24px;align-items:end;justify-items:center;gap:7px}
+#performanceEvolutionChart .evolution-value{font-size:10px;font-weight:850;color:var(--muted);white-space:nowrap;line-height:1}
+#performanceEvolutionChart .evolution-bar-area{width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center}
+#performanceEvolutionChart .evolution-bar{width:min(42px,72%);height:var(--bar-height,3px);min-height:3px;border-radius:9px 9px 3px 3px;background:linear-gradient(180deg,#7790ff 0%,var(--blue) 100%);box-shadow:0 7px 18px rgba(65,101,245,.18);transition:height .35s ease,transform .18s ease,filter .18s ease;position:relative}
+#performanceEvolutionChart .evolution-bar:hover{transform:translateY(-3px);filter:brightness(1.08)}
+#performanceEvolutionChart .evolution-bar.empty{background:var(--line);box-shadow:none;opacity:.75}
+#performanceEvolutionChart .evolution-bar.current{outline:3px solid rgba(65,101,245,.18);outline-offset:3px}
+#performanceEvolutionChart .evolution-label{font-size:10px;color:var(--muted);font-weight:850;letter-spacing:.35px;line-height:1}
+.performance-evolution-empty{display:grid;place-items:center;width:100%;height:190px;color:var(--muted);font-size:12px;text-align:center}
+body.dark #performanceEvolutionChart .evolution-bar.empty{background:#2a3958}
+@media(max-width:680px){#performanceEvolutionChart{gap:7px;padding-inline:2px}#performanceEvolutionChart .evolution-bar{width:min(30px,76%)}#performanceEvolutionChart .evolution-value{font-size:9px}}
 @media(max-width:1250px){
   #progress .grid.stats.performance-layout,#progress .grid.stats{
     grid-template-columns:minmax(250px,.68fr) minmax(520px,1.45fr)!important;
@@ -4801,8 +4809,13 @@ body.dark #progress .performance-topics .performance-questions-embedded{backgrou
     let title=card.querySelector('.section-title');
     if(!title){title=document.createElement('div');title.className='section-title';card.prepend(title)}
     title.innerHTML=`<h3>Evolução ${evolutionMode==='daily'?'diária':'semanal'}</h3><div class="performance-evolution-controls"><button type="button" data-evolution-mode="daily" class="${evolutionMode==='daily'?'active':''}">Diária</button><button type="button" data-evolution-mode="weekly" class="${evolutionMode==='weekly'?'active':''}">Semanal</button></div>`;
-    let chart=card.querySelector('#performanceEvolutionChart');
-    if(!chart){chart=document.createElement('div');chart.id='performanceEvolutionChart';chart.className='chart';card.appendChild(chart)}
+    const charts=[...card.querySelectorAll(':scope > .chart, :scope > #performanceEvolutionChart')];
+    let chart=card.querySelector('#performanceEvolutionChart')||charts[0];
+    if(!chart){chart=document.createElement('div');card.appendChild(chart)}
+    chart.id='performanceEvolutionChart';
+    chart.className='chart performance-evolution-chart';
+    charts.filter(item=>item!==chart).forEach(item=>item.remove());
+    [...card.children].filter(item=>item!==title&&item!==chart&&item.classList?.contains('empty')).forEach(item=>item.remove());
     return chart;
   }
   async function currentUser(){
@@ -4818,18 +4831,25 @@ body.dark #progress .performance-topics .performance-questions-embedded{backgrou
     const {data,error}=await sb.from('study_sessions').select('data_sessao,duration_minutes,completed').eq('user_id',u.id).eq('concurso_id',cid).eq('completed',true).gte('data_sessao',iso(start)).lt('data_sessao',iso(end));
     if(error)throw error;return data||[];
   }
+  function evolutionBars(labels,values,currentIndex){
+    const max=Math.max(1,...values);
+    return labels.map((label,i)=>{
+      const value=Math.max(0,Number(values[i]||0));
+      const height=value?Math.max(8,Math.round(value/max*100)):3;
+      return `<div class="evolution-column"><span class="evolution-value">${value?esc(fmt(value)):'0min'}</span><div class="evolution-bar-area"><div class="evolution-bar${value?'':' empty'}${i===currentIndex?' current':''}" style="--bar-height:${height}%" title="${esc(label)} · ${esc(fmt(value))}" role="img" aria-label="${esc(label)}: ${esc(fmt(value))}"></div></div><span class="evolution-label">${esc(label)}</span></div>`
+    }).join('');
+  }
   function renderEvolution(rows){
     const chart=ensureEvolutionUI();if(!chart)return;
     if(evolutionMode==='daily'){
       const start=monday(),labels=['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
       const values=labels.map((_,i)=>rows.filter(r=>r.data_sessao===iso(addDays(start,i))).reduce((s,r)=>s+Number(r.duration_minutes||0),0));
-      const max=Math.max(1,...values);
-      chart.innerHTML=labels.map((label,i)=>`<div class="day"><div class="chart-bar${i===((new Date().getDay()+6)%7)?' now':''}" style="height:${values[i]?Math.max(8,Math.round(values[i]/max*100)):2}%" title="${esc(fmt(values[i]))}"></div>${label}</div>`).join('');
+      chart.innerHTML=evolutionBars(labels,values,(new Date().getDay()+6)%7);
     }else{
       const current=monday();
-      const weeks=[-4,-3,-2,-1,0].map(offset=>{const start=addDays(current,offset*7),end=addDays(start,7);return rows.filter(r=>r.data_sessao>=iso(start)&&r.data_sessao<iso(end)).reduce((s,r)=>s+Number(r.duration_minutes||0),0)});
-      const max=Math.max(1,...weeks);
-      chart.innerHTML=weeks.map((value,i)=>`<div class="day"><div class="chart-bar${i===4?' now':''}" style="height:${value?Math.max(8,Math.round(value/max*100)):2}%" title="${esc(fmt(value))}"></div>S${i+1}</div>`).join('');
+      const offsets=[-4,-3,-2,-1,0];
+      const values=offsets.map(offset=>{const start=addDays(current,offset*7),end=addDays(start,7);return rows.filter(r=>r.data_sessao>=iso(start)&&r.data_sessao<iso(end)).reduce((s,r)=>s+Number(r.duration_minutes||0),0)});
+      chart.innerHTML=evolutionBars(['S1','S2','S3','S4','S5'],values,4);
     }
   }
   async function refreshEvolution(){
