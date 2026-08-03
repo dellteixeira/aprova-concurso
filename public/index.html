@@ -5310,203 +5310,259 @@ body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominat
 
 
 <style id="flexibleWeeklyPlanStyles">
-#flexiblePlanModal .modal-box{width:min(1240px,calc(100vw - 28px));max-width:1240px;max-height:calc(100dvh - 28px);overflow:auto;padding:clamp(22px,3vw,42px)}
-#flexiblePlanModal .flex-plan-intro{margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.5}
-#flexiblePlanModal .flex-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:18px}
-#flexiblePlanModal .flex-period-section{display:grid;gap:14px;margin-top:8px}
-#flexiblePlanModal .flex-period-group{border:1px solid var(--line);border-radius:18px;padding:17px;background:color-mix(in srgb,var(--navy) 5%,transparent)}
-#flexiblePlanModal .flex-period-group>h3{margin:0 0 4px;font-size:15px}
-#flexiblePlanModal .flex-period-group>p{margin:0 0 14px;color:var(--muted);font-size:12px;line-height:1.45}
-#flexiblePlanModal .flex-period-grid{display:grid;grid-template-columns:repeat(2,minmax(300px,1fr));gap:14px}
-#flexiblePlanModal .flex-period-card{display:grid;gap:12px;border:1px solid var(--line);border-radius:15px;padding:15px;background:var(--soft)}
-#flexiblePlanModal .flex-period-head{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(120px,.7fr);gap:10px;align-items:center;margin:0}
-#flexiblePlanModal .flex-period-head input{width:18px;height:18px;margin:0;accent-color:var(--blue)}
-#flexiblePlanModal .flex-period-head strong{display:block;font-size:14px}
-#flexiblePlanModal .flex-period-head small{display:block;margin-top:2px;color:var(--muted);font-size:11px}
-#flexiblePlanModal .flex-day-hours{display:grid;gap:8px}
-#flexiblePlanModal .flex-day-hours label{display:grid;grid-template-columns:minmax(76px,1fr) minmax(130px,1.15fr);gap:8px;align-items:center;font-size:12px;font-weight:800;color:var(--muted)}
-#flexiblePlanModal .flex-day-hours select,#flexiblePlanModal .flex-period-head select{width:100%;min-width:0}
-#flexiblePlanModal .flex-subject-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
-#flexiblePlanModal .flex-subject-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:330px;overflow:auto;padding:3px;margin-top:10px}
-#flexiblePlanModal .flex-subject-choice{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:11px;padding:11px;background:var(--soft);cursor:pointer;user-select:none}
-#flexiblePlanModal .flex-subject-choice input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--blue)}
-#flexiblePlanModal .flex-subject-choice b{display:block;font-size:12px}
-#flexiblePlanModal .flex-subject-choice small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
-#flexiblePlanModal .flex-result-note{margin:14px 0 0;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--soft);color:var(--muted);font-size:12px;line-height:1.45}
+#simplePlanModal .modal-box{width:min(1180px,calc(100vw - 28px));max-width:1180px;max-height:calc(100dvh - 28px);overflow:auto;padding:clamp(22px,3vw,38px)}
+#simplePlanModal .simple-plan-intro{margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.55}
+#simplePlanModal .simple-top-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:16px}
+#simplePlanModal .simple-section{border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:14px;background:color-mix(in srgb,var(--navy) 4%,transparent)}
+#simplePlanModal .simple-section h3{margin:0 0 5px;font-size:15px}
+#simplePlanModal .simple-section p{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.45}
+#simplePlanModal .simple-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--navy) 2%,transparent)}
+#simplePlanModal table{width:100%;min-width:940px;border-collapse:collapse}
+#simplePlanModal th,#simplePlanModal td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+#simplePlanModal th:last-child,#simplePlanModal td:last-child{border-right:0}#simplePlanModal tr:last-child td{border-bottom:0}
+#simplePlanModal th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:900;background:color-mix(in srgb,var(--navy) 8%,transparent)}
+#simplePlanModal .day-name{font-weight:900;color:var(--ink);white-space:nowrap}
+#simplePlanModal .period-cell{display:grid;grid-template-columns:minmax(92px,.8fr) minmax(108px,1fr);gap:8px;align-items:center}
+#simplePlanModal .period-cell small{grid-column:1/-1;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.02em}
+#simplePlanModal .period-cell select{width:100%;min-width:0;padding:8px 7px;font-size:12px}
+#simplePlanModal .simple-subject-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+#simplePlanModal .simple-subject-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:330px;overflow:auto;padding:2px}
+#simplePlanModal .simple-subject-choice{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--soft);cursor:pointer;user-select:none}
+#simplePlanModal .simple-subject-choice input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--blue)}
+#simplePlanModal .simple-subject-choice b{display:block;font-size:12px;line-height:1.25}
+#simplePlanModal .simple-subject-choice small{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35}
+#simplePlanModal .simple-summary{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--muted);font-size:12px;line-height:1.45}
 #plan .canonical-planner .planner-empty{cursor:pointer;position:relative;background:color-mix(in srgb,var(--blue) 3%,transparent)}
 #plan .canonical-planner .planner-empty:hover{background:color-mix(in srgb,var(--blue) 12%,transparent);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--blue) 42%,transparent)}
 #plan .canonical-planner .planner-empty:focus-visible{outline:3px solid color-mix(in srgb,var(--blue) 75%,white);outline-offset:-4px}
 #plan .canonical-planner .planner-empty:hover::after{content:'Clique para personalizar';position:absolute;inset:auto 10px 10px 10px;text-align:center;color:var(--muted);font-size:10px;font-weight:850;letter-spacing:.03em}
-@media(max-width:820px){#flexiblePlanModal .flex-settings-grid,#flexiblePlanModal .flex-period-grid,#flexiblePlanModal .flex-subject-grid{grid-template-columns:1fr}#flexiblePlanModal .flex-period-head{grid-template-columns:auto 1fr}#flexiblePlanModal .flex-period-head select{grid-column:1/-1}#flexiblePlanModal .flex-day-hours label{grid-template-columns:minmax(76px,1fr) minmax(128px,1fr)}}
+@media(max-width:820px){#simplePlanModal .simple-top-grid,#simplePlanModal .simple-subject-grid{grid-template-columns:1fr}#simplePlanModal .modal-box{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:20px 16px}}
 </style>
 <script id="flexibleWeeklyPlanController">
 (() => {
   'use strict';
   const DIAS=['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
-  const UTEIS=DIAS.slice(0,5),FDS=DIAS.slice(5);
-  const DAY_NAMES={SEG:'Segunda',TER:'Terça',QUA:'Quarta',QUI:'Quinta',SEX:'Sexta','SÁB':'Sábado',DOM:'Domingo'};
+  const DAY_NAMES={SEG:'Segunda-feira',TER:'Terça-feira',QUA:'Quarta-feira',QUI:'Quinta-feira',SEX:'Sexta-feira','SÁB':'Sábado',DOM:'Domingo'};
   const PERIODS=['manha','tarde','noite'];
-  const PERIOD_INFO={manha:{title:'Manhã',range:'04:00 – 11:59',defaultTime:'08:00',times:['04:00','04:30','05:00','05:30','06:00','06:30','07:00','07:30','08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30']},tarde:{title:'Tarde',range:'12:00 – 17:59',defaultTime:'13:00',times:['12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30']},noite:{title:'Noite',range:'18:00 – 00:00',defaultTime:'18:30',times:['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30','00:00']}};
-  const ACTIVE='aprovaActiveContestId', PREFIX='aprovaContestState:', CONFIG='aprovaConfiguracaoPlano', PLAN='aprovaPlano';
+  const PERIOD_LABEL={manha:'Manhã',tarde:'Tarde',noite:'Noite'};
+  const DEFAULT_START={manha:'08:00',tarde:'13:00',noite:'18:00'};
+  const START_OPTIONS={
+    manha:['04:00','04:30','05:00','05:30','06:00','06:30','07:00','07:30','08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30'],
+    tarde:['12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30'],
+    noite:['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30']
+  };
+  const ACTIVE='aprovaActiveContestId', PREFIX='aprovaContestState:', CONFIG='aprovaConfiguracaoPlano', PLAN='aprovaPlano', AVAILABLE='aprovaAvailable';
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
-  const read=(key,fallback)=>{try{const value=JSON.parse(localStorage.getItem(key));return value??fallback}catch(_){return fallback}};
+  const read=(key,fallback)=>{try{const raw=localStorage.getItem(key);return raw==null?fallback:(JSON.parse(raw)??fallback)}catch(_){return fallback}};
   const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
   const activeId=()=>String(localStorage.getItem(ACTIVE)||'');
-  const readState=()=>{const id=activeId();if(!id)return {};try{return JSON.parse(localStorage.getItem(PREFIX+id)||'{}')||{}}catch(_){return {}}};
-  const saveGlobalAndContest=(key,value)=>{write(key,value);const id=activeId();if(!id)return;const st=readState();st[key]=JSON.stringify(value);localStorage.setItem(PREFIX+id,JSON.stringify(st));};
+  const getVertical=()=>{try{return (typeof verticalizacaoImportada!=='undefined'&&verticalizacaoImportada)||read('aprovaVerticalizacao',null)||null}catch(_){return read('aprovaVerticalizacao',null)||null}};
   const toMinutes=value=>{const [h,m]=String(value||'00:00').split(':').map(Number);return (h||0)*60+(m||0)};
-  const fromMinutes=value=>{const total=((value%1440)+1440)%1440;return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0')};
-  const finish=(start,duration)=>fromMinutes(toMinutes(start)+Number(duration||0));
-  const hoursLabel=hours=>{const minutes=Math.round(Number(hours||0)*60);if(!minutes)return 'Não estudar';const h=Math.floor(minutes/60),m=minutes%60;return [h?`${h}h`:'',m?`${m}min`:''].filter(Boolean).join(' ')};
-  const hoursOptions=(selected)=>Array.from({length:25},(_,i)=>i*0.5).map(value=>`<option value="${value}" ${Number(selected)===value?'selected':''}>${hoursLabel(value)}</option>`).join('');
-  const optionList=(values,selected)=>values.map(value=>`<option value="${value}" ${value===selected?'selected':''}>${value}</option>`).join('');
-  const configured=()=>read(CONFIG,{});
-  function subjectList(){
-    const vertical=window.verticalizacaoImportada||read('aprovaVerticalizacao',null);
-    const raw=vertical?.disciplinas||vertical?.materias||read('aprovaConcurso',{})?.materias||[];
-    const list=Array.isArray(raw)?raw:String(raw||'').split(',').map(item=>item.trim()).filter(Boolean);
-    return [...new Set(list.map(item=>typeof item==='string'?item:(item?.nome||item?.nome_disciplina||item?.materia||'')).filter(Boolean))];
+  const fromMinutes=value=>{const total=((Math.round(value)%1440)+1440)%1440;return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0')};
+  const sessionsThatFit=(hours,duration,breakMinutes)=>{const minutes=Math.round(Number(hours||0)*60);duration=Number(duration||40);breakMinutes=Number(breakMinutes??10);if(minutes<duration)return 0;return Math.max(0,Math.floor((minutes+breakMinutes)/(duration+breakMinutes)))};
+  const hoursForCount=(count,duration,breakMinutes)=>{count=Number(count||0);if(!count)return 0;return Math.round(((count*duration)+Math.max(0,count-1)*breakMinutes)/30)/2};
+  const hourText=hours=>{const minutes=Math.round(Number(hours||0)*60);if(!minutes)return 'Não estudar';const h=Math.floor(minutes/60),m=minutes%60;return [h?`${h}h`:'',m?`${m}min`:''].filter(Boolean).join(' ')};
+  const hoursOptions=selected=>Array.from({length:17},(_,i)=>i*0.5).map(value=>`<option value="${value}" ${Number(selected)===value?'selected':''}>${hourText(value)}</option>`).join('');
+  const timeOptions=(period,selected)=>START_OPTIONS[period].map(value=>`<option value="${value}" ${value===selected?'selected':''}>${value}</option>`).join('');
+  function disciplineRows(){
+    const vertical=getVertical();
+    const raw=Array.isArray(vertical?.disciplinas)?vertical.disciplinas:[];
+    let rows=raw.map((item,index)=>({
+      nome:String(item?.nome||item?.nome_disciplina||item?.materia||'').trim(),
+      prioridade:String(item?.prioridade||'media').toLowerCase(),
+      peso:Math.max(1,Number(item?.peso||1)||1),
+      topicos:Array.isArray(item?.topicos)?item.topicos.length:0,
+      ordem:Number.isFinite(Number(item?.ordem))?Number(item.ordem):index
+    })).filter(item=>item.nome);
+    if(!rows.length){
+      const rawSubjects=read('aprovaConcurso',{})?.materias||[];
+      const list=Array.isArray(rawSubjects)?rawSubjects:String(rawSubjects||'').split(',').map(item=>item.trim()).filter(Boolean);
+      rows=list.map((nome,index)=>({nome:String(nome),prioridade:'media',peso:1,topicos:0,ordem:index}));
+    }
+    const rank={alta:0,high:0,media:1,média:1,medium:1,baixa:2,low:2};
+    return [...new Map(rows.map(item=>[item.nome,item])).values()].sort((a,b)=>(rank[a.prioridade]??1)-(rank[b.prioridade]??1)||a.ordem-b.ordem||String(a.nome).localeCompare(String(b.nome),'pt-BR')||b.peso-a.peso);
   }
-  function priorityLabel(name){
-    const vertical=window.verticalizacaoImportada||read('aprovaVerticalizacao',null);
-    const d=(vertical?.disciplinas||[]).find(item=>String(item?.nome||'')===String(name));
-    const p=String(d?.prioridade||'media').toLowerCase();
-    return `${p==='alta'?'Alta':p==='baixa'?'Baixa':'Média'} · ${Array.isArray(d?.topicos)?d.topicos.length:0} tópicos`;
+  function sortedSelectedSubjects(selected){
+    const wanted=new Set((selected||[]).map(String));
+    const rows=disciplineRows();
+    const filtered=rows.filter(row=>wanted.size?wanted.has(row.nome):true);
+    return filtered.length?filtered:rows;
   }
-  function defaultPeriodState(group,period){return {ativo:(group==='semana'&&period==='noite')||(group==='fds'&&period==='manha'),hora:PERIOD_INFO[period].defaultTime}}
-  function normalizePeriodStates(config,group){
-    const source=group==='semana'?config.periodosUteis:config.periodosFimDeSemana;
-    return Object.fromEntries(PERIODS.map(period=>[period,{...defaultPeriodState(group,period),...(source?.[period]||{})}]));
+  function priorityQueue(selected){
+    const rows=sortedSelectedSubjects(selected);
+    const queue=[];
+    rows.forEach(row=>{for(let i=0;i<Math.max(1,Math.round(Number(row.peso)||1));i+=1)queue.push(row.nome)});
+    return queue.length?queue:rows.map(row=>row.nome);
   }
-  function countToHours(count,duration,breakMinutes){
-    count=Math.max(0,Number(count)||0);if(!count)return 0;
-    return Math.round((count*duration+Math.max(0,count-1)*breakMinutes)/30)/2;
+  function defaultAgenda(){
+    const agenda={};
+    DIAS.forEach(day=>{agenda[day]={};PERIODS.forEach(period=>{agenda[day][period]={inicio:DEFAULT_START[period],horas:0}})});
+    ['SEG','TER','QUA','QUI','SEX'].forEach(day=>{agenda[day].noite.horas=1.5});
+    agenda['SÁB'].manha.horas=2;
+    return agenda;
   }
-  function normalizeHours(config,states){
-    const stored=config.horasPorPeriodo||{};
-    const counts=config.sessoesPorPeriodo||{};
-    const result={semana:{},fds:{}};
-    [['semana',UTEIS],['fds',FDS]].forEach(([group,days])=>{
-      result[group]={};
-      PERIODS.forEach(period=>{result[group][period]={};});
-      days.forEach(day=>{
-        let hasStored=false;
-        PERIODS.forEach(period=>{
-          const value=stored?.[group]?.[period]?.[day];
-          if(Number.isFinite(Number(value))){result[group][period][day]=Number(value);hasStored=true;}
-          else {
-            const count=Number(counts?.[group]?.[period]?.[day]||0);
-            result[group][period][day]=countToHours(count,Number(config.duracao||40),Number(config.pausa??10));
-          }
-        });
-        if(!hasStored && !PERIODS.some(period=>result[group][period][day]>0)){
-          const legacy=Number(config.porDiaDia?.[day]??0);
-          if(legacy>0){const first=PERIODS.find(period=>states[group][period]?.ativo)||'noite';result[group][first][day]=countToHours(legacy,Number(config.duracao||40),Number(config.pausa??10));}
+  function normalizeAgenda(config){
+    const agenda=defaultAgenda();
+    const saved=config?.agendaFlexivelV2;
+    if(saved&&typeof saved==='object'){
+      DIAS.forEach(day=>PERIODS.forEach(period=>{
+        const cell=saved?.[day]?.[period]||{};
+        agenda[day][period]={inicio:cell.inicio||agenda[day][period].inicio,horas:Number(cell.horas||0)};
+      }));
+      return agenda;
+    }
+    const horas=config?.horasPorPeriodo||{}, counts=config?.sessoesPorPeriodo||{};
+    const dur=Number(config?.duracao||40), pausa=Number(config?.pausa??10);
+    let found=false;
+    DIAS.forEach((day,index)=>{
+      const group=index<5?'semana':'fds';
+      PERIODS.forEach(period=>{
+        const periodState=(group==='semana'?config?.periodosUteis:config?.periodosFimDeSemana)?.[period]||{};
+        const h=horas?.[group]?.[period]?.[day];
+        const c=counts?.[group]?.[period]?.[day];
+        const value=Number.isFinite(Number(h))?Number(h):hoursForCount(Number(c||0),dur,pausa);
+        agenda[day][period]={inicio:periodState.hora||agenda[day][period].inicio,horas:value};
+        if(value>0)found=true;
+      });
+    });
+    if(found)return agenda;
+    const porDiaDia=config?.porDiaDia||{};
+    DIAS.forEach(day=>{
+      const count=Number(porDiaDia[day]??0);
+      if(count>0){agenda[day].noite={inicio:config.inicio||DEFAULT_START.noite,horas:hoursForCount(count,dur,pausa)}};
+    });
+    return agenda;
+  }
+  function compatibleStructures(agenda,duration,breakMinutes){
+    const horas={semana:{},fds:{}}, counts={semana:{},fds:{}}, periodosUteis={}, periodosFimDeSemana={}, porDiaDia={};
+    PERIODS.forEach(period=>{horas.semana[period]={};horas.fds[period]={};counts.semana[period]={};counts.fds[period]={};periodosUteis[period]={ativo:false,hora:DEFAULT_START[period]};periodosFimDeSemana[period]={ativo:false,hora:DEFAULT_START[period]};});
+    DIAS.forEach((day,index)=>{
+      const group=index<5?'semana':'fds';
+      porDiaDia[day]=0;
+      PERIODS.forEach(period=>{
+        const cell=agenda[day][period];
+        const qt=sessionsThatFit(cell.horas,duration,breakMinutes);
+        horas[group][period][day]=Number(cell.horas||0);
+        counts[group][period][day]=qt;
+        porDiaDia[day]+=qt;
+        if(qt>0){
+          if(group==='semana'){periodosUteis[period].ativo=true;periodosUteis[period].hora=cell.inicio||DEFAULT_START[period];}
+          else{periodosFimDeSemana[period].ativo=true;periodosFimDeSemana[period].hora=cell.inicio||DEFAULT_START[period];}
         }
       });
     });
-    return result;
-  }
-  function sessionsThatFit(hours,duration,breakMinutes){
-    const minutes=Math.round(Number(hours||0)*60);duration=Number(duration||40);breakMinutes=Number(breakMinutes??10);
-    if(minutes<duration)return 0;
-    return Math.max(0,Math.floor((minutes+breakMinutes)/(duration+breakMinutes)));
+    return {horasPorPeriodo:horas,sessoesPorPeriodo:counts,periodosUteis,periodosFimDeSemana,porDiaDia};
   }
   function buildPlan(config){
-    const subjects=config.materias?.length?config.materias:subjectList();
+    const duration=Number(config.duracao||40), breakMinutes=Number(config.pausa??10), agenda=normalizeAgenda(config), queue=priorityQueue(config.materias);
     const sessions=[];let pointer=0;
-    DIAS.forEach((day,index)=>{
-      const group=index<5?'semana':'fds';
-      const states=group==='semana'?config.periodosUteis:config.periodosFimDeSemana;
+    DIAS.forEach(day=>{
       PERIODS.forEach(period=>{
-        const state=states?.[period];
-        const count=Number(config.sessoesPorPeriodo?.[group]?.[period]?.[day]||0);
-        if(!state?.ativo||!count)return;
-        const start=toMinutes(state.hora);
-        for(let i=0;i<count;i+=1){
-          const subject=subjects[pointer%subjects.length]||'Estudo direcionado';
-          sessions.push([day,fromMinutes(start+i*(config.duracao+config.pausa)),subject,config.duracao]);
+        const cell=agenda[day][period];
+        const count=sessionsThatFit(cell.horas,duration,breakMinutes);
+        if(!count)return;
+        const start=toMinutes(cell.inicio||DEFAULT_START[period]);
+        for(let index=0;index<count;index+=1){
+          const subject=queue[pointer%queue.length]||'Estudo direcionado';
+          sessions.push([day,fromMinutes(start+index*(duration+breakMinutes)),subject,duration]);
           pointer+=1;
         }
       });
     });
     sessions.sort((a,b)=>DIAS.indexOf(a[0])-DIAS.indexOf(b[0])||toMinutes(a[1])-toMinutes(b[1])||String(a[2]).localeCompare(String(b[2]),'pt-BR'));
-    return {version:5,config,horarios:[...new Set(sessions.map(item=>item[1]))].sort((a,b)=>toMinutes(a)-toMinutes(b)),sessoes:sessions,updatedAt:Date.now()};
+    const compat=compatibleStructures(agenda,duration,breakMinutes);
+    const normalized={...config,duracao:duration,pausa:breakMinutes,agendaFlexivelV2:agenda,materias:sortedSelectedSubjects(config.materias).map(item=>item.nome),...compat,porDia:Math.max(0,...Object.values(compat.porDiaDia)),inicio:firstStart(agenda,false),inicioFimDeSemana:firstStart(agenda,true)};
+    return {version:6,config:normalized,horarios:[...new Set(sessions.map(item=>item[1]))].sort((a,b)=>toMinutes(a)-toMinutes(b)),sessoes:sessions,updatedAt:Date.now()};
+  }
+  function firstStart(agenda,weekend){
+    const days=weekend?['SÁB','DOM']:['SEG','TER','QUA','QUI','SEX'];
+    const starts=[];days.forEach(day=>PERIODS.forEach(period=>{if(Number(agenda[day][period].horas)>0)starts.push(agenda[day][period].inicio)}));
+    return starts.sort((a,b)=>toMinutes(a)-toMinutes(b))[0]||DEFAULT_START.noite;
+  }
+  function savePlan(plan){
+    write(CONFIG,plan.config);write(PLAN,plan);write(AVAILABLE,DIAS.map(day=>(plan.config.porDiaDia?.[day]||0)>0));
+    const id=activeId();if(id){const key=PREFIX+id;const state=read(key,{});state[CONFIG]=JSON.stringify(plan.config);state[PLAN]=JSON.stringify(plan);state[AVAILABLE]=JSON.stringify(DIAS.map(day=>(plan.config.porDiaDia?.[day]||0)>0));localStorage.setItem(key,JSON.stringify(state));}
+    try{if(typeof planoEditavel!=='undefined')planoEditavel=plan;}catch(_){}
   }
   function sync(plan){
-    try{window.renderPlano?.()}catch(_){}
+    try{window.renderPlano?.()}catch(error){console.warn('Falha ao renderizar plano:',error)}
+    try{window.renderGrade?.()}catch(_){}
+    try{window.renderReviews?.();window.renderProgress?.()}catch(_){}
     window.dispatchEvent(new CustomEvent('aprova:plan-updated',{detail:plan}));
     try{window.dispatchEvent(new StorageEvent('storage',{key:PLAN,newValue:JSON.stringify(plan)}))}catch(_){}
     try{window.aprovaContestManager?.snapshot?.()}catch(_){}
+    setTimeout(decorateEmptyCells,30);
+  }
+  function currentConfig(){
+    const saved=read(CONFIG,{});
+    const subjects=disciplineRows().map(row=>row.nome);
+    const materias=Array.isArray(saved.materias)&&saved.materias.length?saved.materias:subjects;
+    return {...saved,duracao:Number(saved.duracao||40),pausa:Number(saved.pausa??10),materias,agendaFlexivelV2:normalizeAgenda(saved)};
   }
   function ensureModal(){
-    let modal=document.getElementById('flexiblePlanModal');
-    if(!modal){modal=document.createElement('div');modal.id='flexiblePlanModal';modal.className='modal';modal.innerHTML='<div class="modal-box"></div>';document.body.appendChild(modal)}
+    let modal=document.getElementById('simplePlanModal');
+    if(!modal){modal=document.createElement('div');modal.id='simplePlanModal';modal.className='modal';modal.innerHTML='<div class="modal-box"></div>';document.body.appendChild(modal)}
     return modal;
   }
-  function renderPeriodCard(group,period,states,hours){
-    const days=group==='semana'?UTEIS:FDS,info=PERIOD_INFO[period],state=states[group][period];
-    return `<article class="flex-period-card"><label class="flex-period-head"><input type="checkbox" data-flex-active="${group}:${period}" ${state.ativo?'checked':''}><span><strong>${info.title}</strong><small>${info.range}</small></span><select data-flex-time="${group}:${period}" aria-label="Início ${info.title}">${optionList(info.times,state.hora||info.defaultTime)}</select></label><div class="flex-day-hours">${days.map(day=>`<label><span>${DAY_NAMES[day]}</span><select data-flex-hours="${group}:${period}:${day}">${hoursOptions(hours[group][period][day]||0)}</select></label>`).join('')}</div></article>`;
+  function renderDayRow(day,agenda){
+    return `<tr><td class="day-name">${DAY_NAMES[day]}</td>${PERIODS.map(period=>{const cell=agenda[day][period];return `<td><div class="period-cell"><small>${PERIOD_LABEL[period]}</small><select data-simple-start="${day}:${period}" aria-label="Início ${DAY_NAMES[day]} ${PERIOD_LABEL[period]}">${timeOptions(period,cell.inicio||DEFAULT_START[period])}</select><select data-simple-hours="${day}:${period}" aria-label="Horas ${DAY_NAMES[day]} ${PERIOD_LABEL[period]}">${hoursOptions(cell.horas||0)}</select></div></td>`}).join('')}</tr>`;
   }
-  function openFlexibleEditor(){
-    const subjects=subjectList();
-    if(!subjects.length){(window.toast||window.alert)('Importe a verticalização para listar as matérias do concurso.');return;}
-    const config=configured();
-    const states={semana:normalizePeriodStates(config,'semana'),fds:normalizePeriodStates(config,'fds')};
-    const hours=normalizeHours(config,states);
-    const selected=config.materias?.length?config.materias:subjects;
+  function openEditor(){
+    const rows=disciplineRows();
+    if(!rows.length){(window.toast||window.alert)('Importe ou cadastre as matérias do edital antes de montar o plano.');return;}
+    const config=currentConfig(),agenda=normalizeAgenda(config),selected=new Set(config.materias||rows.map(row=>row.nome));
     const modal=ensureModal(),box=modal.querySelector('.modal-box');
-    box.innerHTML=`<h2>Personalizar plano de estudos</h2><p class="flex-plan-intro">Defina, por dia e por período, quantas horas você tem para estudar. Exemplo: na segunda, Manhã 3h, Tarde 5h e Noite 3h. O app converterá essas horas em sessões conforme a duração e o intervalo escolhidos.</p><form id="flexiblePlanForm"><div class="flex-settings-grid"><div class="field"><label>Duração de cada sessão</label><select id="flexDuration">${[25,30,40,45,50,60].map(n=>`<option value="${n}" ${n===Number(config.duracao||40)?'selected':''}>${n} minutos</option>`).join('')}</select></div><div class="field"><label>Intervalo entre sessões</label><select id="flexBreak">${[5,10,15,20,30].map(n=>`<option value="${n}" ${n===Number(config.pausa??10)?'selected':''}>${n} minutos</option>`).join('')}</select></div></div><section class="flex-period-section"><div class="flex-period-group"><h3>Dias úteis</h3><p>Ative os períodos disponíveis e informe as horas de estudo de segunda a sexta.</p><div class="flex-period-grid">${PERIODS.map(period=>renderPeriodCard('semana',period,states,hours)).join('')}</div></div><div class="flex-period-group"><h3>Sábado e domingo</h3><p>Configure separadamente o fim de semana, sem interferir nos dias úteis.</p><div class="flex-period-grid">${PERIODS.map(period=>renderPeriodCard('fds',period,states,hours)).join('')}</div></div></section><div class="flex-subject-toolbar"><label>Matérias do ciclo</label><button class="btn" type="button" data-flex-select-all>Marcar/desmarcar todas</button></div><div class="flex-subject-grid">${subjects.map(subject=>`<label class="flex-subject-choice"><input type="checkbox" data-flex-subject value="${esc(subject)}" ${selected.includes(subject)?'checked':''}><span><b>${esc(subject)}</b><small>Prioridade ${esc(priorityLabel(subject))}</small></span></label>`).join('')}</div><p class="flex-result-note">Ao salvar, a grade semanal, o plano do dia, revisões, progresso e histórico serão sincronizados. Células vazias da grade também abrem esta personalização.</p></form><div class="modal-actions"><button class="btn" type="button" data-flex-close>Cancelar</button><button class="btn primary" type="submit" form="flexiblePlanForm">Salvar personalização</button></div>`;
+    box.innerHTML=`<h2>Personalizar plano de estudos</h2><p class="simple-plan-intro">Informe exatamente quanto tempo você tem por dia e por período. Use “Não estudar” para deixar um período livre. O botão Recalcular usará estes mesmos dados e distribuirá as matérias por prioridade: alta, média, baixa, ordem do edital e peso.</p><form id="simplePlanForm"><div class="simple-top-grid"><div class="field"><label>Duração de cada sessão</label><select id="simpleDuration">${[25,30,40,45,50,60].map(n=>`<option value="${n}" ${n===Number(config.duracao)?'selected':''}>${n} minutos</option>`).join('')}</select></div><div class="field"><label>Intervalo entre sessões</label><select id="simpleBreak">${[0,5,10,15,20,30].map(n=>`<option value="${n}" ${n===Number(config.pausa)?'selected':''}>${n} minutos</option>`).join('')}</select></div></div><section class="simple-section"><h3>Horários por dia e período</h3><p>Exemplo: em Segunda-feira, defina Manhã 3h, Tarde 5h e Noite 3h. O app gera automaticamente as sessões que couberem em cada bloco.</p><div class="simple-table-wrap"><table><thead><tr><th>Dia</th><th>Manhã</th><th>Tarde</th><th>Noite</th></tr></thead><tbody>${DIAS.map(day=>renderDayRow(day,agenda)).join('')}</tbody></table></div></section><section class="simple-section"><div class="simple-subject-toolbar"><div><h3>Matérias do ciclo</h3><p>A ordem abaixo já está organizada por prioridade, ordem manual do edital e peso.</p></div><button class="btn" type="button" data-simple-select-all>Marcar/desmarcar todas</button></div><div class="simple-subject-grid">${rows.map(row=>`<label class="simple-subject-choice"><input type="checkbox" data-simple-subject value="${esc(row.nome)}" ${selected.has(row.nome)?'checked':''}><span><b>${esc(row.nome)}</b><small>Prioridade ${labelPriority(row.prioridade)} · Peso ${row.peso} · ${row.topicos} tópico${row.topicos===1?'':'s'}</small></span></label>`).join('')}</div><div class="simple-summary">Ao salvar, a grade semanal e o plano do dia serão recalculados com estes horários. O botão “Recalcular plano” repetirá o mesmo cálculo sem abrir esta janela.</div></section></form><div class="modal-actions"><button class="btn" type="button" data-simple-close>Cancelar</button><button class="btn primary" type="submit" form="simplePlanForm">Salvar personalização</button></div>`;
     modal.classList.add('open');modal.setAttribute('aria-hidden','false');
   }
-  function saveFlexibleEditor(event){
+  function labelPriority(value){value=String(value||'media').toLowerCase();return value==='alta'||value==='high'?'Alta':value==='baixa'||value==='low'?'Baixa':'Média'}
+  function readForm(form){
+    const agenda={};DIAS.forEach(day=>{agenda[day]={};PERIODS.forEach(period=>{agenda[day][period]={inicio:form.querySelector(`[data-simple-start="${day}:${period}"]`)?.value||DEFAULT_START[period],horas:Number(form.querySelector(`[data-simple-hours="${day}:${period}"]`)?.value||0)}})});
+    const materias=[...form.querySelectorAll('[data-simple-subject]:checked')].map(input=>input.value);
+    return {...currentConfig(),duracao:Number(form.querySelector('#simpleDuration')?.value||40),pausa:Number(form.querySelector('#simpleBreak')?.value??10),materias,agendaFlexivelV2:agenda};
+  }
+  function saveFromForm(event){
     event.preventDefault();event.stopImmediatePropagation();
-    const form=event.target,modal=document.getElementById('flexiblePlanModal');
-    const duration=Number(form.querySelector('#flexDuration')?.value||40),breakMinutes=Number(form.querySelector('#flexBreak')?.value??10);
-    const materias=[...form.querySelectorAll('[data-flex-subject]:checked')].map(input=>input.value);
-    if(!materias.length){(window.toast||window.alert)('Escolha ao menos uma matéria para o ciclo.');return;}
-    const states={semana:{},fds:{}},hours={semana:{},fds:{}},counts={semana:{},fds:{}};
-    ['semana','fds'].forEach(group=>{
-      PERIODS.forEach(period=>{
-        const id=`${group}:${period}`;
-        states[group][period]={ativo:!!form.querySelector(`[data-flex-active="${id}"]`)?.checked,hora:form.querySelector(`[data-flex-time="${id}"]`)?.value||PERIOD_INFO[period].defaultTime};
-        hours[group][period]={};counts[group][period]={};
-      });
-      form.querySelectorAll(`[data-flex-hours^="${group}:"]`).forEach(input=>{
-        const [,period,day]=input.dataset.flexHours.split(':');
-        const value=Number(input.value||0);hours[group][period][day]=value;
-        counts[group][period][day]=states[group][period].ativo?sessionsThatFit(value,duration,breakMinutes):0;
-      });
-    });
-    const porDiaDia={};
-    DIAS.forEach((day,index)=>{const group=index<5?'semana':'fds';porDiaDia[day]=PERIODS.reduce((total,period)=>total+Number(counts[group][period][day]||0),0);});
-    if(!Object.values(porDiaDia).some(value=>value>0)){(window.toast||window.alert)('Informe horas suficientes para gerar ao menos uma sessão.');return;}
-    const firstActive=group=>PERIODS.filter(period=>states[group][period].ativo).map(period=>states[group][period].hora).sort((a,b)=>toMinutes(a)-toMinutes(b))[0]||PERIOD_INFO.noite.defaultTime;
-    const config={...configured(),duracao:duration,pausa:breakMinutes,materias,periodosUteis:states.semana,periodosFimDeSemana:states.fds,horasPorPeriodo:hours,sessoesPorPeriodo:counts,porDiaDia,porDia:Math.max(0,...Object.values(porDiaDia)),inicio:firstActive('semana'),inicioFimDeSemana:firstActive('fds')};
+    const config=readForm(event.target);
+    if(!config.materias.length){(window.toast||window.alert)('Escolha ao menos uma matéria para o ciclo.');return;}
     const plan=buildPlan(config);
-    saveGlobalAndContest(CONFIG,config);saveGlobalAndContest(PLAN,plan);saveGlobalAndContest('aprovaAvailable',DIAS.map(day=>porDiaDia[day]>0));
-    modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');
-    sync(plan);(window.toast||window.alert)('Personalização salva: horários flexíveis aplicados à grade semanal.');
+    if(!plan.sessoes.length){(window.toast||window.alert)('Informe horas suficientes para gerar ao menos uma sessão.');return;}
+    savePlan(plan);document.getElementById('simplePlanModal')?.classList.remove('open');sync(plan);(window.toast||window.alert)('Personalização salva. Grade recalculada conforme seus horários e prioridades.');
+  }
+  function recalculate(event){
+    event?.preventDefault();event?.stopImmediatePropagation();
+    const plan=buildPlan(currentConfig());
+    if(!plan.sessoes.length){(window.toast||window.alert)('Não há sessões para recalcular. Abra “Personalizar semana e matérias” e informe seus horários.');return;}
+    savePlan(plan);sync(plan);(window.toast||window.alert)('Plano recalculado conforme horários salvos e prioridades das matérias.');
   }
   function decorateEmptyCells(){
-    document.querySelectorAll('#plan .canonical-planner .planner-empty').forEach(cell=>{cell.tabIndex=0;cell.setAttribute('role','button');cell.setAttribute('aria-label','Personalizar plano de estudos nesta célula vazia');cell.title='Clique para personalizar o plano de estudos';});
+    document.querySelectorAll('#plan .canonical-planner .planner-empty').forEach(cell=>{cell.tabIndex=0;cell.setAttribute('role','button');cell.setAttribute('aria-label','Abrir personalização do plano de estudos');cell.title='Clique para personalizar o plano de estudos';});
+  }
+  function replaceButton(id,handler){
+    const old=document.getElementById(id);if(!old)return null;
+    const fresh=old.cloneNode(true);old.replaceWith(fresh);fresh.addEventListener('click',handler,true);fresh.onclick=handler;return fresh;
+  }
+  function wire(){
+    replaceButton('planCustomizePersistent',event=>{event.preventDefault();event.stopImmediatePropagation();openEditor();});
+    replaceButton('finalEditPlanButton',event=>{event.preventDefault();event.stopImmediatePropagation();openEditor();});
+    replaceButton('regenPlan',recalculate);
+    decorateEmptyCells();
   }
   document.addEventListener('click',event=>{
-    if(event.target.closest('[data-flex-close]')){event.preventDefault();document.getElementById('flexiblePlanModal')?.classList.remove('open');return;}
-    if(event.target.closest('[data-flex-select-all]')){event.preventDefault();const boxes=[...document.querySelectorAll('#flexiblePlanModal [data-flex-subject]')],all=boxes.every(box=>box.checked);boxes.forEach(box=>box.checked=!all);return;}
+    if(event.target.closest('[data-simple-close]')){event.preventDefault();document.getElementById('simplePlanModal')?.classList.remove('open');return;}
+    if(event.target.closest('[data-simple-select-all]')){event.preventDefault();const boxes=[...document.querySelectorAll('#simplePlanModal [data-simple-subject]')],all=boxes.length&&boxes.every(box=>box.checked);boxes.forEach(box=>box.checked=!all);return;}
     const empty=event.target.closest('#plan .canonical-planner .planner-empty');
-    if(empty){event.preventDefault();event.stopPropagation();openFlexibleEditor();return;}
+    if(empty){event.preventDefault();event.stopImmediatePropagation();openEditor();return;}
   },true);
-  document.addEventListener('keydown',event=>{const empty=event.target.closest?.('#plan .canonical-planner .planner-empty');if(empty&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openFlexibleEditor();}},true);
-  document.addEventListener('submit',event=>{if(event.target?.id==='flexiblePlanForm')saveFlexibleEditor(event);},true);
-  document.addEventListener('aprova:plan-updated',()=>setTimeout(decorateEmptyCells,0));
-  window.addEventListener('storage',event=>{if(event.key===PLAN)setTimeout(decorateEmptyCells,0);});
-  const observer=new MutationObserver(decorateEmptyCells);
-  const start=()=>{const wrap=document.querySelector('#plan .planner-wrap');if(wrap)observer.observe(wrap,{childList:true,subtree:true});decorateEmptyCells();};
+  document.addEventListener('keydown',event=>{const empty=event.target.closest?.('#plan .canonical-planner .planner-empty');if(empty&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openEditor();}},true);
+  document.addEventListener('submit',event=>{if(event.target?.id==='simplePlanForm')saveFromForm(event);},true);
+  document.addEventListener('aprova:render',()=>setTimeout(()=>{wire();decorateEmptyCells();},40));
+  document.addEventListener('aprova:plan-updated',()=>setTimeout(decorateEmptyCells,30));
+  window.addEventListener('storage',event=>{if([PLAN,CONFIG].includes(event.key))setTimeout(()=>{wire();decorateEmptyCells();},50);});
+  const start=()=>{wire();setTimeout(wire,250);setTimeout(wire,1000);};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  setTimeout(start,300);setTimeout(start,1000);
-  window.aprovaFlexiblePlan={open:openFlexibleEditor,save:saveFlexibleEditor,buildPlan};
-  window.aprovaFinalSubjects={...(window.aprovaFinalSubjects||{}),openSubjects:openFlexibleEditor};
+  window.aprovaFlexiblePlan={open:openEditor,buildPlan,recalculate};
+  window.aprovaFinalSubjects={...(window.aprovaFinalSubjects||{}),openSubjects:openEditor};
 })();
 </script>
 
