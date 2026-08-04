@@ -5566,5 +5566,82 @@ body.dark #progress .performance-topics .dominated-topic-row.is-studied .dominat
 })();
 </script>
 
+
+<style id="wideStudyLogModalFix">
+/* Registrar estudo: janela ampla para exibir todos os campos sem corte horizontal. */
+#logModal{
+  padding:clamp(12px,3vw,34px)!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+}
+#logModal .modal-box{
+  width:min(1040px,calc(100vw - 2 * clamp(12px,3vw,34px)))!important;
+  max-width:1040px!important;
+  max-height:calc(100dvh - 2 * clamp(12px,3vw,34px))!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  margin:0!important;
+}
+#logModal #logForm.log-form{
+  width:100%!important;
+  max-width:100%!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:14px 16px!important;
+}
+#logModal #logForm .field,
+#logModal #logForm .field input,
+#logModal #logForm .field select,
+#logModal #logForm .field textarea{
+  min-width:0!important;
+  width:100%!important;
+  max-width:100%!important;
+}
+#logModal #logForm .full,
+#logModal #logForm .question-fields,
+#logModal #logForm #questionFields{
+  grid-column:1/-1!important;
+}
+#logModal #questionFields.question-fields.show{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:14px 16px!important;
+  width:100%!important;
+  max-width:100%!important;
+}
+#logModal #questionFields .full{grid-column:1/-1!important}
+#logModal .question-type-toggle{width:100%!important;max-width:100%!important}
+#logModal .modal-actions{
+  position:sticky;
+  bottom:-1px;
+  z-index:2;
+  padding-top:16px;
+  background:inherit;
+}
+@media(max-width:760px){
+  #logModal{padding:8px!important;align-items:flex-start!important}
+  #logModal .modal-box{
+    width:calc(100vw - 16px)!important;
+    max-width:none!important;
+    max-height:calc(100dvh - 16px)!important;
+    border-radius:14px!important;
+    padding:18px!important;
+  }
+  #logModal #logForm.log-form,
+  #logModal #questionFields.question-fields.show{
+    grid-template-columns:1fr!important;
+  }
+  #logModal .modal-actions{
+    display:grid!important;
+    grid-template-columns:1fr 1fr;
+    gap:8px!important;
+  }
+  #logModal .modal-actions .btn{width:100%!important}
+}
+</style>
+
 </body>
 </html>
